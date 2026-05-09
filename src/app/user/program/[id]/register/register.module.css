@@ -1,0 +1,1048 @@
+/* ==========================================
+   REGISTRATION FORM PAGE STYLES — SEMESTA MANUSIA
+   Brand Color: #00BFFF (Dodger Blue)
+   ========================================== */
+
+/* Variables */
+:root {
+  --primary: #00BFFF;
+  --primary-dark: #0099CC;
+  --primary-light: #66D9FF;
+  --primary-bg: rgba(0, 191, 255, 0.08);
+  --secondary: #7C3AED;
+  --accent: #F59E0B;
+  --success: #10B981;
+  --danger: #EF4444;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  --background: #ffffff;
+  --background-alt: #f8fafc;
+  --background-gradient: linear-gradient(135deg, #E0F7FF 0%, #F0F9FF 50%, #ffffff 100%);
+  --card-shadow: 0 8px 32px rgba(0, 191, 255, 0.12);
+  --card-shadow-hover: 0 16px 48px rgba(0, 191, 255, 0.2);
+  --gradient-primary: linear-gradient(135deg, #00BFFF 0%, #7C3AED 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(0, 191, 255, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+}
+
+/* ==========================================
+   PAGE CONTAINER
+   ========================================== */
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--background);
+  position: relative;
+  overflow-x: hidden;
+  padding-top: 80px;
+}
+
+/* Animated Background */
+.animatedBg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gradientOrb1 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 191, 255, 0.12) 0%, transparent 70%);
+  top: -150px;
+  right: -50px;
+  filter: blur(60px);
+}
+
+.gradientOrb2 {
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+  bottom: 30%;
+  left: -80px;
+  filter: blur(50px);
+}
+
+.gradientOrb3 {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 191, 255, 0.08) 0%, transparent 70%);
+  bottom: -50px;
+  right: 20%;
+  filter: blur(40px);
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ==========================================
+   MAIN CONTAINER — 2 COLUMN LAYOUT
+   ========================================== */
+.container {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  min-height: calc(100vh - 80px);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 2rem;
+  gap: 2rem;
+}
+
+/* ==========================================
+   SIDEBAR — LEFT COLUMN
+   ========================================== */
+.sidebar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  box-shadow: var(--card-shadow);
+}
+
+.sidebarTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.sidebarSubtitle {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 2rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--primary-bg);
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stepItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+}
+
+.stepCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f1f5f9;
+  color: var(--text-light);
+  border: 2px solid #e2e8f0;
+}
+
+.stepCircle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.stepCircle.active {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 191, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.stepCircle.complete {
+  background: var(--success);
+  border-color: var(--success);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stepTitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-light);
+  transition: all 0.3s ease;
+}
+
+.stepTitle.activeTitle {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stepTitle.completeTitle {
+  font-weight: 600;
+  color: var(--success);
+}
+
+.stepLabel {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  opacity: 0.7;
+}
+
+.stepLabel.activeLabel {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.stepLine {
+  width: 2px;
+  height: 2rem;
+  background: #e2e8f0;
+  margin-left: 1.25rem;
+  transition: all 0.4s ease;
+  border-radius: 2px;
+}
+
+.stepItem:has(.stepCircle.complete) .stepLine {
+  background: linear-gradient(180deg, var(--success) 0%, #e2e8f0 100%);
+}
+
+/* Help Box */
+.helpBox {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--gradient-subtle);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(0, 191, 255, 0.1);
+}
+
+.helpIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.helpIcon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+}
+
+.helpContent h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.2rem 0;
+}
+
+.helpContent p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   MAIN CONTENT — RIGHT COLUMN
+   ========================================== */
+.mainContent {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  box-shadow: var(--card-shadow);
+  min-height: 600px;
+}
+
+.stepHeaderContent {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--primary-bg);
+}
+
+.stepPageTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.stepMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stepNumber {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  background: var(--primary-bg);
+  border-radius: 20px;
+}
+
+.stepProgress {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.progressDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.progressDot.active {
+  background: var(--primary);
+  transform: scale(1.2);
+}
+
+.progressDot.complete {
+  background: var(--success);
+}
+
+/* ==========================================
+   FORM STYLES
+   ========================================== */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.formField.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.input,
+.select,
+.textarea {
+  padding: 0.875rem 1.125rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: #ffffff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: #cbd5e1;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.15);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-light);
+}
+
+.input.inputError,
+.select.inputError,
+.textarea.inputError {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.75rem;
+}
+
+.dateInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dateInput {
+  padding-right: 3rem;
+  width: 100%;
+}
+
+/* Hide native browser calendar picker */
+.dateInput::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 1rem;
+  width: 20px;
+  height: 20px;
+  color: var(--text-light);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.dateInputWrapper:hover .calendarIcon {
+  color: var(--primary);
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: var(--danger);
+  margin-top: 0.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.errorText::before {
+  content: "⚠";
+  font-size: 0.75rem;
+}
+
+/* ==========================================
+   FILE UPLOAD STYLES
+   ========================================== */
+.uploadField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.uploadLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.uploadInstruction {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  padding: 0.75rem 1rem;
+  background: #fffbeb;
+  border-radius: 10px;
+  border-left: 3px solid var(--accent);
+}
+
+.uploadInstruction .link {
+  color: var(--primary-dark);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.uploadInstruction .note {
+  color: var(--danger);
+  font-weight: 600;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.uploadBox {
+  border: 2px dashed rgba(0, 191, 255, 0.4);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--gradient-subtle);
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.uploadBox::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.uploadBox:hover::before {
+  opacity: 0.05;
+}
+
+.uploadBox:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 191, 255, 0.15);
+}
+
+.uploadBox.hasFile {
+  border-style: solid;
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.uploadBox.hasError {
+  border-color: var(--danger);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.uploadPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-light);
+  position: relative;
+  z-index: 1;
+}
+
+.uploadPlaceholder svg {
+  width: 48px;
+  height: 48px;
+  color: var(--primary);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.uploadBox:hover .uploadPlaceholder svg {
+  opacity: 1;
+  transform: translateY(-4px);
+}
+
+.uploadPlaceholder span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.uploadPlaceholder small {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.filePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.previewImage {
+  border-radius: 12px;
+  object-fit: cover;
+  max-width: 180px;
+  max-height: 140px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.fileName {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.removeFile {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeFile:hover {
+  background: var(--danger);
+}
+
+.removeFile:hover svg {
+  color: #ffffff;
+}
+
+.removeFile svg {
+  width: 16px;
+  height: 16px;
+  color: var(--danger);
+  transition: color 0.2s ease;
+}
+
+.fileInput {
+  display: none;
+}
+
+/* ==========================================
+   PAYMENT SECTION
+   ========================================== */
+.paymentSection {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fcd34d;
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.paymentSection::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.paymentTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paymentTitle::before {
+  content: "💳";
+}
+
+.paymentInfo {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.paymentInfo p {
+  margin: 0;
+}
+
+.paymentInfo strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ==========================================
+   NAVIGATION BUTTONS
+   ========================================== */
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--primary-bg);
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backButton:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateX(-4px);
+}
+
+.backButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.backButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.continueButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.3);
+}
+
+.continueButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 191, 255, 0.4);
+}
+
+.continueButton:active {
+  transform: translateY(0);
+}
+
+.continueButton svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.continueButton:hover svg {
+  transform: translateX(4px);
+}
+
+/* ==========================================
+   SUCCESS MODAL
+   ========================================== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  padding: 1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 3rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.modalContent::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--gradient-primary);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.modalIcon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.75rem;
+  position: relative;
+}
+
+.modalIcon::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.modalIcon svg {
+  width: 44px;
+  height: 44px;
+  color: var(--success);
+}
+
+.modalTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.modalText {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 2rem 0;
+}
+
+.modalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.3);
+}
+
+.modalButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 191, 255, 0.4);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 320px 1fr;
+    padding: 1.5rem;
+  }
+
+  .mainContent {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .sidebar {
+    position: relative;
+    top: 0;
+    padding: 1.5rem;
+  }
+
+  .stepper {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+  }
+
+  .stepItem {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .stepLine {
+    display: none;
+  }
+
+  .stepText {
+    display: none;
+  }
+
+  .mainContent {
+    padding: 1.5rem;
+  }
+
+  .stepPageTitle {
+    font-size: 1.5rem;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .formField.fullWidth {
+    grid-column: 1;
+  }
+
+  .navigation {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .backButton,
+  .continueButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .uploadBox {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 1.25rem;
+  }
+
+  .mainContent {
+    padding: 1.25rem;
+  }
+
+  .stepHeaderContent {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .modalContent {
+    padding: 2rem;
+  }
+
+  .modalTitle {
+    font-size: 1.5rem;
+  }
+}

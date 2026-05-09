@@ -1,0 +1,633 @@
+/* ==========================================
+   PROGRAM SEARCH PAGE STYLES — SEMESTA MANUSIA
+   ========================================== */
+
+.programPage {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Page Header */
+.pageHeader {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.875rem 0;
+  padding-top: 5rem;
+}
+
+/* Search & Filter Bar - Below page header */
+.searchFilterBar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 1rem;
+}
+
+.searchFilterBarContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pageHeaderContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #00BFFF;
+}
+
+.backButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pageTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+/* Main Content */
+.mainContent {
+  flex: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 2rem 2rem;
+  width: 100%;
+}
+
+/* Search Bar */
+.searchBar {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00BFFF;
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
+}
+
+.searchInput::placeholder {
+  color: #9ca3af;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background: #f9fafb;
+  border-color: #00BFFF;
+  color: #00BFFF;
+}
+
+.actionButton svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Sort Dropdown */
+.sortWrapper {
+  position: relative;
+}
+
+.sortDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sortOption {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sortOption:hover {
+  background: #f3f4f6;
+}
+
+.sortOption.active {
+  color: #00BFFF;
+  font-weight: 600;
+}
+
+/* Filter Dropdown */
+.filterWrapper {
+  position: relative;
+}
+
+.filterDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.filterOption {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filterOption:hover {
+  background: #f3f4f6;
+}
+
+.filterOption.active {
+  color: #00BFFF;
+  font-weight: 600;
+  background: rgba(0, 191, 255, 0.05);
+}
+
+.filterOption.active::before {
+  content: '✓ ';
+}
+
+/* Program Grid - 4 columns */
+.programGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Program Card */
+.programCard {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.programCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.programCardImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.programCardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.programCard:hover .programCardImage img {
+  transform: scale(1.05);
+}
+
+.programCardBadge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.programCardBadge.camp {
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+}
+
+.programCardBadge.jelajah {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.programCardBadge.placeholder {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.programCardBody {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.programCardTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.4rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.programCardDescription {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.programCardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.programCardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.programCardMetaItem svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: #00BFFF;
+  opacity: 0.8;
+}
+
+/* Registration Deadline Badge */
+.deadlineBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #92400E;
+  margin-top: 0.5rem;
+}
+
+.deadlineBadge.camp {
+  background: rgba(0, 191, 255, 0.06);
+  border-color: rgba(0, 191, 255, 0.3);
+  color: #0077AA;
+}
+
+.deadlineBadge.jelajah {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #5B21B6;
+}
+
+.deadlineBadge.camp svg {
+  color: #00BFFF;
+}
+
+.deadlineBadge.jelajah svg {
+  color: #7C3AED;
+}
+
+.deadlineBadge svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.programCardButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.programCardButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transition: left 0.5s ease;
+}
+
+.programCardButton:hover::before {
+  left: 100%;
+}
+
+.programCardButton:hover {
+  background: linear-gradient(135deg, #00CFFF 0%, #00AAE0 100%);
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.35);
+}
+
+.programCardButton span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Empty State */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.emptyState svg {
+  width: 64px;
+  height: 64px;
+  color: #d1d5db;
+  margin: 0 auto 1rem;
+}
+
+.emptyState h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 0.5rem;
+}
+
+.emptyState p {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  border-color: #00BFFF;
+  color: #00BFFF;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  border-color: transparent;
+  color: white;
+  font-weight: 700;
+}
+
+.paginationEllipsis {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+}
+
+.paginationButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .programGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .pageHeader {
+    position: relative;
+    top: 0;
+  }
+
+  .pageHeaderContainer {
+    padding: 0 1rem;
+  }
+
+  .searchFilterBarContainer {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .mainContent {
+    padding: 2rem 1rem 1rem;
+  }
+
+  .searchBar {
+    flex: 1;
+    max-width: none;
+  }
+
+  .actionButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .searchFilterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchBar {
+    width: 100%;
+  }
+
+  .actionButtons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .actionButton {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .programGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .backButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .backButton svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pageTitle {
+    font-size: 1.1rem;
+  }
+
+  .actionButton {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+  }
+
+  .actionButton svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .programGrid {
+    grid-template-columns: 1fr;
+  }
+}

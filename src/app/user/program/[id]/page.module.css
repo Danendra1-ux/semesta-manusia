@@ -1,0 +1,721 @@
+/* ==========================================
+   DETAIL PROGRAM PAGE STYLES — SEMESTA MANUSIA
+   ========================================== */
+
+/* Page Container */
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Hero Section — 2 Column Layout */
+.heroSection {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 5rem 2rem 2rem;
+  display: grid;
+  grid-template-columns: 42% 58%;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+/* Hero Image Column */
+.heroImageCol {
+  position: relative;
+}
+
+.heroImage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4/5;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.heroImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.imagePlaceholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.7;
+}
+
+/* Back Button — overlay on hero image */
+.backButton {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 2;
+}
+
+.backButton:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.backButton svg {
+  width: 20px;
+  height: 20px;
+  color: #1f2937;
+}
+
+/* Info & Registration Column */
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Category Badge + Share Row */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.badge.sjn {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.badge.camp {
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+}
+
+/* Share Button */
+.shareButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.shareButton:hover {
+  border-color: #00BFFF;
+  background: rgba(0, 191, 255, 0.05);
+  transform: scale(1.05);
+}
+
+.shareButton svg {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+/* Program Title */
+.programTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Info Box */
+.infoBox {
+  background: #f8fafc;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.infoIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.infoIcon.sjn {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.infoIcon svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.infoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.infoLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+/* Funding Options (SJN only) */
+.fundingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fundingOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fundingOption {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+
+.fundingOption:hover {
+  border-color: #00BFFF;
+  background: rgba(0, 191, 255, 0.03);
+}
+
+.fundingOption.active {
+  border-color: #00BFFF;
+  background: rgba(0, 191, 255, 0.06);
+}
+
+.fundingOption.active.sjn {
+  border-color: #7C3AED;
+  background: rgba(124, 58, 237, 0.06);
+}
+
+.radioCircle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.fundingOption.active .radioCircle {
+  border-color: #00BFFF;
+}
+
+.fundingOption.active.sjn .radioCircle {
+  border-color: #7C3AED;
+}
+
+.radioDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #00BFFF;
+  display: none;
+}
+
+.fundingOption.active .radioDot {
+  display: block;
+}
+
+.fundingOption.active.sjn .radioDot {
+  background: #7C3AED;
+}
+
+.fundingLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.fundingName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.fundingNote {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Funded Badge */
+.fundedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 50px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  color: white;
+  margin-left: 0.4rem;
+}
+
+.fundedBadge.sjn {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+/* Warning Box */
+.warningBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #FFFBEB;
+  border: 1.5px solid #FCD34D;
+  border-radius: 8px;
+}
+
+.warningBox svg {
+  width: 15px;
+  height: 15px;
+  color: #D97706;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.warningText {
+  font-size: 0.8rem;
+  color: #92400E;
+  line-height: 1.4;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.primaryAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: 2px solid;
+}
+
+.primaryAction.gradient {
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 3px 12px rgba(0, 191, 255, 0.3);
+}
+
+.primaryAction.gradient:hover {
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.primaryAction.gradient.sjn {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.3);
+}
+
+.primaryAction.gradient.sjn:hover {
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.primaryAction.outlined {
+  background: transparent;
+  border-color: #00BFFF;
+  color: #00BFFF;
+}
+
+.primaryAction.outlined:hover {
+  background: rgba(0, 191, 255, 0.05);
+}
+
+.primaryAction.outlined.sjn {
+  border-color: #7C3AED;
+  color: #7C3AED;
+}
+
+.primaryAction.outlined.sjn:hover {
+  background: rgba(124, 58, 237, 0.05);
+}
+
+.primaryAction svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Tab Content Section */
+.tabSection {
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.tabSectionInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #00BFFF;
+}
+
+.tab.active {
+  color: #00BFFF;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #00BFFF;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Tab Panel */
+.tabPanel {
+  padding: 3rem 0 5rem;
+}
+
+/* Content Sections */
+.contentSection {
+  max-width: 900px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 1.25rem;
+  line-height: 1.3;
+}
+
+.contentText {
+  font-size: 1rem;
+  color: #4b5563;
+  line-height: 1.85;
+  margin: 0 0 1.5rem;
+}
+
+.contentText:last-child {
+  margin-bottom: 0;
+}
+
+/* Download Button */
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid #00BFFF;
+  border-radius: 12px;
+  color: #00BFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  background: transparent;
+  margin: 0 0 2.5rem;
+}
+
+.downloadButton:hover {
+  background: rgba(0, 191, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.15);
+}
+
+.downloadButton.sjn {
+  border-color: #7C3AED;
+  color: #7C3AED;
+}
+
+.downloadButton.sjn:hover {
+  background: rgba(124, 58, 237, 0.06);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+}
+
+.downloadButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Divisi List */
+.divisiSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.divisiItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.divisiItem:hover {
+  border-color: #00BFFF;
+  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.08);
+}
+
+.divisiIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.divisiIcon.sjn {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.divisiIcon svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+.divisiInfo h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.2rem;
+}
+
+.divisiInfo p {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Not Found State */
+.notFound {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.notFound svg {
+  width: 80px;
+  height: 80px;
+  color: #d1d5db;
+}
+
+.notFound h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0;
+}
+
+.notFound p {
+  font-size: 1rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.notFoundButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  color: white;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.3);
+}
+
+.notFoundButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 191, 255, 0.4);
+}
+
+.notFoundButton svg {
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .heroSection {
+    grid-template-columns: 1fr;
+    padding: 4.5rem 1.5rem 1.5rem;
+    gap: 1.25rem;
+  }
+
+  .heroImage {
+    aspect-ratio: 4/5;
+    max-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    padding: 4rem 1rem 1rem;
+    gap: 1rem;
+  }
+
+  .heroImage {
+    aspect-ratio: 4/5;
+    max-height: none;
+  }
+
+  .programTitle {
+    font-size: 1.1rem;
+  }
+
+  .tabSectionInner {
+    padding: 0 1rem;
+  }
+
+  .tabPanel {
+    padding: 1.5rem 0 4rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.125rem;
+  }
+
+  .contentText {
+    font-size: 0.9rem;
+  }
+
+  .backButton {
+    width: 36px;
+    height: 36px;
+  }
+}

@@ -1,0 +1,194 @@
+/* ==========================================
+   FOOTER COMPONENT STYLES — SEMESTA MANUSIA
+   Brand Color: #00BFFF (Dodger Blue)
+   ========================================== */
+
+.footer {
+  background: #1f2937;
+  color: white;
+  padding: 4rem 2rem 2rem;
+}
+
+.footerContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.footerMain {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid #374151;
+}
+
+.footerBrand {
+  max-width: 360px;
+}
+
+.footerLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+}
+
+.footerLogoIcon {
+  width: 56px;
+  height: 56px;
+  position: relative;
+}
+
+.footerLogoText {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerLogoMain {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+}
+
+.footerLogoSub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footerDescription {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.footerLinks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.footerColumn h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 1.25rem;
+}
+
+.footerColumn ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footerColumn ul li a {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.footerColumn ul li a:hover {
+  color: var(--primary);
+}
+
+.footerBottom {
+  padding-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footerBottom p {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.footerSocial {
+  display: flex;
+  gap: 1rem;
+}
+
+.footerSocial a {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.footerSocial a:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .footerMain {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .footerBrand {
+    max-width: 100%;
+  }
+
+  .footerLinks {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 3rem 1.5rem 1.5rem;
+  }
+
+  .footerMain {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .footerLinks {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  .footerColumn:last-child {
+    display: none;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding-top: 1.5rem;
+  }
+
+  .footerSocial a {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footerLinks {
+    grid-template-columns: 1fr;
+  }
+
+  .footerColumn:last-child {
+    display: block;
+  }
+}

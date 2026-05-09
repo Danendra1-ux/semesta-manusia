@@ -1,0 +1,482 @@
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import styles from "./page.module.css";
+import navbarStyles from "../landingpage/landingpage.module.css";
+import { allPrograms, programCategories } from "../data/programs";
+
+export default function ProgramPage() {
+  const router = useRouter();
+  const [scrollY, setScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("semua");
+  const [sortBy, setSortBy] = useState("terbaru");
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 16;
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSortDropdown && !e.target.closest(`.${styles.sortWrapper}`)) {
+        setShowSortDropdown(false);
+      }
+      if (showFilterDropdown && !e.target.closest(`.${styles.filterWrapper}`)) {
+        setShowFilterDropdown(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showSortDropdown, showFilterDropdown]);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const sortOptions = [
+    { value: "terbaru", label: "Aktivitas Terbaru" },
+    { value: "terlama", label: "Aktivitas Terlama" },
+    { value: "az", label: "Nama A-Z" },
+    { value: "za", label: "Nama Z-A" }
+  ];
+
+  const filterOptions = [
+    { value: "semua", label: "Semua" },
+    { value: "camp", label: "Semesta Camp" },
+    { value: "sjn", label: "Semesta Jelajah Nusantara" }
+  ];
+
+  const getActiveFilterLabel = () => {
+    return filterOptions.find(f => f.value === activeFilter)?.label || "Filter";
+  };
+
+  const filteredPrograms = useMemo(() => {
+    let result = [...allPrograms];
+
+    if (activeFilter === "camp") {
+      result = result.filter(p => p.category === "Semesta Camp");
+    } else if (activeFilter === "sjn") {
+      result = result.filter(p => p.category === "SJN");
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.location?.toLowerCase().includes(query)
+      );
+    }
+
+    if (sortBy === "terbaru") {
+      result.sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(b.date.split(" – ")[0]) - new Date(a.date.split(" – ")[0]);
+      });
+    } else if (sortBy === "terlama") {
+      result.sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(a.date.split(" – ")[0]) - new Date(b.date.split(" – ")[0]);
+      });
+    } else if (sortBy === "az") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "za") {
+      result.sort((a, b) => b.title.localeCompare(a.title));
+    }
+
+    return result;
+  }, [searchQuery, activeFilter, sortBy]);
+
+  const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
+  const paginatedPrograms = filteredPrograms.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleFilter = (value) => {
+    setActiveFilter(value);
+    setShowFilterDropdown(false);
+    setCurrentPage(1);
+  };
+
+  const handleSort = (option) => {
+    setSortBy(option);
+    setShowSortDropdown(false);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 4) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const getBadgeClass = (category) => {
+    if (category === "SJN") return styles.jelajah;
+    if (category === "Semesta Camp") return styles.camp;
+    return styles.placeholder;
+  };
+
+  const getGradient = (category) => {
+    if (category === "SJN") return programCategories.SJN.gradient;
+    return programCategories.SEMESTA_CAMP.gradient;
+  };
+
+  return (
+    <div className={styles.programPage}>
+      {/* Animated Background */}
+      <div className={navbarStyles.animatedBg}>
+        <div className={navbarStyles.gradientOrb1} style={{ transform: `translateY(${scrollY * 0.3}px)` }} />
+        <div className={navbarStyles.gradientOrb2} style={{ transform: `translateY(${scrollY * 0.2}px)` }} />
+        <div className={navbarStyles.gradientOrb3} style={{ transform: `translateY(${scrollY * 0.4}px)` }} />
+      </div>
+
+      {/* Navbar */}
+      <nav className={navbarStyles.navbar} style={{ background: scrollY > 50 ? 'rgba(255, 255, 255, 0.95)' : 'transparent' }}>
+        <div className={navbarStyles.navContainer}>
+          <Link href="/user/landingpage" className={navbarStyles.logo}>
+            <div className={navbarStyles.logoImage}>
+              <Image src="/LOGO SEMESTA MANUSIA.png" alt="Semesta Manusia Logo" fill style={{ objectFit: 'contain' }} />
+            </div>
+            <div className={navbarStyles.logoText}>
+              <span className={navbarStyles.logoMain}>Semesta Manusia</span>
+              <span className={navbarStyles.logoSub}>Indonesia</span>
+            </div>
+          </Link>
+
+          <ul className={`${navbarStyles.navLinks} ${mobileMenuOpen ? navbarStyles.navLinksOpen : ""}`}>
+            <li><a href="/user/landingpage#beranda" className={navbarStyles.navLink}>Beranda</a></li>
+            <li><a href="/user/landingpage#tentang" className={navbarStyles.navLink}>Tentang</a></li>
+            <li><a href="/user/landingpage#program" className={navbarStyles.navLink}>Program</a></li>
+            <li><a href="/user/landingpage#galeri" className={navbarStyles.navLink}>Galeri</a></li>
+            <li><a href="/user/landingpage#kontak" className={navbarStyles.navLink}>Kontak</a></li>
+          </ul>
+
+          <div className={navbarStyles.navActions}>
+            <Link href="/user/program" className={navbarStyles.ctaButton}>
+              <span>Daftar Volunteer</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </Link>
+            <button className={navbarStyles.mobileMenuButton} onClick={toggleMobileMenu} aria-label="Menu">
+              <span className={`${navbarStyles.hamburger} ${mobileMenuOpen ? navbarStyles.hamburgerOpen : ""}`}></span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Page Header */}
+      <div className={styles.pageHeader}>
+        <div className={styles.pageHeaderContainer}>
+          <button className={styles.backButton} onClick={() => router.back()}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1 className={styles.pageTitle}>Cari Program</h1>
+        </div>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <div className={styles.searchFilterBar}>
+        <div className={styles.searchFilterBarContainer}>
+          <div className={styles.searchBar}>
+            <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Search"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
+
+          <div className={styles.actionButtons}>
+            <div className={styles.filterWrapper}>
+              <button
+                className={styles.actionButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFilterDropdown(!showFilterDropdown);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="4" y1="21" x2="4" y2="14"/>
+                  <line x1="4" y1="10" x2="4" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12" y2="3"/>
+                  <line x1="20" y1="21" x2="20" y2="16"/>
+                  <line x1="20" y1="12" x2="20" y2="3"/>
+                  <line x1="1" y1="14" x2="7" y2="14"/>
+                  <line x1="9" y1="8" x2="15" y2="8"/>
+                  <line x1="17" y1="16" x2="23" y2="16"/>
+                </svg>
+                <span>{getActiveFilterLabel()}</span>
+              </button>
+
+              {showFilterDropdown && (
+                <div className={styles.filterDropdown}>
+                  {filterOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`${styles.filterOption} ${activeFilter === option.value ? styles.active : ''}`}
+                      onClick={() => handleFilter(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className={styles.sortWrapper}>
+              <button
+                className={styles.actionButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSortDropdown(!showSortDropdown);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <polyline points="19 12 12 19 5 12"/>
+                </svg>
+                <span>Urutkan: {sortOptions.find(o => o.value === sortBy)?.label}</span>
+              </button>
+
+              {showSortDropdown && (
+                <div className={styles.sortDropdown}>
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`${styles.sortOption} ${sortBy === option.value ? styles.active : ''}`}
+                      onClick={() => handleSort(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className={styles.mainContent}>
+        {/* Program Grid */}
+        <div className={styles.programGrid}>
+          {paginatedPrograms.length > 0 ? (
+            paginatedPrograms.map((program) => (
+              <div key={program.id} className={styles.programCard}>
+                <div className={styles.programCardImage}>
+                  <Image
+                    src={program.image}
+                    alt={program.title}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <span className={`${styles.programCardBadge} ${getBadgeClass(program.category)}`}>
+                    {program.category}
+                  </span>
+                </div>
+                <div className={styles.programCardBody}>
+                  <h3 className={styles.programCardTitle}>{program.title}</h3>
+                  <p className={styles.programCardDescription}>{program.description}</p>
+                  <div className={styles.programCardMeta}>
+                    <div className={styles.programCardMetaItem}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      <span>{program.date || "Coming Soon"}</span>
+                    </div>
+                    <div className={styles.programCardMetaItem}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      <span>{program.location || "Indonesia"}</span>
+                    </div>
+                  </div>
+
+                  {/* Registration Deadline Badge */}
+                  <div className={`${styles.deadlineBadge} ${getBadgeClass(program.category)}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>
+                      {program.category === "SJN" && typeof program.registrationDeadline === "object"
+                        ? `Batas Registrasi: ${program.registrationDeadline.fully}`
+                        : typeof program.registrationDeadline === "string"
+                          ? `Batas Registrasi: ${program.registrationDeadline}`
+                          : "Segera Daftar"}
+                    </span>
+                  </div>
+                </div>
+                <Link href={`/user/program/${program.id}`} className={styles.programCardButton}>
+                  <span>Daftar</span>
+                </Link>
+              </div>
+            ))
+          ) : (
+            <div className={styles.emptyState}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <h3>Tidak ada program ditemukan</h3>
+              <p>Coba ubah kata kunci pencarian atau filter yang digunakan.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {filteredPrograms.length > 0 && (
+          <div className={styles.pagination}>
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className={styles.paginationEllipsis}>...</span>
+              ) : (
+                <button
+                  key={page}
+                  className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className={navbarStyles.footer}>
+        <div className={navbarStyles.footerContainer}>
+          <div className={navbarStyles.footerMain}>
+            <div className={navbarStyles.footerBrand}>
+              <Link href="/user/landingpage" className={navbarStyles.footerLogo}>
+                <div className={navbarStyles.footerLogoIcon}>
+                  <Image src="/LOGO SEMESTA MANUSIA.png" alt="Semesta Manusia" fill style={{ objectFit: 'contain' }} />
+                </div>
+              </Link>
+              <p className={navbarStyles.footerDescription}>
+                Menjangkau Nusantara, Menciptakan Perubahan. Bergabunglah dalam komunitas volunteer terbesar Indonesia.
+              </p>
+            </div>
+
+            <div className={navbarStyles.footerLinks}>
+              <div className={navbarStyles.footerColumn}>
+                <h4>Program</h4>
+                <ul>
+                  <li><a href="/user/landingpage#program">Semesta Camp</a></li>
+                  <li><a href="/user/landingpage#program">Semesta Jelajah Nusantara</a></li>
+                  <li><a href="/user/landingpage#program">Edukasi & Literasi</a></li>
+                  <li><a href="/user/landingpage#program">Kesehatan</a></li>
+                </ul>
+              </div>
+              <div className={navbarStyles.footerColumn}>
+                <h4>Perusahaan</h4>
+                <ul>
+                  <li><a href="/user/landingpage#tentang">Tentang Kami</a></li>
+                  <li><a href="/user/landingpage#galeri">Galeri</a></li>
+                  <li><a href="/user/landingpage#kontak">Hubungi Kami</a></li>
+                </ul>
+              </div>
+              <div className={navbarStyles.footerColumn}>
+                <h4>Bantuan</h4>
+                <ul>
+                  <li><a href="#">FAQ</a></li>
+                  <li><a href="#">Kebijakan Privasi</a></li>
+                  <li><a href="#">Syarat & Ketentuan</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className={navbarStyles.footerBottom}>
+            <p>© 2026 Semesta Manusia Indonesia. Seluruh hak cipta dilindungi.</p>
+            <div className={navbarStyles.footerSocial}>
+              <a href="#" aria-label="Instagram">IG</a>
+              <a href="#" aria-label="Twitter">TW</a>
+              <a href="#" aria-label="YouTube">YT</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
