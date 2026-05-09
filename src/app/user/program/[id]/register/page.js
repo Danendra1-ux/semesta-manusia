@@ -5,7 +5,7 @@ import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import styles from "./register.module.css";
+import styles from "./page.module.css";
 import navbarStyles from "../../../landingpage/landingpage.module.css";
 import { allPrograms } from "../../../data/programs";
 
@@ -53,11 +53,15 @@ export default function RegisterPage({ params }) {
   // Get sidebar title
   const getSidebarTitle = () => {
     if (!program) return "";
-    const programNum = program.title.match(/#\d+/)?.[0] || "";
-    const baseName = program.title.split(programNum)[0].trim();
-    if (type === "fully-funded") return `Fully Funded - ${baseName} ${programNum}`;
-    if (type === "self-funded") return `Self Funded - ${baseName} ${programNum}`;
-    return `${baseName} ${programNum}`;
+    if (program.category === "SJN") {
+      const programNum = program.title.match(/#\d+/)?.[0] || "";
+      const baseName = program.title.split(programNum)[0].trim();
+      if (type === "fully-funded") return `Fully Funded - ${baseName} ${programNum}`;
+      if (type === "self-funded") return `Self Funded - ${baseName} ${programNum}`;
+      return `${baseName} ${programNum}`;
+    }
+    // Semesta Camp
+    return program.title;
   };
 
   // Get registration fee info
@@ -369,6 +373,11 @@ export default function RegisterPage({ params }) {
 
         {/* Sidebar */}
         <aside className={styles.sidebar}>
+          <button className={styles.sidebarBackButton} onClick={() => router.push(`/user/program/${programId}`)} aria-label="Kembali">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
           <h2 className={styles.sidebarTitle}>{getSidebarTitle()}</h2>
           <span className={styles.sidebarSubtitle}>
             {type === "semesta-camp" ? "Semesta Camp Registration" : "SJN Registration"}

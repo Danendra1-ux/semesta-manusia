@@ -124,6 +124,34 @@
   box-shadow: var(--card-shadow);
 }
 
+.sidebarBackButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 1rem;
+  align-self: flex-start;
+}
+
+.sidebarBackButton:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.sidebarBackButton svg {
+  width: 20px;
+  height: 20px;
+  color: #1f2937;
+}
+
 .sidebarTitle {
   font-size: 1rem;
   font-weight: 700;
