@@ -1053,6 +1053,47 @@
   opacity: 0.8;
 }
 
+.previewDeadlineBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #92400E;
+  margin-top: 0.5rem;
+}
+
+.previewDeadlineBadge.camp {
+  background: rgba(0, 191, 255, 0.06);
+  border-color: rgba(0, 191, 255, 0.3);
+  color: #0077AA;
+}
+
+.previewDeadlineBadge.jelajah {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #5B21B6;
+}
+
+.previewDeadlineBadge svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  color: #F59E0B;
+}
+
+.previewDeadlineBadge.camp svg {
+  color: #00BFFF;
+}
+
+.previewDeadlineBadge.jelajah svg {
+  color: #7C3AED;
+}
+
 /* Preview Button - Modern & Attractive */
 .previewButton {
   position: relative;

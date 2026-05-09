@@ -406,6 +406,23 @@ export default function LandingPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Registration Deadline Badge */}
+                    {program.registrationDeadline && (
+                      <div className={`${styles.previewDeadlineBadge} ${program.category === "SJN" ? styles.jelajah : styles.camp}`}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span>
+                          {program.category === "SJN" && typeof program.registrationDeadline === "object"
+                            ? `Batas Registrasi: ${program.registrationDeadline.fully}`
+                            : typeof program.registrationDeadline === "string"
+                              ? `Batas Registrasi: ${program.registrationDeadline}`
+                              : null}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <Link href={`/user/program/${program.id}`} className={styles.previewButton}>
                     <span>Daftar</span>
