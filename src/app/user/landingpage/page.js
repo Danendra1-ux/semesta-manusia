@@ -1,25 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import styles from "./landingpage.module.css";
-import navbarStyles from "./landingpage.module.css";
 import { previewPrograms } from "../data/programs";
 
 export default function LandingPage() {
-  const [scrollY, setScrollY] = useState(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("semua");
 
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const filteredPrograms = activeFilter === "semua"
+    ? previewPrograms
+    : activeFilter === "camp"
+    ? previewPrograms.filter(p => p.category === "Semesta Camp")
+    : previewPrograms.filter(p => p.category === "SJN");
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+  const filterTabs = [
+    { key: "semua", label: "Semua" },
+    { key: "camp", label: "Semesta Camp" },
+    { key: "jelajah", label: "Semesta Jelajah Nusantara" }
+  ];
+
+  const stats = [
+    { number: "1000+", label: "Volunteer" },
+    { number: "50+", label: "Program" },
+    { number: "20+", label: "Provinsi" }
+  ];
 
   const programs = [
     {
@@ -53,69 +61,10 @@ export default function LandingPage() {
     }
   ];
 
-  const [activeFilter, setActiveFilter] = useState("semua");
-
-  const filteredPrograms = activeFilter === "semua"
-    ? previewPrograms
-    : activeFilter === "camp"
-    ? previewPrograms.filter(p => p.category === "Semesta Camp")
-    : previewPrograms.filter(p => p.category === "SJN");
-
-  const filterTabs = [
-    { key: "semua", label: "Semua" },
-    { key: "camp", label: "Semesta Camp" },
-    { key: "jelajah", label: "Semesta Jelajah Nusantara" }
-  ];
-
-  const stats = [
-    { number: "1000+", label: "Volunteer" },
-    { number: "50+", label: "Program" },
-    { number: "20+", label: "Provinsi" }
-  ];
-
   return (
     <div className={styles.container}>
-      {/* Animated Background */}
-      <div className={styles.animatedBg}>
-        <div className={styles.gradientOrb1} style={{ transform: `translateY(${scrollY * 0.3}px)` }} />
-        <div className={styles.gradientOrb2} style={{ transform: `translateY(${scrollY * 0.2}px)` }} />
-        <div className={styles.gradientOrb3} style={{ transform: `translateY(${scrollY * 0.4}px)` }} />
-      </div>
-
       {/* Navbar */}
-      <nav className={navbarStyles.navbar} style={{ background: scrollY > 50 ? 'rgba(255, 255, 255, 0.95)' : 'transparent' }}>
-        <div className={navbarStyles.navContainer}>
-          <Link href="/" className={navbarStyles.logo}>
-            <div className={navbarStyles.logoImage}>
-              <Image src="/LOGO SEMESTA MANUSIA.png" alt="Semesta Manusia Logo" fill style={{ objectFit: 'contain' }} />
-            </div>
-            <div className={navbarStyles.logoText}>
-              <span className={navbarStyles.logoMain}>Semesta Manusia</span>
-              <span className={navbarStyles.logoSub}>Indonesia</span>
-            </div>
-          </Link>
-
-          <ul className={`${navbarStyles.navLinks} ${mobileMenuOpen ? navbarStyles.navLinksOpen : ""}`}>
-            <li><a href="#beranda" className={navbarStyles.navLink}>Beranda</a></li>
-            <li><a href="#tentang" className={navbarStyles.navLink}>Tentang</a></li>
-            <li><a href="#program" className={navbarStyles.navLink}>Program</a></li>
-            <li><a href="#galeri" className={navbarStyles.navLink}>Galeri</a></li>
-            <li><a href="#kontak" className={navbarStyles.navLink}>Kontak</a></li>
-          </ul>
-
-          <div className={navbarStyles.navActions}>
-            <Link href="/user/program" className={navbarStyles.ctaButton}>
-              <span>Daftar Volunteer</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Link>
-            <button className={navbarStyles.mobileMenuButton} onClick={toggleMobileMenu} aria-label="Menu">
-              <span className={`${navbarStyles.hamburger} ${mobileMenuOpen ? navbarStyles.hamburgerOpen : ""}`}></span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section id="beranda" className={styles.hero}>
@@ -584,59 +533,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerMain}>
-            <div className={styles.footerBrand}>
-              <Link href="/" className={styles.footerLogo}>
-                <div className={styles.footerLogoIcon}>
-                  <Image src="/LOGO SEMESTA MANUSIA.png" alt="Semesta Manusia" fill style={{ objectFit: 'contain' }} />
-                </div>
-              </Link>
-              <p className={styles.footerDescription}>
-                Menjangkau Nusantara, Menciptakan Perubahan. Bergabunglah dalam komunitas volunteer terbesar Indonesia.
-              </p>
-            </div>
-
-            <div className={styles.footerLinks}>
-              <div className={styles.footerColumn}>
-                <h4>Program</h4>
-                <ul>
-                  <li><a href="#program">Semesta Camp</a></li>
-                  <li><a href="#program">Semesta Jelajah Nusantara</a></li>
-                  <li><a href="#program">Edukasi & Literasi</a></li>
-                  <li><a href="#program">Kesehatan</a></li>
-                </ul>
-              </div>
-              <div className={styles.footerColumn}>
-                <h4>Perusahaan</h4>
-                <ul>
-                  <li><a href="#tentang">Tentang Kami</a></li>
-                  <li><a href="#galeri">Galeri</a></li>
-                  <li><a href="#kontak">Hubungi Kami</a></li>
-                </ul>
-              </div>
-              <div className={styles.footerColumn}>
-                <h4>Bantuan</h4>
-                <ul>
-                  <li><a href="#">FAQ</a></li>
-                  <li><a href="#">Kebijakan Privasi</a></li>
-                  <li><a href="#">Syarat & Ketentuan</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.footerBottom}>
-            <p>© 2026 Semesta Manusia Indonesia. Seluruh hak cipta dilindungi.</p>
-            <div className={styles.footerSocial}>
-              <a href="#" aria-label="Instagram">IG</a>
-              <a href="#" aria-label="Twitter">TW</a>
-              <a href="#" aria-label="YouTube">YT</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

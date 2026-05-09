@@ -5,8 +5,9 @@ import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-import navbarStyles from "../../../landingpage/landingpage.module.css";
 import { allPrograms } from "../../../data/programs";
 
 export default function RegisterPage({ params }) {
@@ -304,20 +305,7 @@ export default function RegisterPage({ params }) {
   if (!program || !type) {
     return (
       <div className={styles.page}>
-        <nav className={navbarStyles.navbar}>
-          <div className={navbarStyles.navContainer}>
-            <Link href="/user/landingpage" className={navbarStyles.logo}>
-              <div className={navbarStyles.logoImage}>
-                <Image
-                  src="/LOGO SEMESTA MANUSIA.png"
-                  alt="Semesta Manusia Logo"
-                  fill
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            </Link>
-          </div>
-        </nav>
+        <Navbar showCta={false} />
         <div className={styles.loading}>Loading...</div>
       </div>
     );
@@ -329,47 +317,10 @@ export default function RegisterPage({ params }) {
   return (
     <div className={styles.page}>
       {/* Navbar */}
-      <nav className={navbarStyles.navbar}>
-        <div className={navbarStyles.navContainer}>
-          <Link href="/user/landingpage" className={navbarStyles.logo}>
-            <div className={navbarStyles.logoImage}>
-              <Image
-                src="/LOGO SEMESTA MANUSIA.png"
-                alt="Semesta Manusia Logo"
-                fill
-                style={{ objectFit: "contain" }}
-              />
-            </div>
-            <div className={navbarStyles.logoText}>
-              <span className={navbarStyles.logoMain}>Semesta Manusia</span>
-              <span className={navbarStyles.logoSub}>Indonesia</span>
-            </div>
-          </Link>
-
-          <ul className={navbarStyles.navLinks}>
-            <li><a href="/user/landingpage#beranda" className={navbarStyles.navLink}>Beranda</a></li>
-            <li><a href="/user/landingpage#tentang" className={navbarStyles.navLink}>Tentang</a></li>
-            <li><a href="/user/landingpage#program" className={navbarStyles.navLink}>Program</a></li>
-            <li><a href="/user/landingpage#galeri" className={navbarStyles.navLink}>Galeri</a></li>
-            <li><a href="/user/landingpage#kontak" className={navbarStyles.navLink}>Kontak</a></li>
-          </ul>
-
-          <div className={navbarStyles.navActions}>
-            <Link href="/user/program" className={navbarStyles.ctaButton}>
-              <span>Daftar Volunteer</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content */}
       <div className={styles.container}>
-        {/* Animated Background */}
-        <div className={styles.animatedBg}>
-          <div className={styles.gradientOrb1} />
-          <div className={styles.gradientOrb2} />
-          <div className={styles.gradientOrb3} />
-        </div>
 
         {/* Sidebar */}
         <aside className={styles.sidebar}>
@@ -734,48 +685,7 @@ export default function RegisterPage({ params }) {
       )}
 
       {/* Footer */}
-      <footer className={navbarStyles.footer}>
-        <div className={navbarStyles.footerContainer}>
-          <div className={navbarStyles.footerMain}>
-            <div className={navbarStyles.footerBrand}>
-              <Link href="/user/landingpage" className={navbarStyles.footerLogo}>
-                <div className={navbarStyles.footerLogoIcon}>
-                  <Image
-                    src="/LOGO SEMESTA MANUSIA.png"
-                    alt="Semesta Manusia"
-                    fill
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
-              </Link>
-              <p className={navbarStyles.footerDescription}>
-                Menjangkau Nusantara, Menciptakan Perubahan.
-              </p>
-            </div>
-
-            <div className={navbarStyles.footerLinks}>
-              <div className={navbarStyles.footerColumn}>
-                <h4>Program</h4>
-                <ul>
-                  <li><a href="/user/landingpage#program">Semesta Camp</a></li>
-                  <li><a href="/user/landingpage#program">Semesta Jelajah Nusantara</a></li>
-                </ul>
-              </div>
-              <div className={navbarStyles.footerColumn}>
-                <h4>Perusahaan</h4>
-                <ul>
-                  <li><a href="/user/landingpage#tentang">Tentang Kami</a></li>
-                  <li><a href="/user/landingpage#kontak">Hubungi Kami</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className={navbarStyles.footerBottom}>
-            <p>© 2026 Semesta Manusia Indonesia. Seluruh hak cipta dilindungi.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
