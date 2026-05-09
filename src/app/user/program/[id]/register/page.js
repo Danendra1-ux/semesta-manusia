@@ -373,7 +373,7 @@ export default function RegisterPage({ params }) {
 
         {/* Sidebar */}
         <aside className={styles.sidebar}>
-          <button className={styles.sidebarBackButton} onClick={() => router.push(`/user/program/${programId}`)} aria-label="Kembali">
+          <button className={styles.sidebarBackButton} onClick={() => router.replace(`/user/program/${programId}`)} aria-label="Kembali">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
