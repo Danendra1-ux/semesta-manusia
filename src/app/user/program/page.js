@@ -20,12 +20,6 @@ export default function ProgramPage() {
   const itemsPerPage = 16;
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (e) => {
       if (showSortDropdown && !e.target.closest(`.${styles.sortWrapper}`)) {
         setShowSortDropdown(false);
@@ -73,25 +67,31 @@ export default function ProgramPage() {
       );
     }
 
-    if (sortBy === "terbaru") {
-      result.sort((a, b) => {
-        if (!a.date && !b.date) return 0;
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return new Date(b.date.split(" – ")[0]) - new Date(a.date.split(" – ")[0]);
-      });
-    } else if (sortBy === "terlama") {
-      result.sort((a, b) => {
-        if (!a.date && !b.date) return 0;
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return new Date(a.date.split(" – ")[0]) - new Date(b.date.split(" – ")[0]);
-      });
-    } else if (sortBy === "az") {
-      result.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "za") {
-      result.sort((a, b) => b.title.localeCompare(a.title));
-    }
+    // SJN selalu di atas, lalu sortir berdasarkan sortBy
+    result.sort((a, b) => {
+      if (sortBy === "terbaru") {
+        if (a.category === "SJN" && b.category !== "SJN") return -1;
+        if (a.category !== "SJN" && b.category === "SJN") return 1;
+        return b.id - a.id;
+      } else if (sortBy === "terlama") {
+        if (a.category === "SJN" && b.category !== "SJN") return -1;
+        if (a.category !== "SJN" && b.category === "SJN") return 1;
+        return a.id - b.id;
+      } else if (sortBy === "az") {
+        if (a.category === "SJN" && b.category !== "SJN") return -1;
+        if (a.category !== "SJN" && b.category === "SJN") return 1;
+        const ta = a.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const tb = b.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        return ta.localeCompare(tb, "id", { sensitivity: "base" });
+      } else if (sortBy === "za") {
+        if (a.category === "SJN" && b.category !== "SJN") return -1;
+        if (a.category !== "SJN" && b.category === "SJN") return 1;
+        const ta = a.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const tb = b.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        return ta.localeCompare(tb, "id", { sensitivity: "base" }) * -1;
+      }
+      return 0;
+    });
 
     return result;
   }, [searchQuery, activeFilter, sortBy]);

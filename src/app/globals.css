@@ -3,9 +3,10 @@
    ========================================== */
 
 :root {
-  --primary: #4f46e5;
-  --primary-dark: #4338ca;
-  --primary-light: #818cf8;
+  /* Brand Colors — Dodger Blue */
+  --primary: #00BFFF;
+  --primary-dark: #0099CC;
+  --primary-light: #7dd3fc;
   --secondary: #10b981;
   --accent: #f59e0b;
   --background: #ffffff;

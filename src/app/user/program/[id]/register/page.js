@@ -635,17 +635,18 @@ export default function RegisterPage({ params }) {
 
           {/* Navigation Buttons */}
           <div className={styles.navigation}>
-            <button
-              type="button"
-              className={styles.backButton}
-              onClick={handleBack}
-              disabled={currentStep === 1}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
+            {currentStep > 1 && (
+              <button
+                type="button"
+                className={styles.backButton}
+                onClick={handleBack}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+            )}
             <button
               type="button"
               className={styles.continueButton}

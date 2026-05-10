@@ -43,10 +43,10 @@ export const allPrograms = [
     image: "/program-preview-1.jpg",
     registrationDeadline: { fully: "01 Ags 2026", self: "08 Ags 2026" }
   },
-  // Semesta Camp items (3) dengan tanggal
+  // Semesta Camp items (13) dengan penomoran urut
   {
     id: 4,
-    title: "Semesta Camp: Pendampingan Anak Yatim Jakarta",
+    title: "Semesta Camp #1: Pendampingan Anak Yatim Jakarta",
     description: "Program pendampingan dan bimbingan anak-anak di panti asuhan kawasan Jakarta Timur.",
     category: "Semesta Camp",
     date: "13 Apr 2026 – 27 Apr 2026",
@@ -56,7 +56,7 @@ export const allPrograms = [
   },
   {
     id: 5,
-    title: "Semesta Camp: Literasi Anak Jakarta Timur",
+    title: "Semesta Camp #2: Literasi Anak Jakarta Timur",
     description: "Membantu anak-anak di permukiman padat penduduk belajar membaca dan menulis dengan menyenangkan.",
     category: "Semesta Camp",
     date: "20 Apr 2026 – 04 Mei 2026",
@@ -66,7 +66,7 @@ export const allPrograms = [
   },
   {
     id: 6,
-    title: "Semesta Camp: Pemberdayaan Ibu-ibu di Bandung",
+    title: "Semesta Camp #3: Pemberdayaan Ibu-ibu di Bandung",
     description: "Membantu ibu-ibu di komunitas perkampungan untuk mengembangkan keterampilan usaha mikro.",
     category: "Semesta Camp",
     date: "05 Mei 2026 – 19 Mei 2026",
@@ -77,7 +77,7 @@ export const allPrograms = [
   // Placeholder items (10)
   {
     id: 7,
-    title: "Semesta Camp: Konservasi Terumbu Karang",
+    title: "Semesta Camp #4: Konservasi Terumbu Karang",
     description: "Program konservasi terumbu karang dan pendidikan lingkungan laut untuk komunitas pesisir.",
     category: "Semesta Camp",
     date: null,
@@ -87,7 +87,7 @@ export const allPrograms = [
   },
   {
     id: 8,
-    title: "Semesta Camp: Seni dan Budaya untuk Anak",
+    title: "Semesta Camp #5: Seni dan Budaya untuk Anak",
     description: "Mengenalkan seni dan budaya lokal kepada anak-anak melalui workshop kreatif dan ekspresif.",
     category: "Semesta Camp",
     date: null,
@@ -97,7 +97,7 @@ export const allPrograms = [
   },
   {
     id: 9,
-    title: "Semesta Camp: Pertanian Berkelanjutan",
+    title: "Semesta Camp #6: Pertanian Berkelanjutan",
     description: "Pelatihan pertanian organik dan berkelanjutan untuk masyarakat di daerah peri-urban.",
     category: "Semesta Camp",
     date: null,
@@ -107,7 +107,7 @@ export const allPrograms = [
   },
   {
     id: 10,
-    title: "Semesta Camp: Digital Literacy untuk Remaja",
+    title: "Semesta Camp #7: Digital Literacy untuk Remaja",
     description: "Memberikan pelatihan teknologi digital dan komputer untuk remaja di daerah tertinggal.",
     category: "Semesta Camp",
     date: null,
@@ -117,7 +117,7 @@ export const allPrograms = [
   },
   {
     id: 11,
-    title: "Semesta Camp: Kesehatan Gigi dan Mulut",
+    title: "Semesta Camp #8: Kesehatan Gigi dan Mulut",
     description: "Penyuluhan dan pemeriksaan kesehatan gigi untuk anak-anak sekolah dasar di pedesaan.",
     category: "Semesta Camp",
     date: null,
@@ -127,7 +127,7 @@ export const allPrograms = [
   },
   {
     id: 12,
-    title: "Semesta Camp: English Teaching Program",
+    title: "Semesta Camp #9: English Teaching Program",
     description: "Program pengajaran bahasa Inggris untuk meningkatkan kemampuan komunikasi anak-anak.",
     category: "Semesta Camp",
     date: null,
@@ -137,7 +137,7 @@ export const allPrograms = [
   },
   {
     id: 13,
-    title: "Semesta Camp: Building for Better Future",
+    title: "Semesta Camp #10: Building for Better Future",
     description: "Program pembangunan infrastruktur sederhana untuk mendukung kegiatan belajar mengajar.",
     category: "Semesta Camp",
     date: null,
@@ -147,7 +147,7 @@ export const allPrograms = [
   },
   {
     id: 14,
-    title: "Semesta Camp: Waste Management Education",
+    title: "Semesta Camp #11: Waste Management Education",
     description: "Edukasi pengelolaan sampah dan daur ulang untuk komunitas dan sekolah-sekolah.",
     category: "Semesta Camp",
     date: null,
@@ -157,7 +157,7 @@ export const allPrograms = [
   },
   {
     id: 15,
-    title: "Semesta Camp: Music and Art Therapy",
+    title: "Semesta Camp #12: Music and Art Therapy",
     description: "Program terapi seni musik untuk anak-anak dengan kebutuhan khusus di panti rehabilitasi.",
     category: "Semesta Camp",
     date: null,
@@ -167,7 +167,7 @@ export const allPrograms = [
   },
   {
     id: 16,
-    title: "Semesta Camp: Women's Empowerment Workshop",
+    title: "Semesta Camp #13: Women's Empowerment Workshop",
     description: "Workshop pemberdayaan perempuan melalui pelatihan keterampilan dan kewirausahaan.",
     category: "Semesta Camp",
     date: null,
