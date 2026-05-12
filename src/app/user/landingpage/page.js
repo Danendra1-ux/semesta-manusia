@@ -6,7 +6,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./landingpage.module.css";
-import { previewPrograms } from "../data/programs";
+import { previewPrograms, liputanData } from "../data/programs";
 
 export default function LandingPage() {
   const [activeFilter, setActiveFilter] = useState("semua");
@@ -458,29 +458,8 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.liputanGrid}>
-            {[
-              {
-                title: "Semesta Manusia Helau 1000 Relawan Baru di NTT",
-                description: "Program kemanusiaan ini berhasil merekrut lebih dari 1000 volunteer baru untuk berkontribusi di berbagai daerah terpencil di Nusa Tenggara Timur.",
-                image: "/program-preview-1.jpg"
-              },
-              {
-                title: "Kolaborasi dengan Pemerintah Daerah dalam Program Edukasi",
-                description: "Semesta Manusia resmi menjalin kerja sama dengan Pemerintah Provinsi Jawa Barat untuk program edukasi anak-anak di 50 sekolah terpencil.",
-                image: "/program-preview-2.jpg"
-              },
-              {
-                title: "Dampak Program Volunteer: Kisah Sukses dari Sumba",
-                description: "Bagaimana program volunteer Semesta Manusia berhasil mengubah kehidupan masyarakat di pedalaman Sumba melalui program literasi dan pertanian.",
-                image: "/program-preview-3.jpg"
-              },
-              {
-                title: "Inovasi Digital untuk Volunteer: Aplikasi Baru Diluncurkan",
-                description: "Semesta Manusia peluncuran aplikasi mobile untuk membantu volunteer dalam mengelola program dan berkomunikasi dengan tim di lapangan.",
-                image: "/program-preview-4.jpg"
-              }
-            ].map((item, index) => (
-              <div key={index} className={styles.liputanCard}>
+            {liputanData.slice(0, 4).map((item) => (
+              <div key={item.id} className={styles.liputanCard}>
                 <div className={styles.liputanCardImage}>
                   <Image src={item.image} alt={item.title} fill style={{ objectFit: 'cover' }} />
                 </div>
@@ -495,12 +474,12 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <button className={styles.previewLoadMore}>
+          <Link href="/user/liputan" className={styles.previewLoadMore}>
             <span>Lihat lebih banyak</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-          </button>
+          </Link>
         </div>
       </section>
 
