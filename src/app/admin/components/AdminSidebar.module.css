@@ -1,0 +1,289 @@
+/* ==========================================
+   ADMIN SIDEBAR STYLES — SEMESTA MANUSIA
+   Brand Color: #00BFFF
+   ========================================== */
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar.collapsed {
+  width: 72px;
+}
+
+/* =================== SIDEBAR HEADER =================== */
+.sidebarHeader {
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.orgName {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.orgNameBold {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.headerDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin-top: 1rem;
+}
+
+/* =================== MENU SECTION =================== */
+.menuSection {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+
+.menuLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem 0.5rem;
+}
+
+.menuNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.menuItem:hover {
+  background: rgba(0, 191, 255, 0.08);
+  color: #00bfff;
+}
+
+.menuItem.active {
+  background: rgba(0, 191, 255, 0.12);
+  color: #00bfff;
+}
+
+.menuItem.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #00bfff;
+  border-radius: 0 2px 2px 0;
+}
+
+.menuIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.menuText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapsed .menuItem {
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.collapsed .menuText {
+  display: none;
+}
+
+/* =================== BOTTOM SECTION =================== */
+.bottomSection {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Admin Profile */
+.adminProfile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.adminProfile.profileCollapsed {
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00bfff, #0077b6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.adminName {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adminEmail {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileCollapsed .profileInfo {
+  display: none;
+}
+
+/* Logout Button */
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logoutButton:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.logoutButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.collapsed .logoutButton {
+  padding: 0.75rem;
+}
+
+.collapsed .logoutButton span {
+  display: none;
+}
+
+/* Collapse Toggle */
+.collapseToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 1px solid 7eb;
+  border-radius: 8px;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.collapseToggle:hover {
+  background: #f9fafb;
+  border-color: #00bfff;
+  color: #00bfff;
+}
+
+.collapseToggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
