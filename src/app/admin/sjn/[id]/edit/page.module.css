@@ -1,0 +1,1016 @@
+/* =================== CSS VARIABLES =================== */
+:root {
+  --brand: #00BFFF;
+  --brand-dark: #0099CC;
+  --brand-light: rgba(0, 191, 255, 0.1);
+  --brand-glow: rgba(0, 191, 255, 0.25);
+  --surface: white;
+  --bg: #f0f4f8;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --border: #e9ecef;
+  --border-focus: #00BFFF;
+  --success: #059669;
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+/* =================== LAYOUT =================== */
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent.expanded {
+  margin-left: 72px;
+}
+
+/* Not Found */
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1.5rem;
+}
+
+.notFound h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.backLinkError {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.backLinkError:hover {
+  color: var(--brand-dark);
+}
+
+/* =================== TOAST NOTIFICATION =================== */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #111827, #1f2937);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 14px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.95);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  border-left: 4px solid var(--brand);
+}
+
+.toast.toastShow {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.toast svg {
+  width: 22px;
+  height: 22px;
+  color: #34d399;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
+}
+
+/* =================== CONTENT HEADER =================== */
+.contentHeader {
+  padding: 1.75rem 2rem 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.backButton:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--brand-glow);
+}
+
+.backButton:active {
+  transform: translateY(0);
+}
+
+.backButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+  background: linear-gradient(135deg, #111827 0%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.saveButtonTop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #00BFFF 0%, #0077b6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.saveButtonTop::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.saveButtonTop:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 191, 255, 0.45);
+}
+
+.saveButtonTop:hover::before {
+  left: 100%;
+}
+
+.saveButtonTop:active {
+  transform: translateY(0);
+}
+
+.saveButtonTop svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.headerSubtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding-left: 56px;
+  line-height: 1.5;
+}
+
+/* =================== SECTIONS =================== */
+.section {
+  padding: 1.5rem 2rem 0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sectionTitle::before {
+  content: "";
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--brand) 0%, #0077b6 100%);
+  border-radius: 2px;
+}
+
+.sectionCard {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+}
+
+.sectionCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* =================== INFO GRID =================== */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+}
+
+.posterColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.posterUpload {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+}
+
+.posterUpload:hover {
+  border-color: var(--brand);
+  background: linear-gradient(135deg, var(--brand-light) 0%, rgba(0, 191, 255, 0.05) 100%);
+  transform: scale(1.01);
+}
+
+.posterPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-light);
+  padding: 1.5rem;
+}
+
+.posterPlaceholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+  transition: all 0.25s ease;
+}
+
+.posterUpload:hover .posterPlaceholder svg {
+  opacity: 1;
+  color: var(--brand);
+  transform: scale(1.1);
+}
+
+.posterPlaceholder span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.posterPreview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.posterImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.removePosterBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.85));
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.removePosterBtn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: scale(1.1);
+}
+
+.removePosterBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* =================== FIELDS COLUMN =================== */
+.fieldsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* =================== FIELD LABEL =================== */
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.fieldLabel::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--brand);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.required {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+/* =================== INPUTS =================== */
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem 1.125rem;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  color: var(--text);
+  outline: none;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.input::placeholder {
+  color: #b0b8c1;
+}
+
+.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-glow), 0 2px 8px rgba(0, 191, 255, 0.15);
+  background: white;
+  transform: translateY(-1px);
+}
+
+.inputIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--text-light);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.inputWrapper:has(.input:focus) .inputIcon {
+  color: var(--brand);
+}
+
+/* Hide browser's native calendar icon for date inputs */
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* =================== TIPE SUB-SECTION (SJN) =================== */
+.tipeSubSection {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-top: 0.5rem;
+}
+
+.tipeSubTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.875rem;
+}
+
+/* View Form Button */
+.viewFormBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  background: white;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.viewFormBtn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--brand-light);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.viewFormBtn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--brand-glow);
+}
+
+.viewFormBtn:hover::before {
+  opacity: 1;
+}
+
+/* =================== TEXTAREA =================== */
+.textarea {
+  width: 100%;
+  padding: 1rem 1.125rem;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  color: var(--text);
+  outline: none;
+  transition: all 0.25s ease;
+  resize: vertical;
+  font-family: inherit;
+  min-height: 140px;
+  line-height: 1.6;
+}
+
+.textarea::placeholder {
+  color: #b0b8c1;
+}
+
+.textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-glow), 0 2px 8px rgba(0, 191, 255, 0.15);
+  background: white;
+}
+
+/* =================== DYNAMIC FIELDS =================== */
+.dynamicField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.dynamicField:hover {
+  border-color: rgba(0, 191, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 191, 255, 0.1);
+}
+
+.dynamicField:last-of-type {
+  margin-bottom: 0;
+}
+
+.dynamicFieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.removeFieldBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: white;
+  color: var(--text-light);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.removeFieldBtn:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger);
+  transform: scale(1.05);
+}
+
+.removeFieldBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* =================== SELECT WRAPPER =================== */
+.selectWrapper {
+  position: relative;
+}
+
+.selectWrapper .input {
+  padding-right: 2.75rem;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-light);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* =================== ADD FIELD BUTTON =================== */
+.addFieldBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 1rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.addFieldBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--brand-light);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.addFieldBtn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px var(--brand-glow);
+}
+
+.addFieldBtn:hover::before {
+  opacity: 1;
+}
+
+.addFieldBtn svg {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.addFieldBtn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* =================== SAVE SECTION =================== */
+.saveSection {
+  padding: 2rem 2rem 2.5rem;
+}
+
+.saveButtonBottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  max-width: 480px;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #00BFFF 0%, #0077b6 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.saveButtonBottom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.saveButtonBottom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 191, 255, 0.45);
+}
+
+.saveButtonBottom:hover::before {
+  left: 100%;
+}
+
+.saveButtonBottom:active {
+  transform: translateY(0);
+}
+
+.saveButtonBottom svg {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* =================== MODAL =================== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  z-index: 1000;
+  padding: 100px 2rem 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  width: 400px;
+  animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.modalTitle::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--brand);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--brand-glow);
+}
+
+.modalClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: white;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.modalClose:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger);
+  transform: scale(1.05);
+}
+
+.modalClose svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modalBody {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.addFieldModalBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: calc(100% - 3.5rem);
+  margin: 0.5rem 1.75rem 1.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00BFFF 0%, #0077b6 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.35);
+}
+
+.addFieldModalBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 191, 255, 0.45);
+}
+
+.addFieldModalBtn:active {
+  transform: translateY(0);
+}
+
+.addFieldModalBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addFieldModalBtn svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .posterUpload {
+    min-height: 180px;
+  }
+
+  .posterImage {
+    height: 180px;
+  }
+
+  .section {
+    padding: 1.25rem 1.5rem 0;
+  }
+
+  .contentHeader {
+    padding: 1.5rem 1.5rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerTop {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .headerSubtitle {
+    padding-left: 0;
+  }
+
+  .saveButtonTop {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fieldRow {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .saveSection {
+    padding: 1.5rem 1.5rem 2rem;
+  }
+
+  .saveButtonBottom {
+    max-width: 100%;
+  }
+
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .sectionCard {
+    padding: 1.25rem;
+  }
+
+  .dynamicField {
+    padding: 1rem;
+  }
+}
+
+/* =================== SUBTLE ANIMATIONS =================== */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.sectionTitle::before {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* =================== CUSTOM SCROLLBAR =================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--brand) 0%, #0077b6 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--brand-dark) 0%, #005f8a 100%);
+}
+
+/* =================== SELECT DROPDOWN STYLING =================== */
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 2.5rem;
+}
+
+select.input:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300BFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* selectWrapper overrides select's background-image so only ChevronIcon arrow shows */
+.selectWrapper select.input {
+  background-image: none;
+}

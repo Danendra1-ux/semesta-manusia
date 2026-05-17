@@ -81,7 +81,19 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
             </div>
           )}
         </div>
-        {!isCollapsed && <div className={styles.headerDivider} />}
+        <button
+          className={styles.collapseToggle}
+          onClick={onToggle}
+          title={isCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            {isCollapsed ? (
+              <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
+            ) : (
+              <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
+            )}
+          </svg>
+        </button>
       </div>
 
       {/* Menu Section */}
@@ -129,21 +141,6 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           {!isCollapsed && <span>Keluar</span>}
-        </button>
-
-        {/* Collapse Toggle */}
-        <button
-          className={styles.collapseToggle}
-          onClick={onToggle}
-          title={isCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            {isCollapsed ? (
-              <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
-            ) : (
-              <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-            )}
-          </svg>
         </button>
       </div>
     </aside>

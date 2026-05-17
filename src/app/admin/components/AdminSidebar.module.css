@@ -24,13 +24,19 @@
 /* =================== SIDEBAR HEADER =================== */
 .sidebarHeader {
   padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .logoWrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .logo {
@@ -59,10 +65,12 @@
   color: #111827;
 }
 
-.headerDivider {
-  height: 1px;
-  background: #e5e7eb;
-  margin-top: 1rem;
+.collapsed .logoWrapper {
+  justify-content: center;
+}
+
+.collapsed .logoText {
+  display: none;
 }
 
 /* =================== MENU SECTION =================== */
@@ -257,17 +265,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  border: 1px solid 7eb;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid #e5e7eb;
   border-radius: 8px;
   background: white;
   color: #6b7280;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .collapseToggle:hover {
-  background: #f9fafb;
+  background: #f0f9ff;
   border-color: #00bfff;
   color: #00bfff;
 }
