@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.js";
 import styles from "./page.module.css";
 
+const ChevronIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 const programDetailData = {
   "semesta-camp-10-palembang": {
     id: "semesta-camp-10-palembang",
@@ -150,7 +156,6 @@ export default function EditProgramPage({ params }) {
   const [targetSection, setTargetSection] = useState(null); // "detail" | "pekerjaan"
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
-  const [modalPlaceholder, setModalPlaceholder] = useState("");
 
   // Toast
   const [toastShow, setToastShow] = useState(false);
@@ -195,7 +200,6 @@ export default function EditProgramPage({ params }) {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
-    setModalPlaceholder("");
     setModalOpen(true);
   };
 
@@ -207,7 +211,7 @@ export default function EditProgramPage({ params }) {
       label: modalLabel,
       type: modalFieldType.toLowerCase(),
       value: "",
-      placeholder: modalPlaceholder,
+      placeholder: "",
     };
 
     if (targetSection === "detail") {
@@ -603,15 +607,18 @@ export default function EditProgramPage({ params }) {
               <div className={styles.modalBody}>
                 <div className={styles.modalField}>
                   <label className={styles.fieldLabel}>Pilih Tipe Field</label>
-                  <select
-                    className={styles.input}
-                    value={modalFieldType}
-                    onChange={(e) => setModalFieldType(e.target.value)}
-                  >
-                    {fieldTypes.map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
+                  <div className={styles.selectWrapper}>
+                    <select
+                      className={styles.input}
+                      value={modalFieldType}
+                      onChange={(e) => setModalFieldType(e.target.value)}
+                    >
+                      {fieldTypes.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
                 </div>
 
                 <div className={styles.modalField}>
@@ -622,17 +629,6 @@ export default function EditProgramPage({ params }) {
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
                     placeholder="Label"
-                  />
-                </div>
-
-                <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Placeholder</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={modalPlaceholder}
-                    onChange={(e) => setModalPlaceholder(e.target.value)}
-                    placeholder="Placeholder"
                   />
                 </div>
               </div>
