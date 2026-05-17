@@ -65,7 +65,6 @@ export default function DashboardPage() {
             <h1 className={styles.pageTitle}>Dashboard</h1>
           </div>
           <div className={styles.topbarRight}>
-            <span className={styles.currentDate}>{getFormattedDate()}</span>
             <button className={styles.notificationButton} aria-label="Notifikasi">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
