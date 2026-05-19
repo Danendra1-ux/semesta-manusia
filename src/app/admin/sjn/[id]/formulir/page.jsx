@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import AdminSidebar from "../../../components/AdminSidebar.js";
+import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];

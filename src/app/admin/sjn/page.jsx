@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "../components/AdminSidebar.js";
+import AdminSidebar from "../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
 const initialPrograms = [

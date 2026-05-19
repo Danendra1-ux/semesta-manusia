@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import AdminSidebar from "../../../../components/AdminSidebar.js";
+import AdminSidebar from "../../../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
 export default function PendaftarDetailPage({ params }) {
