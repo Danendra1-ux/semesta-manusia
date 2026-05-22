@@ -69,12 +69,21 @@
   transform: translateY(0) scale(1);
 }
 
+.toast.toastError {
+  border-left-color: var(--danger);
+}
+
 .toast svg {
   width: 22px;
   height: 22px;
   color: #34d399;
   flex-shrink: 0;
   filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
+}
+
+.toast.toastError svg {
+  color: #f87171;
+  filter: drop-shadow(0 0 6px rgba(248, 113, 113, 0.5));
 }
 
 /* =================== CONTENT HEADER =================== */
@@ -258,27 +267,6 @@
   padding: 0.375rem 0.75rem;
   outline: none;
   background: white;
-}
-
-/* Section Title in Header */
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.sectionTitle::before {
-  content: "";
-  width: 4px;
-  height: 18px;
-  background: linear-gradient(180deg, var(--brand) 0%, #0077b6 100%);
-  border-radius: 2px;
 }
 
 /* Section Card */
