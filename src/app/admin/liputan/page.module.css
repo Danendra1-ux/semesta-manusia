@@ -1,0 +1,476 @@
+/* =================== PAGE LAYOUT =================== */
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light, #f9fafb);
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem 2.5rem;
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+}
+
+.mainContent.expanded {
+  margin-left: 70px;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* =================== HEADER =================== */
+.contentHeader {
+  margin-bottom: 1.75rem;
+}
+
+.headerTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-dark, #111827);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+
+.headerSubtitle {
+  font-size: 0.9375rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+}
+
+/* =================== MAIN CARD =================== */
+.mainCard {
+  background: white;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-dark, #111827);
+  margin: 0;
+}
+
+.tambahBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.tambahBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.tambahBtn:active {
+  transform: translateY(0);
+}
+
+.tambahBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* =================== CARD LIST =================== */
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.9375rem;
+}
+
+/* =================== LIPUTAN CARD =================== */
+.liputanCard {
+  position: relative;
+  background: #fafbfc;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.liputanCard:hover {
+  border-color: var(--brand, #00BFFF);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.deleteCardBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border, #e5e7eb);
+  color: var(--text-muted, #6b7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.deleteCardBtn:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.deleteCardBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  grid-template-rows: auto auto;
+  gap: 1rem 1.25rem;
+}
+
+/* =================== FOTO COLUMN =================== */
+.fotoColumn {
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.photoUpload {
+  width: 100%;
+  height: 130px;
+  border: 2px dashed var(--border, #d1d5db);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: white;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.photoUpload:hover {
+  border-color: var(--brand, #00BFFF);
+  background: #f0f7ff;
+}
+
+.photoPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #9ca3af);
+  width: 100%;
+  height: 100%;
+}
+
+.photoPlaceholder svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.7;
+}
+
+.photoUpload:hover .photoPlaceholder svg {
+  opacity: 1;
+  color: var(--brand, #00BFFF);
+}
+
+.photoPreview {
+  width: 100%;
+  height: 100%;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.uploadHint {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+  text-align: center;
+}
+
+/* =================== JUDUL COLUMN =================== */
+.judulColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* =================== DESKRIPSI COLUMN =================== */
+.deskripsiColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* =================== LINK COLUMN =================== */
+.linkColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputHint {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+}
+
+/* =================== FIELD LABEL =================== */
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dark, #374151);
+  display: block;
+}
+
+/* =================== INPUT =================== */
+.input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  color: var(--text-dark, #111827);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand, #00BFFF);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input::placeholder {
+  color: var(--text-muted, #9ca3af);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  color: var(--text-dark, #111827);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--brand, #00BFFF);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.textarea::placeholder {
+  color: var(--text-muted, #9ca3af);
+}
+
+/* =================== SAVE CARD BUTTON =================== */
+.saveCardBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
+
+.saveCardBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.saveCardBtnActive {
+  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  color: white;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.saveCardBtnActive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.saveCardBtnActive:active {
+  transform: translateY(0);
+}
+
+.saveCardBtnDisabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border: 1.5px solid #e5e7eb;
+}
+
+/* =================== PAGINATION =================== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.paginationBtn {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #e5e7eb);
+  background: white;
+  color: var(--text-dark, #374151);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  border-color: var(--brand, #00BFFF);
+  color: var(--brand, #00BFFF);
+  background: #f0f7ff;
+}
+
+.paginationBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginationBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.paginationBtnActive {
+  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.paginationBtnActive:hover {
+  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  color: white;
+}
+
+.paginationDots {
+  padding: 0 0.25rem;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* =================== TOAST =================== */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.875rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.toast svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.toastShow {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 1024px) {
+  .cardGrid {
+    grid-template-columns: 140px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 70px;
+    padding: 1.25rem 1rem;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .fotoColumn {
+    grid-row: auto;
+  }
+
+  .photoUpload {
+    height: 180px;
+  }
+}
