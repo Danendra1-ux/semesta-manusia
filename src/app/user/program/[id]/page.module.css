@@ -578,27 +578,6 @@
   box-shadow: 0 4px 16px rgba(0, 191, 255, 0.08);
 }
 
-.divisiIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.divisiIcon.sjn {
-  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
-}
-
-.divisiIcon svg {
-  width: 20px;
-  height: 20px;
-  color: white;
-}
-
 .divisiInfo h4 {
   font-size: 1rem;
   font-weight: 700;

@@ -156,6 +156,8 @@ export default function EditProgramPage({ params }) {
   const [targetSection, setTargetSection] = useState(null); // "detail" | "pekerjaan"
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
+  const [modalPlaceholder, setModalPlaceholder] = useState("");
+  const [modalOptions, setModalOptions] = useState([""]);
 
   // Toast
   const [toastShow, setToastShow] = useState(false);
@@ -200,18 +202,39 @@ export default function EditProgramPage({ params }) {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
+    setModalPlaceholder("");
+    setModalOptions([""]);
     setModalOpen(true);
+  };
+
+  const handleAddOption = () => {
+    setModalOptions((prev) => [...prev, ""]);
+  };
+
+  const handleOptionChange = (index, value) => {
+    setModalOptions((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const handleRemoveOption = (index) => {
+    setModalOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddField = () => {
     if (!modalLabel.trim()) return;
 
+    const validOptions = modalOptions.filter((o) => o.trim() !== "");
+
     const newField = {
       id: `${targetSection === "detail" ? "df" : "pf"}-${Date.now()}`,
       label: modalLabel,
-      type: modalFieldType.toLowerCase(),
+      type: modalFieldType.toLowerCase().replace(/\s+/g, "-"),
       value: "",
-      placeholder: "",
+      placeholder: modalPlaceholder,
+      ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 
     if (targetSection === "detail") {
@@ -478,13 +501,51 @@ export default function EditProgramPage({ params }) {
                     onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
                   />
                 ) : field.type === "dropdown" ? (
-                  <select
-                    className={styles.input}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
-                  >
-                    <option value="">{field.placeholder || "Pilih..."}</option>
-                  </select>
+                  <div className={styles.dropdownList}>
+                    {(field.options || []).map((opt, i) => (
+                      <span key={i} className={styles.dropdownOption}>
+                        <span className={styles.dropdownBullet}>-</span> {opt}
+                      </span>
+                    ))}
+                  </div>
+                ) : field.type === "upload-file" ? (
+                  <div className={styles.uploadFileArea}>
+                    <div className={styles.uploadFileBox}>
+                      {field.value ? (
+                        <span className={styles.uploadFileName}>
+                          {field.value}
+                          <button
+                            className={styles.clearUploadBtn}
+                            onClick={() => handleFieldChange("detail", field.id, "")}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </span>
+                      ) : (
+                        <div className={styles.uploadPlaceholder}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                          </svg>
+                          <p className={styles.uploadPlaceholderText}>
+                            Pilih file untuk diupload
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className={styles.fileInput}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFieldChange("detail", field.id, file.name);
+                      }}
+                    />
+                  </div>
                 ) : (
                   <input
                     type="text"
@@ -549,13 +610,51 @@ export default function EditProgramPage({ params }) {
                     onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
                   />
                 ) : field.type === "dropdown" ? (
-                  <select
-                    className={styles.input}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
-                  >
-                    <option value="">{field.placeholder || "Pilih..."}</option>
-                  </select>
+                  <div className={styles.dropdownList}>
+                    {(field.options || []).map((opt, i) => (
+                      <span key={i} className={styles.dropdownOption}>
+                        <span className={styles.dropdownBullet}>-</span> {opt}
+                      </span>
+                    ))}
+                  </div>
+                ) : field.type === "upload-file" ? (
+                  <div className={styles.uploadFileArea}>
+                    <div className={styles.uploadFileBox}>
+                      {field.value ? (
+                        <span className={styles.uploadFileName}>
+                          {field.value}
+                          <button
+                            className={styles.clearUploadBtn}
+                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </span>
+                      ) : (
+                        <div className={styles.uploadPlaceholder}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                          </svg>
+                          <p className={styles.uploadPlaceholderText}>
+                            Pilih file untuk diupload
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className={styles.fileInput}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                      }}
+                    />
+                  </div>
                 ) : (
                   <input
                     type="text"
@@ -628,9 +727,48 @@ export default function EditProgramPage({ params }) {
                     className={styles.input}
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
-                    placeholder="Label"
+                    placeholder="Contoh: Divisi"
                   />
                 </div>
+
+                {/* Dropdown Options — only show when type is Dropdown */}
+                {modalFieldType === "Dropdown" && (
+                  <div className={styles.modalField}>
+                    <label className={styles.fieldLabel}>Opsi</label>
+                    <div className={styles.optionsList}>
+                      {modalOptions.map((opt, idx) => (
+                        <div key={idx} className={styles.optionItem}>
+                          <input
+                            type="text"
+                            className={styles.input}
+                            value={opt}
+                            onChange={(e) => handleOptionChange(idx, e.target.value)}
+                            placeholder={`Opsi ${idx + 1}`}
+                          />
+                          {modalOptions.length > 1 && (
+                            <button
+                              className={styles.removeOptionBtn}
+                              onClick={() => handleRemoveOption(idx)}
+                              title="Hapus opsi"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <button className={styles.addOptionBtn} onClick={handleAddOption}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Tambah Opsi
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button

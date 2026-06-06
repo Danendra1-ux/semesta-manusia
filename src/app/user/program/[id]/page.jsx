@@ -404,58 +404,31 @@ export default function ProgramDetailPage({ params }) {
                 </p>
 
                 <div className={styles.divisiSection}>
-                  <div className={`${styles.divisiItem} ${getCategoryClass() ? "" : ""}`}>
-                    <div className={`${styles.divisiIcon} ${getCategoryClass()}`}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
-                      </svg>
-                    </div>
+                  <div className={styles.divisiItem}>
                     <div className={styles.divisiInfo}>
-                      <h4>Pendidikan & Literasi</h4>
-                      <p>Mengajar, membuat materi ajar, dan pendampingan belajar anak-anak</p>
+                      <h4>Pendidikan</h4>
+                      <p>Mengajar, membuat materi ajar, pendampingan belajar anak-anak, dan pengembangan literasi masyarakat</p>
                     </div>
                   </div>
 
                   <div className={styles.divisiItem}>
-                    <div className={`${styles.divisiIcon} ${getCategoryClass()}`}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="2" y1="12" x2="22" y2="12" />
-                        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-                      </svg>
-                    </div>
                     <div className={styles.divisiInfo}>
-                      <h4>Konservasi & Lingkungan</h4>
-                      <p>Penanaman pohon, pembersihan area konservasi, dan edukasi lingkungan</p>
+                      <h4>Kesehatan</h4>
+                      <p>Penyuluhan kesehatan, pendampingan masyarakat, dan edukasi gaya hidup sehat di lingkungan program</p>
                     </div>
                   </div>
 
                   <div className={styles.divisiItem}>
-                    <div className={`${styles.divisiIcon} ${getCategoryClass()}`}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 00-3-3.87" />
-                        <path d="M16 3.13a4 4 0 010 7.75" />
-                      </svg>
-                    </div>
                     <div className={styles.divisiInfo}>
-                      <h4>Pemberdayaan Masyarakat</h4>
-                      <p>Pendampingan keterampilan, pelatihan usaha mikro, dan pengembangan komunitas</p>
+                      <h4>Pariwisata</h4>
+                      <p>Pengembangan destinasi, promosi wisata lokal, dan peningkatan daya tarik budaya daerah</p>
                     </div>
                   </div>
 
                   <div className={styles.divisiItem}>
-                    <div className={`${styles.divisiIcon} ${getCategoryClass()}`}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                        <circle cx="12" cy="13" r="4" />
-                      </svg>
-                    </div>
                     <div className={styles.divisiInfo}>
-                      <h4>Dokumentasi & Komunikasi</h4>
-                      <p>Fotografi, videografi, penulisan artikel, dan pengelolaan media sosial program</p>
+                      <h4>Lingkungan</h4>
+                      <p>Pelestarian alam, penanaman pohon, pembersihan area konservasi, dan edukasi lingkungan hidup</p>
                     </div>
                   </div>
                 </div>
