@@ -11,19 +11,19 @@ export default function PendaftarDetailPage({ params }) {
   const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Dummy pendaftar data (same as in detail page)
+  // Dummy pendaftar data — matches Semesta Camp registration form fields
   const pendaftarData = {
     "semesta-camp-10-palembang": [
-      { id: 1, tanggal: "2 Jan 2023", nama: "Andi Pratama", noWhatsapp: "081234567890", email: "andi.pratama@gmail.com", status: "Pending", instansi: "Universitas Padjadjaran",Domisili: "Bandung, Jawa Barat", bidang: "Pendidikan", motivasi: "Ingin berkontribusi dalam kegiatan sosial dan memperluas jaringan volunteering.", },
-      { id: 2, tanggal: "14 Dec 2022", nama: "Siti Rahma", noWhatsapp: "081234567891", email: "siti.rahma@gmail.com", status: "Diterima", instansi: "SMA 12 Bandung", Domisili: "Yogyakarta, DIY", bidang: "Kesehatan", motivasi: "Menggabungkan passion di bidang kesehatan dengan kegiatan kemanusiaan.", },
-      { id: 3, tanggal: "12 Dec 2022", nama: "Budi Santoso", noWhatsapp: "081234567892", email: "budi.santoso@gmail.com", status: "Ditolak", instansi: "Rumah Sakit Hasan Sadikin", Domisili: "Jakarta Selatan", bidang: "Logistik", motivasi: "Berpengalaman dalam manajemen logistik dan ingin berkontribusi lebih.", },
-      { id: 4, tanggal: "7 Dec 2022", nama: "Dewi Lestari", noWhatsapp: "081234567893", email: "dewi.lestari@gmail.com", status: "Pending", instansi: "Universitas Indonesia", Domisili: "Depok, Jawa Barat", bidang: "Pendidikan", motivasi: "Dedicated untuk keberlanjutan program sosial di daerah terpencil.", },
-      { id: 5, tanggal: "3 Dec 2022", nama: "Reza Firmansyah", noWhatsapp: "081234567894", email: "reza.f@gmail.com", status: "Pending", instansi: "Universitas Gadjah Mada", Domisili: "Sleman, Yogyakarta", bidang: "Teknologi", motivasi: "Menggabungkan keahlian tech untuk социаль impact.", },
-      { id: 6, tanggal: "26 Nov 2022", nama: "Nadia Putri", noWhatsapp: "081234567895", email: "nadia.p@gmail.com", status: "Pending", instansi: "Universitas Diponegoro", Domisili: "Semarang, Jawa Tengah", bidang: "Pendidikan", motivasi: "Passionate dalam volunteer work dan community development.", },
-      { id: 7, tanggal: "18 Nov 2022", nama: "Fajar Nugroho", noWhatsapp: "081234567896", email: "fajar.n@gmail.com", status: "Diterima", instansi: "Universitas Brawijaya", Domisili: "Malang, Jawa Timur", bidang: "Kesehatan", motivasi: "Bergabung untuk memperluas jaringan kesehatan masyarakat.", },
-      { id: 8, tanggal: "13 Nov 2022", nama: "Ayu Rahayu", noWhatsapp: "081234567897", email: "ayu.r@gmail.com", status: "Diterima", instansi: "Universitas Airlangga", Domisili: "Surabaya, Jawa Timur", bidang: "Pendidikan", motivasi: "Semangat berkontribusi di bidang kemanusiaan dan pendidikan.", },
-      { id: 9, tanggal: "11 Nov 2022", nama: "Rizky Maulana", noWhatsapp: "081234567898", email: "rizky.m@gmail.com", status: "Diterima", instansi: "Institut Teknologi Bandung", Domisili: "Bandung, Jawa Barat", bidang: "Teknologi", motivasi: "Ingin memanfaatkan keahlian IT untuk kegiatan sosial.", },
-      { id: 10, tanggal: "9 Nov 2022", nama: "Intan Permata", noWhatsapp: "081234567899", email: "intan.p@gmail.com", status: "Ditolak", instansi: "Universitas Hasanuddin", Domisili: "Makassar, Sulawesi Selatan", bidang: "Logistik", motivasi: "Berminat berkontribusi dalam manajemen logistik bencana.", },
+      { id: 1, tanggal: "2 Jan 2023", fullName: "Andi Pratama", email: "andi.pratama@gmail.com", whatsapp: "081234567890", instagram: "@andipratama", birthDate: "7 Feb 1998", region: "Bandung, Jawa Barat", institution: "Universitas Padjadjaran", reason: "Saya ingin mengikuti Semesta Camp untuk mengasah kemampuan leadership dan belajar berkolaborasi dengan peserta dari berbagai daerah, sekaligus memperluas jaringan dengan komunitas yang peduli pada isu sosial dan lingkungan.", berkas: { instagramProof: { name: "follow_ig_andi.jpg", size: "245 KB" }, tiktokProof: { name: "follow_tiktok_andi.jpg", size: "198 KB" }, paymentProof: { name: "bukti_bayar_andi.jpg", size: "187 KB" } }, status: "Pending" },
+      { id: 2, tanggal: "14 Dec 2022", fullName: "Siti Rahma", email: "siti.rahma@gmail.com", whatsapp: "081234567891", instagram: "@sitirahma", birthDate: "21 Apr 1999", region: "Yogyakarta, DIY", institution: "SMA 12 Bandung", reason: "Bergabung dengan Semesta Camp adalah langkah konkret saya untuk belajar tentang teamwork, komunikasi lintas budaya, dan berkontribusi langsung pada kegiatan sosial yang terstruktur dan berdampak.", berkas: { instagramProof: { name: "follow_ig_siti.jpg", size: "252 KB" }, tiktokProof: { name: "follow_tiktok_siti.jpg", size: "210 KB" }, paymentProof: { name: "bukti_bayar_siti.jpg", size: "195 KB" } }, status: "Diterima" },
+      { id: 3, tanggal: "12 Dec 2022", fullName: "Budi Santoso", email: "budi.santoso@gmail.com", whatsapp: "081234567892", instagram: "@budisantoso", birthDate: "15 Agt 1997", region: "Jakarta Selatan", institution: "Rumah Sakit Hasan Sadikin", reason: "Saya melihat Semesta Camp sebagai wadah yang tepat untuk mengaplikasikan pengalaman organisasi saya sekaligus belajar dari fasilitator dan teman-teman peserta yang punya latar belakang beragam.", berkas: { instagramProof: { name: "follow_ig_budi.jpg", size: "230 KB" }, tiktokProof: { name: "follow_tiktok_budi.jpg", size: "188 KB" }, paymentProof: { name: "bukti_bayar_budi.jpg", size: "203 KB" } }, status: "Ditolak" },
+      { id: 4, tanggal: "7 Dec 2022", fullName: "Dewi Lestari", email: "dewi.lestari@gmail.com", whatsapp: "081234567893", instagram: "@dewilestari", birthDate: "3 Mei 2000", region: "Depok, Jawa Barat", institution: "Universitas Indonesia", reason: "Saya ingin menambah pengalaman di luar kampus, bertemu orang-orang inspiratif, dan ikut terlibat dalam program-program sosial yang dijalankan selama Semesta Camp berlangsung.", berkas: { instagramProof: { name: "follow_ig_dewi.jpg", size: "267 KB" }, tiktokProof: { name: "follow_tiktok_dewi.jpg", size: "221 KB" }, paymentProof: { name: "bukti_bayar_dewi.jpg", size: "192 KB" } }, status: "Pending" },
+      { id: 5, tanggal: "3 Dec 2022", fullName: "Reza Firmansyah", email: "reza.f@gmail.com", whatsapp: "081234567894", instagram: "@rezafirmansyah", birthDate: "28 Nov 1998", region: "Sleman, Yogyakarta", institution: "Universitas Gadjah Mada", reason: "Saya mendaftar karena tertarik dengan kurikulum Semesta Camp yang menggabungkan hard skills dan soft skills, terutama sesi leadership dan project management yang ingin saya dalami lebih lanjut.", berkas: { instagramProof: { name: "follow_ig_reza.jpg", size: "241 KB" }, tiktokProof: { name: "follow_tiktok_reza.jpg", size: "194 KB" }, paymentProof: { name: "bukti_bayar_reza.jpg", size: "178 KB" } }, status: "Pending" },
+      { id: 6, tanggal: "26 Nov 2022", fullName: "Nadia Putri", email: "nadia.p@gmail.com", whatsapp: "081234567895", instagram: "@nadiaputri", birthDate: "9 Jul 1999", region: "Semarang, Jawa Tengah", institution: "Universitas Diponegoro", reason: "Semesta Camp adalah kesempatan bagus untuk belajar langsung dari praktisi, membangun relasi dengan sesama peserta, dan mengembangkan diri di lingkungan yang suportif dan kolaboratif.", berkas: { instagramProof: { name: "follow_ig_nadia.jpg", size: "258 KB" }, tiktokProof: { name: "follow_tiktok_nadia.jpg", size: "215 KB" }, paymentProof: { name: "bukti_bayar_nadia.jpg", size: "184 KB" } }, status: "Pending" },
+      { id: 7, tanggal: "18 Nov 2022", fullName: "Fajar Nugroho", email: "fajar.n@gmail.com", whatsapp: "081234567896", instagram: "@fajarnugroho", birthDate: "17 Sep 1998", region: "Malang, Jawa Timur", institution: "Universitas Brawijaya", reason: "Saya ingin keluar dari zona nyaman, melatih public speaking, dan mengasah kemampuan problem solving lewat studi kasus dan simulasi yang dirancang oleh tim Semesta Camp.", berkas: { instagramProof: { name: "follow_ig_fajar.jpg", size: "249 KB" }, tiktokProof: { name: "follow_tiktok_fajar.jpg", size: "201 KB" }, paymentProof: { name: "bukti_bayar_fajar.jpg", size: "189 KB" } }, status: "Diterima" },
+      { id: 8, tanggal: "13 Nov 2022", fullName: "Ayu Rahayu", email: "ayu.r@gmail.com", whatsapp: "081234567897", instagram: "@ayurahayu", birthDate: "5 Mar 2000", region: "Surabaya, Jawa Timur", institution: "Universitas Airlangga", reason: "Saya melihat Semesta Camp sebagai ruang aman untuk mencoba hal baru, bertemu mentor yang berkualitas, dan membentuk jejaring dengan anak muda dari penjuru Indonesia.", berkas: { instagramProof: { name: "follow_ig_ayu.jpg", size: "255 KB" }, tiktokProof: { name: "follow_tiktok_ayu.jpg", size: "208 KB" }, paymentProof: { name: "bukti_bayar_ayu.jpg", size: "181 KB" } }, status: "Diterima" },
+      { id: 9, tanggal: "11 Nov 2022", fullName: "Rizky Maulana", email: "rizky.m@gmail.com", whatsapp: "081234567898", instagram: "@rizkymaulana", birthDate: "22 Jun 1997", region: "Bandung, Jawa Barat", institution: "Institut Teknologi Bandung", reason: "Saya mendaftar karena ingin meningkatkan kemampuan komunikasi, kolaborasi tim, dan kepemimpinan melalui kegiatan yang dirancang secara intensif oleh tim Semesta Camp.", berkas: { instagramProof: { name: "follow_ig_rizky.jpg", size: "238 KB" }, tiktokProof: { name: "follow_tiktok_rizky.jpg", size: "197 KB" }, paymentProof: { name: "bukti_bayar_rizky.jpg", size: "186 KB" } }, status: "Diterima" },
+      { id: 10, tanggal: "9 Nov 2022", fullName: "Intan Permata", email: "intan.p@gmail.com", whatsapp: "081234567899", instagram: "@intanpermata", birthDate: "12 Okt 1999", region: "Makassar, Sulawesi Selatan", institution: "Universitas Hasanuddin", reason: "Saya ingin belajar langsung dari mentor yang berpengalaman, mengikuti sesi workshop yang aplikatif, serta membangun koneksi dengan peserta lain yang punya semangat serupa.", berkas: { instagramProof: { name: "follow_ig_intan.jpg", size: "244 KB" }, tiktokProof: { name: "follow_tiktok_intan.jpg", size: "200 KB" }, paymentProof: { name: "bukti_bayar_intan.jpg", size: "191 KB" } }, status: "Ditolak" },
     ],
   };
 
@@ -34,6 +34,15 @@ export default function PendaftarDetailPage({ params }) {
     if (status === "Diterima") return styles.badgeDiterima;
     if (status === "Ditolak") return styles.badgeDitolak;
     return styles.badgePending;
+  };
+
+  const berkasList = (berkas) => {
+    if (!berkas) return [];
+    return [
+      { key: "instagramProof", label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", file: berkas.instagramProof },
+      { key: "tiktokProof", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", file: berkas.tiktokProof },
+      { key: "paymentProof", label: "Upload Bukti Pembayaran", file: berkas.paymentProof },
+    ];
   };
 
   if (!pendaftar) {
@@ -74,7 +83,7 @@ export default function PendaftarDetailPage({ params }) {
           </div>
           <div className={styles.headerText}>
             <div className={styles.headerTitleRow}>
-              <h1 className={styles.pageTitle}>{pendaftar.nama}</h1>
+              <h1 className={styles.pageTitle}>{pendaftar.fullName}</h1>
               <span className={`${styles.statusBadge} ${getStatusBadgeClass(pendaftar.status)}`}>
                 {pendaftar.status}
               </span>
@@ -86,16 +95,11 @@ export default function PendaftarDetailPage({ params }) {
         {/* Profile Card */}
         <div className={styles.profileCard}>
           <div className={styles.profileAvatar}>
-            {pendaftar.nama.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+            {pendaftar.fullName.split(" ").map((n) => n[0]).slice(0, 2).join("")}
           </div>
           <div className={styles.profileInfo}>
-            <h2 className={styles.profileName}>{pendaftar.nama}</h2>
-            <p className={styles.profileInstitution}>{pendaftar.instansi}</p>
-            <div className={styles.profileStatus}>
-              <span className={`${styles.statusBadge} ${getStatusBadgeClass(pendaftar.status)}`}>
-                {pendaftar.status}
-              </span>
-            </div>
+            <h2 className={styles.profileName}>{pendaftar.fullName}</h2>
+            <p className={styles.profileInstitution}>{pendaftar.institution}</p>
           </div>
         </div>
 
@@ -106,35 +110,35 @@ export default function PendaftarDetailPage({ params }) {
             <div className={styles.infoList}>
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Nama Lengkap</span>
-                <span className={styles.infoValue}>{pendaftar.nama}</span>
+                <span className={styles.infoValue}>{pendaftar.fullName}</span>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Asal Instansi</span>
-                <span className={styles.infoValue}>{pendaftar.instansi}</span>
+                <span className={styles.infoLabel}>Tanggal Lahir</span>
+                <span className={styles.infoValue}>{pendaftar.birthDate}</span>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Domisili</span>
-                <span className={styles.infoValue}>{pendaftar.Domisili}</span>
+                <span className={styles.infoLabel}>Asal Daerah</span>
+                <span className={styles.infoValue}>{pendaftar.region}</span>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Bidang Minat</span>
-                <span className={styles.infoValue}>{pendaftar.bidang}</span>
+                <span className={styles.infoLabel}>Nama Instansi</span>
+                <span className={styles.infoValue}>{pendaftar.institution}</span>
               </div>
             </div>
           </div>
 
           <div className={styles.infoCard}>
-            <h3 className={styles.infoCardTitle}>Kontak</h3>
+            <h3 className={styles.infoCardTitle}>Kontak & Media Sosial</h3>
             <div className={styles.infoList}>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Nomor WhatsApp</span>
+                <span className={styles.infoLabel}>No. WhatsApp</span>
                 <a
-                  href={`https://wa.me/${pendaftar.noWhatsapp}`}
+                  href={`https://wa.me/${pendaftar.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.infoLink}
                 >
-                  {pendaftar.noWhatsapp}
+                  {pendaftar.whatsapp}
                 </a>
               </div>
               <div className={styles.infoItem}>
@@ -143,14 +147,52 @@ export default function PendaftarDetailPage({ params }) {
                   {pendaftar.email}
                 </a>
               </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Akun Instagram</span>
+                <a
+                  href={`https://instagram.com/${pendaftar.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.infoLink}
+                >
+                  {pendaftar.instagram}
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Motivation Card */}
         <div className={styles.motivationCard}>
-          <h3 className={styles.motivationTitle}>Motivasi</h3>
-          <p className={styles.motivationText}>{pendaftar.motivasi}</p>
+          <h3 className={styles.motivationTitle}>Alasan Mengikuti Kegiatan Semesta Camp</h3>
+          <p className={styles.motivationText}>{pendaftar.reason}</p>
+        </div>
+
+        {/* Kelengkapan Persyaratan (Berkas) Card */}
+        <div className={styles.berkasCard}>
+          <h3 className={styles.berkasTitle}>Kelengkapan Persyaratan</h3>
+          <div className={styles.berkasList}>
+            {berkasList(pendaftar.berkas).map((item) => (
+              <div key={item.key} className={styles.berkasItem}>
+                <div className={styles.berkasIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <div className={styles.berkasInfo}>
+                  <span className={styles.berkasLabel}>{item.label}</span>
+                  <span className={styles.berkasName}>{item.file?.name || "—"}</span>
+                  <span className={styles.berkasSize}>{item.file?.size || ""}</span>
+                </div>
+                <a href="#" className={styles.berkasDownload} aria-label="Download">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Registration Info Card */}
@@ -180,7 +222,7 @@ export default function PendaftarDetailPage({ params }) {
           </Link>
           <div className={styles.actionRight}>
             <a
-              href={`https://wa.me/${pendaftar.noWhatsapp}`}
+              href={`https://wa.me/${pendaftar.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.whatsappBtn}

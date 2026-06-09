@@ -392,6 +392,187 @@
   color: #0369A1;
 }
 
+.badgeTipeVolunteer {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.badgeRole {
+  background: #F3E8FF;
+  color: #6B21A8;
+}
+
+/* =================== DESCRIPTION CARD =================== */
+.descriptionCard {
+  margin: 0 2rem 1.5rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.descriptionTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.descriptionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.descriptionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.descriptionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.descriptionValue {
+  font-size: 0.9375rem;
+  color: #374151;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* =================== BERKAS (FILE ATTACHMENTS) CARD =================== */
+.berkasCard {
+  margin: 0 2rem 1.5rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.berkasTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.berkasList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.berkasItem {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.berkasItem:hover {
+  border-color: rgba(0, 191, 255, 0.4);
+  background: rgba(0, 191, 255, 0.04);
+}
+
+.berkasIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  color: #00bfff;
+  flex-shrink: 0;
+}
+
+.berkasIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.berkasInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.berkasLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.berkasName {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.berkasSize {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.berkasEmpty {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem;
+  margin: 0;
+}
+
+.berkasDownload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  color: #6b7280;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.berkasDownload:hover {
+  border-color: #00bfff;
+  color: #00bfff;
+  background: rgba(0, 191, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.berkasDownload svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* =================== RESPONSIVE =================== */
 @media (max-width: 1024px) {
   .mainContent {
@@ -415,6 +596,8 @@
   .profileCard,
   .infoCard,
   .motivationCard,
+  .descriptionCard,
+  .berkasCard,
   .registrationCard {
     margin: 0 1.25rem 1rem;
     padding: 1.25rem;
@@ -437,5 +620,15 @@
 
   .whatsappBtn {
     justify-content: center;
+  }
+
+  .berkasItem {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+  }
+
+  .berkasDownload {
+    width: 32px;
+    height: 32px;
   }
 }
