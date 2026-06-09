@@ -63,6 +63,15 @@ export default function FormulirSJNPage({ params }) {
   const programId = resolvedParams.id;
   const searchParams = useSearchParams();
   const tipe = searchParams.get("tipe") || "fully-funded";
+  const programNameMap = {
+    "sjn-4-raja-ampat":     "Semesta Jelajah Nusantara #4 Raja Ampat",
+    "sjn-3-sumba":          "Semesta Jelajah Nusantara #3 Sumba",
+    "sjn-2-flores":         "Semesta Jelajah Nusantara #2 Flores",
+    "sjn-1-toraja":         "Semesta Jelajah Nusantara #1 Toraja",
+    "sjn-pilot-kalimantan": "Semesta Jelajah Nusantara Pilot Kalimantan",
+  };
+
+  const programName = programNameMap[programId] || programId;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -80,24 +89,25 @@ export default function FormulirSJNPage({ params }) {
       title: "Data Diri",
       isFixed: true,
       fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
+        { id: "f1", label: "Nama Lengkap", type: "teks", placeholder: "Masukkan nama lengkap", required: true, isFixed: true, value: "" },
+        { id: "f2", label: "Email", type: "teks", placeholder: "contoh@email.com", required: true, isFixed: true, value: "" },
+        { id: "f3", label: "No. WhatsApp", type: "teks", placeholder: "(123) 000-0000", required: true, isFixed: true, value: "" },
+        { id: "f4", label: "Akun Instagram", type: "teks", placeholder: "@username", required: true, isFixed: true, value: "" },
+        { id: "f5", label: "Tanggal Lahir", type: "tanggal", placeholder: "", required: true, isFixed: true, value: "" },
+        { id: "f6", label: "Asal Daerah", type: "teks", placeholder: "Kota/Kabupaten", required: true, isFixed: true, value: "" },
+        { id: "f7", label: "Nama Instansi", type: "teks", placeholder: "Nama universitas/sekolah/instansi", required: true, isFixed: true, value: "" },
       ],
     },
     {
       id: "deskripsi-diri",
-      title: "Data Diri",
+      title: "Deskripsi Diri",
       isFixed: false,
       fields: [
-        { id: "f8", label: "Label 1", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
-        { id: "f9", label: "Label 2", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
-        { id: "f10", label: "Label 3", type: "dropdown", placeholder: "Pilih", required: false, isFixed: false, value: "", options: ["Opsi 1", "Opsi 2"] },
-        { id: "f11", label: "Label 4", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
+        { id: "f8", label: `Jelaskan mengapa anda ingin bergabung dalam kegiatan ${programName}?`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
+        { id: "f9", label: "Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?", type: "dropdown", placeholder: "Pilih bidang", required: true, isFixed: false, value: "", options: ["Pendidikan & Literasi", "Konservasi & Lingkungan", "Pemberdayaan Masyarakat", "Dokumentasi & Komunikasi"] },
+        { id: "f10", label: "Apa alasan anda memilih divisi tersebut?", type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
+        { id: "f11", label: `Apa program kerja yang akan anda ajukan untuk kegiatan ${programName}? (Jelaskan secara singkat dan detail)`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
+        { id: "f12", label: `Apa harapan dan rencana anda jika terpilih menjadi delegasi ${programName}?`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
       ],
     },
     {
@@ -105,10 +115,10 @@ export default function FormulirSJNPage({ params }) {
       title: "Kelengkapan Persyaratan",
       isFixed: false,
       fields: [
-        { id: "f12", label: "Label 1", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: false, isFixed: false, value: null },
-        { id: "f13", label: "Label 2", type: "upload", placeholder: "Placeholder", required: false, isFixed: false, value: null },
-        { id: "f14", label: "Label 3", type: "dropdown", placeholder: "Pilih", required: false, isFixed: false, value: "", options: [] },
-        { id: "f15", label: "Label 4", type: "upload", placeholder: "Placeholder", required: false, isFixed: false, value: null },
+        { id: "f13", label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
+        { id: "f14", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
+        { id: "f15", label: "Bukti upload Invitation Story ke Story Instagram Anda", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
+        { id: "f16", label: "Upload Bukti Pembayaran", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
       ],
     },
   ]);
@@ -194,14 +204,18 @@ export default function FormulirSJNPage({ params }) {
             {field.required && <span className={styles.required}>*</span>}
           </label>
           <div className={styles.fieldActions}>
-            <button
-              className={styles.editPlaceholderBtn}
-              onClick={() => openEditPlaceholder(field, sectionId)}
-              title="Edit placeholder"
-            >
-              <EditIcon />
-            </button>
-            <TrashIcon onClick={() => handleRemoveField(sectionId, field.id)} />
+            {!field.isFixed && (
+              <>
+                <button
+                  className={styles.editPlaceholderBtn}
+                  onClick={() => openEditPlaceholder(field, sectionId)}
+                  title="Edit placeholder"
+                >
+                  <EditIcon />
+                </button>
+                <TrashIcon onClick={() => handleRemoveField(sectionId, field.id)} />
+              </>
+            )}
           </div>
         </div>
 

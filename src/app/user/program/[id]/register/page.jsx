@@ -285,7 +285,7 @@ export default function RegisterPage({ params }) {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>Upload Image</span>
+              <span>Unggah 1 file. Maks 100 MB.</span>
               <small>Drag & drop atau klik untuk upload</small>
             </div>
           )}
@@ -507,6 +507,7 @@ export default function RegisterPage({ params }) {
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.whyJoin ? styles.inputError : ""}`}
+                  placeholder="Ceritakan motivasi dan alasan anda bergabung..."
                   rows={4}
                   value={formData.whyJoin || ""}
                   onChange={(e) => handleInputChange("whyJoin", e.target.value)}
@@ -539,6 +540,7 @@ export default function RegisterPage({ params }) {
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.divisionReason ? styles.inputError : ""}`}
+                  placeholder="Jelaskan alasan anda memilih bidang tersebut..."
                   rows={3}
                   value={formData.divisionReason || ""}
                   onChange={(e) => handleInputChange("divisionReason", e.target.value)}
@@ -553,6 +555,7 @@ export default function RegisterPage({ params }) {
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.programProposal ? styles.inputError : ""}`}
+                  placeholder="Deskripsikan program kerja yang akan anda ajukan secara singkat dan detail..."
                   rows={5}
                   value={formData.programProposal || ""}
                   onChange={(e) => handleInputChange("programProposal", e.target.value)}
@@ -567,6 +570,7 @@ export default function RegisterPage({ params }) {
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.hopes ? styles.inputError : ""}`}
+                  placeholder="Tuliskan harapan dan rencana anda jika terpilih sebagai delegasi..."
                   rows={4}
                   value={formData.hopes || ""}
                   onChange={(e) => handleInputChange("hopes", e.target.value)}

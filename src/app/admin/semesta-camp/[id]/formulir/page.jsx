@@ -77,24 +77,14 @@ export default function FormulirPage({ params }) {
       title: "Data Diri",
       isFixed: true,
       fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
-      ],
-    },
-    {
-      id: "deskripsi-diri",
-      title: "Data Diri",
-      isFixed: false,
-      fields: [
-        { id: "f8", label: "Label 1", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
-        { id: "f9", label: "Label 2", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
-        { id: "f10", label: "Label 3", type: "dropdown", placeholder: "Pilih", required: false, isFixed: false, value: "", options: ["Opsi 1", "Opsi 2"] },
-        { id: "f11", label: "Label 4", type: "textarea", placeholder: "Placeholder", required: false, isFixed: false, value: "" },
+        { id: "f1", label: "Nama Lengkap", type: "teks", placeholder: "Masukkan nama lengkap", required: true, isFixed: true, value: "" },
+        { id: "f2", label: "Email", type: "teks", placeholder: "contoh@email.com", required: true, isFixed: true, value: "" },
+        { id: "f3", label: "No. WhatsApp", type: "teks", placeholder: "(123) 000-0000", required: true, isFixed: true, value: "" },
+        { id: "f4", label: "Akun Instagram", type: "teks", placeholder: "@username", required: true, isFixed: true, value: "" },
+        { id: "f5", label: "Tanggal Lahir", type: "tanggal", placeholder: "", required: true, isFixed: true, value: "" },
+        { id: "f6", label: "Asal Daerah", type: "teks", placeholder: "Kota/Kabupaten", required: true, isFixed: true, value: "" },
+        { id: "f7", label: "Nama Instansi", type: "teks", placeholder: "Nama universitas/sekolah/instansi", required: true, isFixed: true, value: "" },
+        { id: "f8", label: "Alasan Mengikuti Kegiatan Semesta Camp", type: "textarea", placeholder: "Jelaskan alasan Anda ingin mengikuti kegiatan ini", required: true, isFixed: true, value: "" },
       ],
     },
     {
@@ -102,10 +92,9 @@ export default function FormulirPage({ params }) {
       title: "Kelengkapan Persyaratan",
       isFixed: false,
       fields: [
-        { id: "f12", label: "Label 1", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: false, isFixed: false, value: null },
-        { id: "f13", label: "Label 2", type: "upload", placeholder: "Placeholder", required: false, isFixed: false, value: null },
-        { id: "f14", label: "Label 3", type: "dropdown", placeholder: "Pilih", required: false, isFixed: false, value: "", options: [] },
-        { id: "f15", label: "Label 4", type: "upload", placeholder: "Placeholder", required: false, isFixed: false, value: null },
+        { id: "f9",  label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
+        { id: "f10", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
+        { id: "f11", label: "Upload Bukti Pembayaran", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
       ],
     },
   ]);
@@ -177,8 +166,7 @@ export default function FormulirPage({ params }) {
 
   // Helper: render single field
   const renderField = (field, sectionId) => {
-    const isNamaInstansi = field.label === "Nama Instansi";
-    const isFullWidth = isNamaInstansi;
+    const isFullWidth = field.label === "Nama Instansi" || field.label === "Alasan Mengikuti Kegiatan Semesta Camp";
 
     return (
       <div
@@ -191,14 +179,18 @@ export default function FormulirPage({ params }) {
             {field.required && <span className={styles.required}>*</span>}
           </label>
           <div className={styles.fieldActions}>
-            <button
-              className={styles.editPlaceholderBtn}
-              onClick={() => openEditPlaceholder(field, sectionId)}
-              title="Edit placeholder"
-            >
-              <EditIcon />
-            </button>
-            <TrashIcon onClick={() => handleRemoveField(sectionId, field.id)} />
+            {!field.isFixed && (
+              <>
+                <button
+                  className={styles.editPlaceholderBtn}
+                  onClick={() => openEditPlaceholder(field, sectionId)}
+                  title="Edit placeholder"
+                >
+                  <EditIcon />
+                </button>
+                <TrashIcon onClick={() => handleRemoveField(sectionId, field.id)} />
+              </>
+            )}
           </div>
         </div>
 
@@ -418,9 +410,9 @@ export default function FormulirPage({ params }) {
                 {/* Fields Card */}
                 <div className={styles.sectionCard}>
                   <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi) */}
+                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi dan Alasan) */}
                     {section.fields
-                      .filter(f => f.isFixed && f.label !== "Nama Instansi")
+                      .filter(f => f.isFixed && f.label !== "Nama Instansi" && f.label !== "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
                     {/* Bagian 2: Nama Instansi (full width, fixed) */}
@@ -428,12 +420,17 @@ export default function FormulirPage({ params }) {
                       .filter(f => f.label === "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 3: Field tambahan (tidak fixed, ditambah user) */}
+                    {/* Bagian 3: Alasan Mengikuti Kegiatan Semesta Camp (full width, fixed) */}
+                    {section.fields
+                      .filter(f => f.label === "Alasan Mengikuti Kegiatan Semesta Camp")
+                      .map(field => renderField(field, section.id))}
+
+                    {/* Bagian 4: Field tambahan (tidak fixed, ditambah user) */}
                     {section.fields
                       .filter(f => !f.isFixed)
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 4: Tombol tambah — selalu di bawah semua field */}
+                    {/* Bagian 5: Tombol tambah — selalu di bawah semua field */}
                     <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
                       <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
