@@ -122,6 +122,41 @@
   height: 20px;
 }
 
+.sectionTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionDescription {
+  font-size: 0.78rem;
+  color: #00BFFF;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.sectionDescriptionInput {
+  font-size: 0.78rem;
+  color: #00BFFF;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #00BFFF;
+  outline: none;
+  padding: 1px 2px;
+  width: 160px;
+}
+
+.sectionDescriptionEditable {
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.sectionDescriptionEditable:hover {
+  opacity: 1;
+  text-decoration: underline dotted;
+}
+
 .headerTitle {
   font-size: 1.5rem;
   font-weight: 800;

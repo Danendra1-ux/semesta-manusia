@@ -122,6 +122,19 @@
   height: 20px;
 }
 
+.sectionTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionDescription {
+  font-size: 0.78rem;
+  color: #00BFFF;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
 .headerTitle {
   font-size: 1.5rem;
   font-weight: 800;
