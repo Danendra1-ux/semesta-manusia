@@ -7,9 +7,6 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-// Pastikan programCategories masih ada jika Anda menggunakannya di tempat lain, 
-// allPrograms telah dihapus karena data kini berasal dari API.
-import { programCategories } from "../data/programs"; 
 
 export default function ProgramPage() {
   const router = useRouter();

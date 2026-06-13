@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -24,22 +22,19 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { funding_types, ...programData } = body;
+    
+    // 1. Ekstrak data: kita pisahkan funding_deadline karena kolom ini ada di tabel lain
+    const { funding_types, funding_deadline, ...programData } = body;
 
-    // --- TAMBAHAN LOGIC GENERATE SLUG ---
-    if (programData.title) {
-      // Ubah title jadi huruf kecil, ganti spasi/karakter aneh jadi strip (-)
-      const baseSlug = programData.title
+    // 2. Generate slug otomatis (Jika title ada)
+    if (programData.title && !programData.slug) {
+      programData.slug = programData.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '');
-      
-      // Tambahin timestamp pendek di belakangnya biar pasti UNIQUE dan nggak bentrok di DB
-      programData.slug = `${baseSlug}-${Math.floor(Date.now() / 1000)}`;
+        .replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
     }
-    // ------------------------------------
 
-    // 1. Insert Program
+    // 3. Insert Program
     const { data: program, error: progError } = await supabase
       .from('programs')
       .insert(programData)
@@ -48,21 +43,27 @@ export async function POST(request) {
 
     if (progError) throw progError;
 
-    // 2. Insert Funding Types jika ada (Fully/Self Funded)
+    // 4. Insert Funding Types (atau insert deadline saja jika tidak ada array funding_types)
     if (funding_types && funding_types.length > 0) {
       const fundingData = funding_types.map(ft => ({
         ...ft,
         program_id: program.id
       }));
-      const { error: fundError } = await supabase
-        .from('program_funding_types')
-        .insert(fundingData);
-        
-      if (fundError) throw fundError;
+      await supabase.from('program_funding_types').insert(fundingData);
+    } else {
+      // Jika tidak ada array khusus, buatkan default record untuk batas registrasi (deadline)
+      await supabase.from('program_funding_types').insert({
+        program_id: program.id,
+        code: 'self',
+        label: 'Self Funded',
+        deadline: funding_deadline || null,
+        is_default: true
+      });
     }
 
     return NextResponse.json(program, { status: 201 });
   } catch (error) {
+    console.error("API POST Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

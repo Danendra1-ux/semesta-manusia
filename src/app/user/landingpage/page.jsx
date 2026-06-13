@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./landingpage.module.css";
-import { previewPrograms, liputanData } from "../data/programs";
 
 export default function LandingPage() {
   const [activeFilter, setActiveFilter] = useState("semua");
 
+  const [programs, setPrograms] = useState([]);
+  const [liputan, setLiputan] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [programsRes, liputanRes] = await Promise.all([
+          fetch('/api/programs?is_active=true'),
+          fetch('/api/liputan?is_published=true')
+        ]);
+
+        if (programsRes.ok) setPrograms(await programsRes.json());
+        if (liputanRes.ok) setLiputan(await liputanRes.json());
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const filteredPrograms = activeFilter === "semua"
-    ? previewPrograms
+    ? programs
     : activeFilter === "camp"
-    ? previewPrograms.filter(p => p.category === "Semesta Camp")
-    : previewPrograms.filter(p => p.category === "SJN");
+    ? programs.filter(p => p.category === "Semesta Camp")
+    : programs.filter(p => p.category === "SJN");
 
   const filterTabs = [
     { key: "semua", label: "Semua" },
@@ -23,43 +46,39 @@ export default function LandingPage() {
     { key: "jelajah", label: "Semesta Jelajah Nusantara" }
   ];
 
-  const stats = [
-    { number: "1000+", label: "Volunteer" },
-    { number: "50+", label: "Program" },
-    { number: "20+", label: "Provinsi" }
-  ];
+  const getCategoryGradient = (category) => {
+    if (category === "SJN") return "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)";
+    return "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)";
+  };
 
-  const programs = [
-    {
-      category: "Semesta Camp",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      ),
-      description: "Program volunteer jangka pendek yang mempertemukan volunteer dengan komunitas lokal di lokasi yang telah ditentukan.",
-      gradient: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)",
-      features: ["Durasi 1-4 minggu", "Tinggal dihomestay lokal", "Project berbasis komunitas", "Sertifikat volunteer"],
-      image: "/camp.jpg",
-      color: "#00BFFF"
-    },
-    {
-      category: "Semesta Jelajah Nusantara",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M2 12h20"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-      ),
-      description: "Program volunteer immersive yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 1-6 bulan.",
-      gradient: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
-      features: ["Durasi 1-6 bulan", "Immersive living", "Skill-based volunteering", "Sustainable impact"],
-      image: "/jelajah.jpg",
-      color: "#7C3AED"
+  const formatDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatDateRange = (start, end) => {
+    if (!start) return null;
+
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const startDate = new Date(start).toLocaleDateString('id-ID', options);
+
+    if (!end || start === end) {
+      return startDate;
     }
-  ];
+
+    const endDate = new Date(end).toLocaleDateString('id-ID', options);
+    return `${startDate} - ${endDate}`;
+  };
+
+  const getBadgeClass = (category) => {
+    if (category === "SJN") return styles.jelajah;
+    if (category === "Semesta Camp") return styles.camp;
+    return "";
+  };
 
   return (
     <div className={styles.container}>
@@ -96,12 +115,19 @@ export default function LandingPage() {
 
             {/* Stats */}
             <div className={styles.statsContainer}>
-              {stats.map((stat, index) => (
-                <div key={index} className={styles.statItem}>
-                  <div className={styles.statNumber}>{stat.number}</div>
-                  <div className={styles.statLabel}>{stat.label}</div>
-                </div>
-              ))}
+              {loading ? (
+                <>
+                  <div className={styles.statItem}><div className={styles.statNumber}>1000+</div><div className={styles.statLabel}>Volunteer</div></div>
+                  <div className={styles.statItem}><div className={styles.statNumber}>50+</div><div className={styles.statLabel}>Program</div></div>
+                  <div className={styles.statItem}><div className={styles.statNumber}>20+</div><div className={styles.statLabel}>Provinsi</div></div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.statItem}><div className={styles.statNumber}>{programs.length}+</div><div className={styles.statLabel}>Program</div></div>
+                  <div className={styles.statItem}><div className={styles.statNumber}>50+</div><div className={styles.statLabel}>Program</div></div>
+                  <div className={styles.statItem}><div className={styles.statNumber}>20+</div><div className={styles.statLabel}>Provinsi</div></div>
+                </>
+              )}
             </div>
           </div>
 
@@ -178,7 +204,7 @@ export default function LandingPage() {
                   <span className={styles.aboutStatLabel}>Tahun Pengalaman</span>
                 </div>
                 <div className={styles.aboutStat}>
-                  <span className={styles.aboutStatNumber}>50+</span>
+                  <span className={styles.aboutStatNumber}>{loading ? "--" : programs.length}+</span>
                   <span className={styles.aboutStatLabel}>Program Aktif</span>
                 </div>
                 <div className={styles.aboutStat}>
@@ -239,32 +265,49 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.programCategories}>
-            {programs.map((program, index) => (
-              <div key={index} className={styles.programCategory}>
-                <div className={styles.categoryHeader} style={{ background: program.gradient }}>
-                  <div className={styles.categoryIcon}>
-                    {program.icon}
-                  </div>
-                  <h3 className={styles.categoryTitle}>{program.category}</h3>
+            <div className={styles.programCategory}>
+              <div className={styles.categoryHeader} style={{ background: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)" }}>
+                <div className={styles.categoryIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
                 </div>
-                <div className={styles.categoryBody}>
-                  <p className={styles.categoryDescription}>{program.description}</p>
-                  <ul className={styles.categoryFeatures}>
-                    {program.features.map((feature, i) => (
-                      <li key={i}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a href="#daftar" className={styles.categoryButton} style={{ background: program.gradient }}>
-                    Pilih Program Ini
-                  </a>
-                </div>
+                <h3 className={styles.categoryTitle}>Semesta Camp</h3>
               </div>
-            ))}
+              <div className={styles.categoryBody}>
+                <p className={styles.categoryDescription}>Program volunteer jangka pendek yang mempertemukan volunteer dengan komunitas lokal di lokasi yang telah ditentukan.</p>
+                <ul className={styles.categoryFeatures}>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-4 minggu</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Tinggal dihomestay lokal</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Project berbasis komunitas</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sertifikat volunteer</span></li>
+                </ul>
+                <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)" }}>Pilih Program Ini</a>
+              </div>
+            </div>
+            <div className={styles.programCategory}>
+              <div className={styles.categoryHeader} style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>
+                <div className={styles.categoryIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                </div>
+                <h3 className={styles.categoryTitle}>Semesta Jelajah Nusantara</h3>
+              </div>
+              <div className={styles.categoryBody}>
+                <p className={styles.categoryDescription}>Program volunteer immersive yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 1-6 bulan.</p>
+                <ul className={styles.categoryFeatures}>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-6 bulan</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Immersive living</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Skill-based volunteering</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sustainable impact</span></li>
+                </ul>
+                <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>Pilih Program Ini</a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -298,12 +341,14 @@ export default function LandingPage() {
 
           {/* Preview Grid */}
           <div className={styles.previewGrid}>
-            {filteredPrograms.length > 0 ? (
-              filteredPrograms.map(program => (
+            {loading ? (
+              <div className={styles.previewEmpty}><p>Memuat program...</p></div>
+            ) : filteredPrograms.length > 0 ? (
+              filteredPrograms.slice(0, 8).map(program => (
                 <div key={program.id} className={styles.previewCard}>
                   <div className={styles.previewCardImage}>
                     <Image
-                      src={program.image}
+                      src={program.image_url || "/program-preview-1.jpg"}
                       alt={program.title}
                       fill
                       style={{ objectFit: 'cover' }}
@@ -316,62 +361,36 @@ export default function LandingPage() {
                     <h3 className={styles.previewTitle}>{program.title}</h3>
                     <p className={styles.previewDescription}>{program.description}</p>
                     <div className={styles.previewMeta}>
-                      {program.date ? (
-                        <div className={styles.previewMetaItem}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                          </svg>
-                          <span>{program.date}</span>
-                        </div>
-                      ) : (
-                        <div className={styles.previewMetaItem}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                          </svg>
-                          <span>Coming Soon</span>
-                        </div>
-                      )}
-                      {program.location ? (
-                        <div className={styles.previewMetaItem}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                          </svg>
-                          <span>{program.location}</span>
-                        </div>
-                      ) : (
-                        <div className={styles.previewMetaItem}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                          </svg>
-                          <span>Indonesia</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Registration Deadline Badge */}
-                    {program.registrationDeadline && (
-                      <div className={`${styles.previewDeadlineBadge} ${program.category === "SJN" ? styles.jelajah : styles.camp}`}>
+                      <div className={styles.previewMetaItem}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <polyline points="12 6 12 12 16 14"/>
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                          <line x1="16" y1="2" x2="16" y2="6"/>
+                          <line x1="8" y1="2" x2="8" y2="6"/>
+                          <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
                         <span>
-                          {program.category === "SJN" && typeof program.registrationDeadline === "object"
-                            ? `Batas Registrasi: ${program.registrationDeadline.fully}`
-                            : typeof program.registrationDeadline === "string"
-                              ? `Batas Registrasi: ${program.registrationDeadline}`
-                              : null}
+                          {formatDate(program.event_start_date) || "Segera Hadir"}
                         </span>
                       </div>
-                    )}
+                      <div className={styles.previewMetaItem}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                          <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>{program.location || "Indonesia"}</span>
+                      </div>
+                    </div>
+
+                    {/* Deadline Badge */}
+                    <div className={`${styles.previewDeadlineBadge} ${getBadgeClass(program.category)}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      <span>
+                        {formatDateRange(program.event_start_date, program.event_end_date) || "Segera Daftar"}
+                      </span>
+                    </div>
                   </div>
                   <Link href={`/user/program/${program.id}`} className={styles.previewButton}>
                     <span>Daftar</span>
@@ -458,16 +477,28 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.liputanGrid}>
-            {liputanData.slice(0, 4).map((item) => (
+            {loading ? (
+              <div className={styles.previewEmpty}><p>Memuat liputan...</p></div>
+            ) : liputan.slice(0, 4).map((item) => (
               <div key={item.id} className={styles.liputanCard}>
                 <div className={styles.liputanCardImage}>
-                  <Image src={item.image} alt={item.title} fill style={{ objectFit: 'cover' }} />
+                  <Image
+                    src={item.image_url || "/liputan-placeholder.svg"}
+                    alt={item.title}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                  />
                 </div>
                 <div className={styles.liputanCardBody}>
                   <h3 className={styles.liputanCardTitle}>{item.title}</h3>
                   <p className={styles.liputanCardDescription}>{item.description}</p>
                 </div>
-                <a href="#" className={styles.liputanCardButton}>
+                <a
+                  href={item.source_url || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.liputanCardButton}
+                >
                   <span>Baca Selengkapnya</span>
                 </a>
               </div>

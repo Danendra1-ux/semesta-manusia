@@ -7,10 +7,9 @@ const supabase = createClient(
 );
 
 export async function GET(request, { params }) {
-  const { id } = params;
+  // 1. WAJIB AWAIT PARAMS DI SINI
+  const { id } = await params;
 
-  // Mengambil detail registrasi beserta relasinya: 
-  // tipe pendanaan, divisi, jawaban form dinamis, dan file yang diunggah
   const { data, error } = await supabase
     .from('registrations')
     .select(`
@@ -36,16 +35,16 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { id } = params;
+  // 2. WAJIB AWAIT PARAMS DI SINI
+  const { id } = await params;
   
   try {
     const body = await request.json();
     
-    // Biasanya admin hanya mengupdate status, catatan penolakan, dan data reviewer
     const updateData = {
       status: body.status,
       rejection_note: body.rejection_note,
-      reviewed_by: body.reviewed_by, // ID user admin yang mereview
+      reviewed_by: body.reviewed_by, 
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -66,10 +65,9 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const { id } = params;
+  // 3. WAJIB AWAIT PARAMS DI SINI
+  const { id } = await params;
 
-  // Karena ON DELETE CASCADE sudah diset di schema, menghapus registrasi
-  // otomatis akan menghapus registration_answers dan registration_files terkait.
   const { error } = await supabase
     .from('registrations')
     .delete()

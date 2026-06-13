@@ -3,8 +3,14 @@
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "../../../components/AdminSidebar.jsx";
+import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
+import { createClient } from '@supabase/supabase-js';
+
+// Inisialisasi Supabase untuk Upload Gambar Baru
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -12,122 +18,22 @@ const ChevronIcon = () => (
   </svg>
 );
 
-const programDetailData = {
-  "semesta-camp-10-palembang": {
-    id: "semesta-camp-10-palembang",
-    nama: "Semesta Camp #10 Palembang",
-    jadwal: "2023-01-15",
-    lokasi: "Jl. Merdeka No.1, Palembang, Sumatera Selatan",
-    batasRegistrasi: "2023-01-10",
-    deskripsi: "Program kemanusiaan terbaik untuk paravolunteer Indonesia yang diselenggarakan di kota Palembang, Sumatera Selatan.",
-    detailFields: [
-      { id: "df1", label: "Kuota Peserta", type: "angka", value: "50", placeholder: "Masukkan jumlah kuota" },
-    ],
-    pekerjaanFields: [
-      { id: "pf1", label: "Divisi", type: "textarea", value: "Pendidikan, Kesehatan, Logistik", placeholder: "Pisahkan dengan koma" },
-      { id: "pf2", label: "Agenda", type: "textarea", value: "Day 1: Registrasi & Briefing\nDay 2: Kegiatan Volunteer\nDay 3: Evaluasi & Penutupan", placeholder: "Masukkan agenda kegiatan" },
-    ],
-  },
-  "semesta-camp-9-yogyakarta": {
-    id: "semesta-camp-9-yogyakarta",
-    nama: "Semesta Camp #9 Yogyakarta",
-    jadwal: "2022-12-20",
-    lokasi: "Jl. Malioboro No.5, Yogyakarta",
-    batasRegistrasi: "2022-12-15",
-    deskripsi: "Program kemanusiaan di kota gudeg dengan suasana budaya yang kaya.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-8-bandung": {
-    id: "semesta-camp-8-bandung",
-    nama: "Semesta Camp #8 Bandung",
-    jadwal: "2022-12-18",
-    lokasi: "Jl. Braga No.10, Bandung, Jawa Barat",
-    batasRegistrasi: "2022-12-13",
-    deskripsi: "Program kemanusiaan di kota kembang dengan udara sejuk pegunungan.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-7-surabaya": {
-    id: "semesta-camp-7-surabaya",
-    nama: "Semesta Camp #7 Surabaya",
-    jadwal: "2022-12-12",
-    lokasi: "Jl. Pemuda No.3, Surabaya, Jawa Timur",
-    batasRegistrasi: "2022-12-07",
-    deskripsi: "Program kemanusiaan di kota pahlawan Surabaya.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-6-medan": {
-    id: "semesta-camp-6-medan",
-    nama: "Semesta Camp #6 Medan",
-    jadwal: "2022-12-08",
-    lokasi: "Jl. Gatot Subroto No.7, Medan, Sumatera Utara",
-    batasRegistrasi: "2022-12-03",
-    deskripsi: "Program kemanusiaan di kota Medan.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-5-makassar": {
-    id: "semesta-camp-5-makassar",
-    nama: "Semesta Camp #5 Makassar",
-    jadwal: "2022-11-30",
-    lokasi: "Jl. Sam Ratulangi No.2, Makassar, Sulawesi Selatan",
-    batasRegistrasi: "2022-11-25",
-    deskripsi: "Program kemanusiaan di kota Makassar.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-4-semarang": {
-    id: "semesta-camp-4-semarang",
-    nama: "Semesta Camp #4 Semarang",
-    jadwal: "2022-11-22",
-    lokasi: "Jl. Pandanaran No.8, Semarang, Jawa Tengah",
-    batasRegistrasi: "2022-11-17",
-    deskripsi: "Program kemanusiaan di kota Semarang.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-3-jakarta": {
-    id: "semesta-camp-3-jakarta",
-    nama: "Semesta Camp #3 Jakarta",
-    jadwal: "2022-11-17",
-    lokasi: "Jl. Sudirman No.15, Jakarta Selatan",
-    batasRegistrasi: "2022-11-12",
-    deskripsi: "Program kemanusiaan di ibu kota Jakarta.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-2-bali": {
-    id: "semesta-camp-2-bali",
-    nama: "Semesta Camp #2 Bali",
-    jadwal: "2022-11-14",
-    lokasi: "Jl. Sunset Road No.4, Kuta, Bali",
-    batasRegistrasi: "2022-11-09",
-    deskripsi: "Program kemanusiaan di Pulau Dewata.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-  "semesta-camp-1-jakarta": {
-    id: "semesta-camp-1-jakarta",
-    nama: "Semesta Camp #1 Jakarta",
-    jadwal: "2022-11-12",
-    lokasi: "Jl. Thamrin No.1, Jakarta Pusat",
-    batasRegistrasi: "2022-11-07",
-    deskripsi: "Program kemanusiaan pertama di Jakarta.",
-    detailFields: [],
-    pekerjaanFields: [],
-  },
-};
-
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];
 
-const Toast = ({ message, show }) => (
-  <div className={`${styles.toast} ${show ? styles.toastShow : ""}`}>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-    {message}
+const Toast = ({ message, show, isError }) => (
+  <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
+    {isError ? (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )}
+    <span>{message}</span>
   </div>
 );
 
@@ -138,46 +44,78 @@ export default function EditProgramPage({ params }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Form state
+  // Form state utama
   const [nama, setNama] = useState("");
-  const [jadwal, setJadwal] = useState("");
+  const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
+  const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
   const [lokasi, setLokasi] = useState("");
-  const [batasRegistrasi, setBatasRegistrasi] = useState("");
+  const [batasRegistrasi, setBatasRegistrasi] = useState(""); // Beda kolom
   const [deskripsi, setDeskripsi] = useState("");
   const [posterPreview, setPosterPreview] = useState(null);
   const [posterFile, setPosterFile] = useState(null);
 
-  // Dynamic fields
+  // Dynamic fields state (UI Only)
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [targetSection, setTargetSection] = useState(null); // "detail" | "pekerjaan"
+  const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
   const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
-  // Toast
+  // Status & Toast
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastIsError, setToastIsError] = useState(false);
 
+  // 1. Fetch Data Lama dari Database
   useEffect(() => {
-    if (programId && programDetailData[programId]) {
-      const data = programDetailData[programId];
-      setNama(data.nama);
-      setJadwal(data.jadwal);
-      setLokasi(data.lokasi);
-      setBatasRegistrasi(data.batasRegistrasi);
-      setDeskripsi(data.deskripsi);
-      setDetailFields(data.detailFields);
-      setPekerjaanFields(data.pekerjaanFields);
-    }
+    if (!programId) return;
+
+    const fetchProgram = async () => {
+      try {
+        const response = await fetch(`/api/programs/${programId}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error("Gagal mengambil data program");
+        
+        const data = await response.json();
+        
+        // Memasukkan data ke dalam form
+        setNama(data.title || "");
+        
+        // Memasukkan Range Date Jadwal Pelaksanaan
+        setJadwalMulai(data.event_start_date ? data.event_start_date.split('T')[0] : "");
+        setJadwalSelesai(data.event_end_date ? data.event_end_date.split('T')[0] : "");
+        
+        // Menarik Batas Registrasi dari relasi program_funding_types jika ada
+        if (data.program_funding_types && data.program_funding_types.length > 0) {
+          const deadline = data.program_funding_types[0].deadline;
+          setBatasRegistrasi(deadline ? deadline.split('T')[0] : "");
+        }
+        
+        setLokasi(data.location || "");
+        setDeskripsi(data.description || "");
+        
+        if (data.image_url) {
+          setPosterPreview(data.image_url);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgram();
   }, [programId]);
 
-  const showToast = (msg) => {
+  const showToast = (msg, isErr = false) => {
     setToastMessage(msg);
+    setToastIsError(isErr);
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3000);
   };
@@ -207,10 +145,8 @@ export default function EditProgramPage({ params }) {
     setModalOpen(true);
   };
 
-  const handleAddOption = () => {
-    setModalOptions((prev) => [...prev, ""]);
-  };
-
+  const handleAddOption = () => setModalOptions((prev) => [...prev, ""]);
+  
   const handleOptionChange = (index, value) => {
     setModalOptions((prev) => {
       const updated = [...prev];
@@ -227,7 +163,6 @@ export default function EditProgramPage({ params }) {
     if (!modalLabel.trim()) return;
 
     const validOptions = modalOptions.filter((o) => o.trim() !== "");
-
     const newField = {
       id: `${targetSection === "detail" ? "df" : "pf"}-${Date.now()}`,
       label: modalLabel,
@@ -242,7 +177,6 @@ export default function EditProgramPage({ params }) {
     } else {
       setPekerjaanFields((prev) => [...prev, newField]);
     }
-
     setModalOpen(false);
   };
 
@@ -266,30 +200,77 @@ export default function EditProgramPage({ params }) {
     }
   };
 
-  const handleSave = () => {
-    if (!nama.trim()) return showToast("Nama Program harus diisi!");
-    if (!jadwal) return showToast("Jadwal Pelaksanaan harus diisi!");
-    if (!lokasi.trim()) return showToast("Lokasi harus diisi!");
-    if (!batasRegistrasi) return showToast("Batas Registrasi harus diisi!");
-    showToast("Perubahan berhasil disimpan!");
+  // 2. Simpan Perubahan ke Database
+  const handleSave = async () => {
+    if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
+    if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
+    if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
+
+    setIsSaving(true);
+    try {
+      let imageUrl = posterPreview;
+
+      if (posterFile) {
+        const fileExt = posterFile.name.split('.').pop();
+        const fileName = `poster-${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('program-images')
+          .upload(fileName, posterFile);
+
+        if (uploadError) throw new Error(`Gagal upload poster: ${uploadError.message}`);
+
+        const { data: publicUrlData } = supabase.storage
+          .from('program-images')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrlData.publicUrl;
+      }
+
+      // Payload untuk update tabel 'programs' dan 'program_funding_types'
+      const payload = {
+        title: nama,
+        event_start_date: jadwalMulai,     
+        event_end_date: jadwalSelesai,     
+        location: lokasi,
+        description: deskripsi,
+        image_url: imageUrl,
+        funding_deadline: batasRegistrasi,
+      };
+
+      const response = await fetch(`/api/programs/${programId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Gagal menyimpan perubahan');
+      }
+
+      // NOTE: Update batasRegistrasi ke program_funding_types harusnya ada API terpisah 
+      // atau logika tambahan di route PUT /api/programs.
+
+      showToast("Perubahan berhasil disimpan!", false);
+      
+      setTimeout(() => {
+        router.push("/admin/semesta-camp");
+      }, 1500);
+
+    } catch (error) {
+      showToast(error.message, true);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const program = programId ? programDetailData[programId] : null;
-
-  if (!program) {
+  if (loading) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
         <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-          <div className={styles.notFound}>
-            <h2>Program tidak ditemukan</h2>
-            <Link href="/admin/semesta-camp" className={styles.backLinkError}>
-              ← Kembali ke Daftar Program
-            </Link>
-          </div>
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Memuat data program...</div>
         </main>
       </div>
     );
@@ -303,8 +284,7 @@ export default function EditProgramPage({ params }) {
       />
 
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-        {/* Toast */}
-        <Toast message={toastMessage} show={toastShow} />
+        <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         {/* Header */}
         <div className={styles.contentHeader}>
@@ -315,13 +295,17 @@ export default function EditProgramPage({ params }) {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Detail Program</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
-              </svg>
-              Simpan Perubahan
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Menyimpan..." : (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                  Simpan Perubahan
+                </>
+              )}
             </button>
           </div>
           <p className={styles.headerSubtitle}>Edit detail program anda</p>
@@ -331,7 +315,7 @@ export default function EditProgramPage({ params }) {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Informasi</h2>
           <div className={styles.infoGrid}>
-            {/* Poster */}
+            
             <div className={styles.posterColumn}>
               <label className={styles.fieldLabel}>Poster</label>
               <div
@@ -371,7 +355,6 @@ export default function EditProgramPage({ params }) {
               />
             </div>
 
-            {/* Fields */}
             <div className={styles.fieldsColumn}>
               <div className={styles.fieldRow}>
                 <div className={styles.fieldGroup}>
@@ -386,21 +369,28 @@ export default function EditProgramPage({ params }) {
                     />
                   </div>
                 </div>
+                
+                {/* JADWAL PELAKSANAAN: RANGE DATE PICKER */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>Jadwal Pelaksanaan <span className={styles.required}>*</span></label>
-                  <div className={styles.inputWrapper}>
-                    <input
-                      type="date"
-                      className={styles.input}
-                      value={jadwal}
-                      onChange={(e) => setJadwal(e.target.value)}
-                    />
-                    <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalMulai}
+                        onChange={(e) => setJadwalMulai(e.target.value)}
+                      />
+                    </div>
+                    <span style={{ color: '#6b7280', fontWeight: 500 }}>-</span>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalSelesai}
+                        onChange={(e) => setJadwalSelesai(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -419,8 +409,9 @@ export default function EditProgramPage({ params }) {
               </div>
 
               <div className={styles.fieldRow}>
+                {/* BATAS REGISTRASI - TERPISAH */}
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Batas Registrasi <span className={styles.required}>*</span></label>
+                  <label className={styles.fieldLabel}>Batas Registrasi</label>
                   <div className={styles.inputWrapper}>
                     <input
                       type="date"
@@ -679,13 +670,17 @@ export default function EditProgramPage({ params }) {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            Simpan Perubahan
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Menyimpan..." : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Simpan Perubahan
+              </>
+            )}
           </button>
         </div>
 
@@ -731,7 +726,7 @@ export default function EditProgramPage({ params }) {
                   />
                 </div>
 
-                {/* Dropdown Options — only show when type is Dropdown */}
+                {/* Dropdown Options */}
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>

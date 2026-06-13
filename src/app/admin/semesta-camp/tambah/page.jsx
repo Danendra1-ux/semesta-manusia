@@ -32,7 +32,7 @@ const Toast = ({ message, show, isError }) => (
         <polyline points="20 6 9 17 4 12" />
       </svg>
     )}
-    {message}
+    <span>{message}</span>
   </div>
 );
 
@@ -41,11 +41,12 @@ export default function TambahSemestaCampProgramPage() {
   const searchParams = useSearchParams();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const fileInputRef = useRef(null);
-   const [isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [nama, setNama] = useState("");
-  const [jadwal, setJadwal] = useState("");
+  const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
+  const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
   const [lokasi, setLokasi] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [posterPreview, setPosterPreview] = useState(null);
@@ -176,54 +177,51 @@ export default function TambahSemestaCampProgramPage() {
     router.push(`/admin/semesta-camp/tambah/formulir?nama=${encodeURIComponent(nama)}`);
   };
 
-  // 2. Perbarui fungsi handleSave menjadi async
+  // Simpan program baru ke database
   const handleSave = async () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
-    if (!jadwal) return showToast("Jadwal Pelaksanaan harus diisi!", true);
+    if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
 
     setIsSaving(true);
     let imageUrl = null;
 
     try {
-      // TAHAP 1: Upload Poster ke Supabase Storage (Jika ada file yang dipilih)
+      // TAHAP 1: Upload Poster ke Supabase Storage
       if (posterFile) {
-        // Buat nama file unik untuk mencegah bentrok
         const fileExt = posterFile.name.split('.').pop();
         const fileName = `poster-${Date.now()}.${fileExt}`;
-        
-        // Simpan langsung di root bucket program-images
         const filePath = fileName; 
 
-        // Proses upload ke bucket BARU
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('program-images') // <--- NAMA BUCKET BARU
+          .from('program-images')
           .upload(filePath, posterFile);
 
         if (uploadError) {
           throw new Error(`Gagal upload poster: ${uploadError.message}`);
         }
 
-        // Dapatkan Public URL dari file yang baru di-upload
         const { data: publicUrlData } = supabase.storage
-          .from('program-images') // <--- NAMA BUCKET BARU
+          .from('program-images')
           .getPublicUrl(filePath);
 
         imageUrl = publicUrlData.publicUrl;
       }
 
-      // TAHAP 2: Siapkan data untuk dikirim ke API
+      // TAHAP 2: Siapkan data untuk API
       const payload = {
         title: nama,
         category: "Semesta Camp", 
         description: deskripsi,
-        event_start_date: jadwal,
+        event_start_date: jadwalMulai,     // Mapping data tanggal mulai
+        event_end_date: jadwalSelesai,     // Mapping data tanggal selesai
         location: lokasi,
         image_url: imageUrl, 
         is_active: true,
+        funding_deadline: batasRegistrasi  // Mengirim batas registrasi
       };
 
-      // TAHAP 3: Simpan Data ke Database melalui API POST
+      // TAHAP 3: Simpan Data ke Database
       const response = await fetch('/api/programs', {
         method: 'POST',
         headers: {
@@ -334,21 +332,28 @@ export default function TambahSemestaCampProgramPage() {
                     />
                   </div>
                 </div>
+                
+                {/* JADWAL PELAKSANAAN: RANGE DATE PICKER */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>Jadwal Pelaksanaan <span className={styles.required}>*</span></label>
-                  <div className={styles.inputWrapper}>
-                    <input
-                      type="date"
-                      className={styles.input}
-                      value={jadwal}
-                      onChange={(e) => setJadwal(e.target.value)}
-                    />
-                    <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalMulai}
+                        onChange={(e) => setJadwalMulai(e.target.value)}
+                      />
+                    </div>
+                    <span style={{ color: '#6b7280', fontWeight: 500 }}>-</span>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalSelesai}
+                        onChange={(e) => setJadwalSelesai(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -602,13 +607,17 @@ export default function TambahSemestaCampProgramPage() {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            Save Changes
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Menyimpan..." : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Simpan Perubahan
+              </>
+            )}
           </button>
         </div>
 

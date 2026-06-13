@@ -1,20 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-import { liputanData } from "../data/programs";
 
 export default function LiputanPage() {
   const router = useRouter();
+
+  const [liputan, setLiputan] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const totalPages = Math.ceil(liputanData.length / itemsPerPage);
-  const paginatedLiputan = liputanData.slice(
+  useEffect(() => {
+    const fetchLiputan = async () => {
+      try {
+        const response = await fetch('/api/liputan?is_published=true');
+        if (!response.ok) throw new Error('Gagal mengambil data liputan');
+        const data = await response.json();
+        setLiputan(data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLiputan();
+  }, []);
+
+  const totalPages = Math.ceil(liputan.length / itemsPerPage);
+  const paginatedLiputan = liputan.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -52,6 +73,15 @@ export default function LiputanPage() {
     return pages;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
     <div className={styles.liputanPage}>
       {/* Navbar */}
@@ -74,60 +104,106 @@ export default function LiputanPage() {
 
       {/* Main Content */}
       <main className={styles.mainContent}>
+        {loading && (
+          <div className={styles.emptyState} style={{ padding: '4rem 2rem' }}>
+            <h3>Memuat liputan...</h3>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className={styles.emptyState} style={{ padding: '4rem 2rem' }}>
+            <h3>Error Terjadi</h3>
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* Liputan Grid */}
-        <div className={styles.liputanGrid}>
-          {paginatedLiputan.map((item) => (
-            <div key={item.id} className={styles.liputanCard}>
-              <div className={styles.liputanCardImage}>
-                <Image src={item.image} alt={item.title} fill style={{ objectFit: 'cover' }} />
-              </div>
-              <div className={styles.liputanCardBody}>
-                <h3 className={styles.liputanCardTitle}>{item.title}</h3>
-                <p className={styles.liputanCardDescription}>{item.description}</p>
-              </div>
-              <a href="#" className={styles.liputanCardButton}>
-                <span>Baca Selengkapnya</span>
-              </a>
+        {!loading && !error && (
+          <>
+            <div className={styles.liputanGrid}>
+              {paginatedLiputan.length > 0 ? (
+                paginatedLiputan.map((item) => (
+                  <div key={item.id} className={styles.liputanCard}>
+                    <div className={styles.liputanCardImage}>
+                      <Image
+                        src={item.image_url || "/liputan-placeholder.svg"}
+                        alt={item.title}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div className={styles.liputanCardBody}>
+                      <h3 className={styles.liputanCardTitle}>{item.title}</h3>
+                      <p className={styles.liputanCardDescription}>{item.description}</p>
+                      {item.published_at && (
+                        <span className={styles.liputanCardMeta}>
+                          {formatDate(item.published_at)}
+                          {item.read_time ? ` • ${item.read_time}` : ''}
+                        </span>
+                      )}
+                    </div>
+                    <a
+                      href={item.source_url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.liputanCardButton}
+                    >
+                      <span>Baca Selengkapnya</span>
+                    </a>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyState}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <h3>Tidak ada liputan ditemukan</h3>
+                  <p>Belum ada liputan yang dipublikasikan.</p>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
 
-        {/* Pagination */}
-        <div className={styles.pagination}>
-          <button
-            className={styles.paginationButton}
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                </button>
 
-          {getPageNumbers().map((page, index) => (
-            page === '...' ? (
-              <span key={`ellipsis-${index}`} className={styles.paginationEllipsis}>...</span>
-            ) : (
-              <button
-                key={page}
-                className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                onClick={() => handlePageChange(page)}
-              >
-                {page}
-              </button>
-            )
-          ))}
+                {getPageNumbers().map((page, index) => (
+                  page === '...' ? (
+                    <span key={`ellipsis-${index}`} className={styles.paginationEllipsis}>...</span>
+                  ) : (
+                    <button
+                      key={page}
+                      className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </button>
+                  )
+                ))}
 
-          <button
-            className={styles.paginationButton}
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
-        </div>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* Footer */}

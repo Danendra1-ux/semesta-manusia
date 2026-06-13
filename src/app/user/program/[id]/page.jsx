@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-import { allPrograms, programCategories } from "../../data/programs";
 
 export default function ProgramDetailPage({ params }) {
   const { id } = use(params);
@@ -17,9 +16,40 @@ export default function ProgramDetailPage({ params }) {
 
   const [activeTab, setActiveTab] = useState("deskripsi");
   const [fundingOption, setFundingOption] = useState("fully");
+
+  const [program, setProgram] = useState(null);
+  const [formConfig, setFormConfig] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const tabRefs = { deskripsi: null, detail: null, divisi: null, pekerjaan: null };
 
-  const program = allPrograms.find((p) => p.id === programId);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [progRes, formRes] = await Promise.all([
+          fetch(`/api/programs/${programId}`),
+          fetch(`/api/programs/${programId}/form`)
+        ]);
+
+        if (progRes.ok) {
+          const progData = await progRes.json();
+          setProgram(progData);
+        }
+
+        if (formRes.ok) {
+          const formData = await formRes.json();
+          setFormConfig(formData || []);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [programId]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -48,10 +78,9 @@ export default function ProgramDetailPage({ params }) {
   };
 
   const getCategoryGradient = () => {
-    if (!program) return programCategories.SEMESTA_CAMP.gradient;
-    return program.category === "SJN"
-      ? programCategories.SJN.gradient
-      : programCategories.SEMESTA_CAMP.gradient;
+    if (!program) return "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)";
+    if (program.category === "SJN") return "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)";
+    return "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)";
   };
 
   const getCategoryClass = () => {
@@ -69,8 +98,42 @@ export default function ProgramDetailPage({ params }) {
     return "Daftar Sekarang";
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "Segera Diumumkan";
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatDateRange = (start, end) => {
+    if (!start) return "Segera Hadir";
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const startDate = new Date(start).toLocaleDateString('id-ID', options);
+    if (!end || start === end) return startDate;
+    const endDate = new Date(end).toLocaleDateString('id-ID', options);
+    return `${startDate} - ${endDate}`;
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Navbar showCta={false} />
+        <div className={styles.notFound}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <h2>Memuat program...</h2>
+        </div>
+      </div>
+    );
+  }
+
   // Not found state
-  if (!program) {
+  if (error || !program) {
     return (
       <div className={styles.page}>
         <Navbar showCta={false} />
@@ -94,16 +157,10 @@ export default function ProgramDetailPage({ params }) {
 
   const isSJN = program.category === "SJN";
 
-  // Resolve registration deadlines from program data
-  const campDeadline = typeof program.registrationDeadline === "string"
-    ? program.registrationDeadline
-    : null;
-  const fullyDeadline = typeof program.registrationDeadline === "object"
-    ? program.registrationDeadline.fully
-    : null;
-  const selfDeadline = typeof program.registrationDeadline === "object"
-    ? program.registrationDeadline.self
-    : null;
+  // Resolve funding deadlines from program_funding_types
+  const fundingTypes = program.program_funding_types || [];
+  const fullyDeadline = fundingTypes.find(f => f.code === 'fully')?.deadline;
+  const selfDeadline = fundingTypes.find(f => f.code === 'self')?.deadline;
 
   return (
     <div className={styles.page}>
@@ -116,13 +173,12 @@ export default function ProgramDetailPage({ params }) {
         <div className={styles.heroImageCol}>
           <div className={styles.heroImage}>
             <Image
-              src={program.image}
+              src={program.image_url || "/program-preview-1.jpg"}
               alt={program.title}
               fill
               style={{ objectFit: "cover" }}
             />
-            {/* Placeholder if no image */}
-            {!program.image && (
+            {!program.image_url && (
               <div
                 className={styles.imagePlaceholder}
                 style={{ background: getCategoryGradient() }}
@@ -185,7 +241,7 @@ export default function ProgramDetailPage({ params }) {
               </div>
               <div className={styles.infoContent}>
                 <span className={styles.infoLabel}>Tanggal Pelaksanaan</span>
-                <span className={styles.infoValue}>{program.date || "Segera Diumumkan"}</span>
+                <span className={styles.infoValue}>{formatDateRange(program.event_start_date, program.event_end_date)}</span>
               </div>
             </div>
 
@@ -214,7 +270,7 @@ export default function ProgramDetailPage({ params }) {
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
               <span className={styles.warningText}>
-                Batas registrasi program: <strong>{campDeadline}</strong>
+                Batas registrasi program: <strong>{formatDate(selfDeadline)}</strong>
               </span>
             </div>
           )}
@@ -283,8 +339,8 @@ export default function ProgramDetailPage({ params }) {
                   :{" "}
                   <strong>
                     {fundingOption === "fully"
-                      ? fullyDeadline
-                      : selfDeadline}
+                      ? formatDate(fullyDeadline)
+                      : formatDate(selfDeadline)}
                   </strong>
                 </span>
               </div>

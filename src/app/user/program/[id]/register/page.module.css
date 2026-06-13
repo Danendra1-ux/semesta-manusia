@@ -25,6 +25,47 @@
   --gradient-subtle: linear-gradient(135deg, rgba(0, 191, 255, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
 }
 
+/* =========================================
+   Toast Notification Styles
+   ========================================= */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: white;
+  border-left: 4px solid #10b981; /* Default: Hijau/Sukses */
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+  z-index: 9999;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toastShow {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toastError {
+  border-left-color: #ef4444; /* Merah untuk Error */
+}
+
+.toastError svg {
+  color: #ef4444;
+}
+
+.toast:not(.toastError) svg {
+  color: #10b981;
+}
+
 /* ==========================================
    PAGE CONTAINER
    ========================================== */

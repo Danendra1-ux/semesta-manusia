@@ -1,57 +1,96 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { use } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-import { allPrograms } from "../../../data/programs";
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Komponen Toast Notification
+const Toast = ({ message, show, isError }) => (
+  <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
+    {isError ? (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, flexShrink: 0 }}>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, flexShrink: 0 }}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )}
+    <span>{message}</span>
+  </div>
+);
 
 export default function RegisterPage({ params }) {
   const { id } = use(params);
   const programId = Number(id);
   const router = useRouter();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
 
-  // Get type from URL (fully-funded, self-funded, semesta-camp)
   const [type, setType] = useState(null);
   const [program, setProgram] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State untuk Toast
+  const [toastShow, setToastShow] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastIsError, setToastIsError] = useState(false);
 
   useEffect(() => {
-    // Get search params
     const params = new URLSearchParams(window.location.search);
     const registrationType = params.get("type");
     setType(registrationType);
 
-    // Find program
-    const foundProgram = allPrograms.find((p) => p.id === programId);
-    setProgram(foundProgram);
+    const fetchProgram = async () => {
+      try {
+        const response = await fetch(`/api/programs/${programId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProgram(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch program:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgram();
   }, [programId]);
 
-  // Get total steps based on type
-  const getTotalSteps = () => {
-    if (type === "semesta-camp") return 2;
-    return 3;
+  // Helper memunculkan Toast
+  const showToast = (msg, isErr = true) => {
+    setToastMessage(msg);
+    setToastIsError(isErr);
+    setToastShow(true);
+    setTimeout(() => setToastShow(false), 4000); // Hilang otomatis setelah 4 detik
   };
 
-  // Get step titles
+  const getTotalSteps = () => type === "semesta-camp" ? 2 : 3;
+
   const getStepTitles = () => {
     const baseSteps = ["Data Diri"];
-    if (type !== "semesta-camp") {
-      baseSteps.push("Deskripsi Diri");
-    }
+    if (type !== "semesta-camp") baseSteps.push("Deskripsi Diri");
     baseSteps.push("Kelengkapan Persyaratan");
     return baseSteps;
   };
 
-  // Get sidebar title
   const getSidebarTitle = () => {
     if (!program) return "";
     if (program.category === "SJN") {
@@ -61,44 +100,23 @@ export default function RegisterPage({ params }) {
       if (type === "self-funded") return `Self Funded - ${baseName} ${programNum}`;
       return `${baseName} ${programNum}`;
     }
-    // Semesta Camp
     return program.title;
   };
 
-  // Get registration fee info
   const getFeeInfo = () => {
-    if (type === "fully-funded") {
-      return {
-        amount: "Rp. 85.000",
-        label: "Fully Funded"
-      };
-    }
-    if (type === "self-funded") {
-      return {
-        amount: "Rp. 50.000",
-        label: "Self Funded"
-      };
-    }
-    // Semesta Camp
-    return {
-      amount: "Rp. 25.000",
-      label: "Semesta Camp"
-    };
+    if (type === "fully-funded") return { amount: "Rp. 85.000", label: "Fully Funded" };
+    if (type === "self-funded") return { amount: "Rp. 50.000", label: "Self Funded" };
+    return { amount: "Rp. 25.000", label: "Semesta Camp" };
   };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
   const handleFileChange = (field, file) => {
     setFiles((prev) => ({ ...prev, [field]: file }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
   const handleRemoveFile = (field) => {
@@ -113,45 +131,29 @@ export default function RegisterPage({ params }) {
     const newErrors = {};
 
     if (step === 1) {
-      const requiredFields = [
-        "fullName", "email", "whatsapp", "instagram",
-        "birthDate", "region", "institution"
-      ];
-      if (type === "semesta-camp") {
-        requiredFields.push("reason");
-      }
+      const requiredFields = ["fullName", "email", "whatsapp", "instagram", "birthDate", "region", "institution"];
+      if (type === "semesta-camp") requiredFields.push("reason");
       requiredFields.forEach((field) => {
-        if (!formData[field]?.trim()) {
-          newErrors[field] = "Field ini wajib diisi";
-        }
+        if (!formData[field]?.trim()) newErrors[field] = "Field ini wajib diisi";
       });
     }
 
     if (step === 2 && type !== "semesta-camp") {
-      const requiredFields = [
-        "whyJoin", "divisionChoice", "divisionReason",
-        "programProposal", "hopes"
-      ];
+      const requiredFields = ["whyJoin", "divisionChoice", "divisionReason", "programProposal", "hopes"];
       requiredFields.forEach((field) => {
-        if (!formData[field]?.trim()) {
-          newErrors[field] = "Field ini wajib diisi";
-        }
+        if (!formData[field]?.trim()) newErrors[field] = "Field ini wajib diisi";
       });
     }
 
     if (step === 3 || (step === 2 && type === "semesta-camp")) {
       const requiredUploads = [];
-      if (type === "fully-funded") {
-        requiredUploads.push("instagramProof", "tiktokProof", "storyProof", "paymentProof");
-      } else if (type === "self-funded") {
+      if (type === "fully-funded" || type === "self-funded") {
         requiredUploads.push("instagramProof", "tiktokProof", "storyProof", "paymentProof");
       } else {
         requiredUploads.push("instagramProof", "tiktokProof", "paymentProof");
       }
       requiredUploads.forEach((field) => {
-        if (!files[field]) {
-          newErrors[field] = "File ini wajib diupload";
-        }
+        if (!files[field]) newErrors[field] = "File ini wajib diupload";
       });
     }
 
@@ -167,6 +169,8 @@ export default function RegisterPage({ params }) {
       } else {
         handleSubmit();
       }
+    } else {
+      showToast("Terdapat kolom wajib yang belum diisi", true);
     }
   };
 
@@ -177,18 +181,90 @@ export default function RegisterPage({ params }) {
     }
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement actual submission logic
-    console.log("Form submitted:", formData, files);
-    setShowSuccessModal(true);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      let fundingTypeId = null;
+      if (program && program.program_funding_types) {
+        const fundingCode = type === "fully-funded" ? "fully" : "self";
+        const ft = program.program_funding_types.find((f) => f.code === fundingCode);
+        if (ft) fundingTypeId = ft.id;
+      }
+
+      const uploaded_files = [];
+      
+      for (const [fieldKey, file] of Object.entries(files)) {
+        if (file) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${programId}-${Date.now()}-${fieldKey}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('registration-files')
+            .upload(fileName, file);
+
+          if (uploadError) throw new Error(`Gagal upload ${fieldKey}: ${uploadError.message}`);
+
+          const { data: publicUrlData } = supabase.storage
+            .from('registration-files')
+            .getPublicUrl(fileName);
+
+          uploaded_files.push({
+            field_key: fieldKey,
+            file_url: publicUrlData.publicUrl,
+            file_name: file.name,
+            file_size: file.size,
+            mime_type: file.type
+          });
+        }
+      }
+
+      const payload = {
+        program_id: programId,
+        funding_type_id: fundingTypeId,
+        
+        full_name: formData.fullName,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        instagram: formData.instagram,
+        birth_date: formData.birthDate,
+        region: formData.region,
+        institution: formData.institution,
+        reason: formData.reason,
+        
+        why_join: formData.whyJoin,
+        division_code: formData.divisionChoice,
+        division_reason: formData.divisionReason,
+        program_proposal: formData.programProposal,
+        hopes: formData.hopes,
+        
+        uploaded_files: uploaded_files
+      };
+
+      const response = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Gagal menyimpan pendaftaran');
+      }
+
+      setShowSuccessModal(true);
+
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      // GANTI ALERT MENJADI TOAST
+      showToast(error.message, true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isStepComplete = (step) => {
-    // Simplified check - in real app, check actual data
-    return step < currentStep;
-  };
+  const isStepComplete = (step) => step < currentStep;
 
-  // Render sidebar stepper
   const renderStepper = () => {
     const steps = getStepTitles();
     const labels = ["Personal Info", "Essay", "Documents"];
@@ -203,31 +279,19 @@ export default function RegisterPage({ params }) {
             <div key={stepNum} className={styles.stepItem}>
               <div className={styles.stepHeader}>
                 <div
-                  className={`${styles.stepCircle} ${
-                    isActive ? styles.active : isComplete ? styles.complete : ""
-                  }`}
+                  className={`${styles.stepCircle} ${isActive ? styles.active : isComplete ? styles.complete : ""}`}
                 >
                   {isComplete ? (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
-                  ) : (
-                    stepNum
-                  )}
+                  ) : stepNum}
                 </div>
                 <div className={styles.stepText}>
-                  <span
-                    className={`${styles.stepTitle} ${
-                      isActive ? styles.activeTitle : isComplete ? styles.completeTitle : ""
-                    }`}
-                  >
+                  <span className={`${styles.stepTitle} ${isActive ? styles.activeTitle : isComplete ? styles.completeTitle : ""}`}>
                     {title}
                   </span>
-                  <span
-                    className={`${styles.stepLabel} ${
-                      isActive ? styles.activeLabel : ""
-                    }`}
-                  >
+                  <span className={`${styles.stepLabel} ${isActive ? styles.activeLabel : ""}`}>
                     {labels[index] || `Step ${stepNum}`}
                   </span>
                 </div>
@@ -240,7 +304,6 @@ export default function RegisterPage({ params }) {
     );
   };
 
-  // Render file upload component
   const FileUpload = ({ label, field, instruction }) => {
     const file = files[field];
     const error = errors[field];
@@ -283,7 +346,7 @@ export default function RegisterPage({ params }) {
           ) : (
             <div className={styles.uploadPlaceholder}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>Unggah 1 file. Maks 100 MB.</span>
               <small>Drag & drop atau klik untuk upload</small>
@@ -302,11 +365,11 @@ export default function RegisterPage({ params }) {
     );
   };
 
-  if (!program || !type) {
+  if (loading || !program || !type) {
     return (
       <div className={styles.page}>
         <Navbar showCta={false} />
-        <div className={styles.loading}>Loading...</div>
+        <div className={styles.loading}>Memuat form pendaftaran...</div>
       </div>
     );
   }
@@ -316,13 +379,12 @@ export default function RegisterPage({ params }) {
 
   return (
     <div className={styles.page}>
-      {/* Navbar */}
       <Navbar />
 
-      {/* Main Content */}
-      <div className={styles.container}>
+      {/* Komponen Toast dirender di sini */}
+      <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
-        {/* Sidebar */}
+      <div className={styles.container}>
         <aside className={styles.sidebar}>
           <button className={styles.sidebarBackButton} onClick={() => router.replace(`/user/program/${programId}`)} aria-label="Kembali">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -335,7 +397,6 @@ export default function RegisterPage({ params }) {
           </span>
           {renderStepper()}
 
-          {/* Help Box */}
           <div className={styles.helpBox}>
             <div className={styles.helpIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -352,7 +413,6 @@ export default function RegisterPage({ params }) {
           </div>
         </aside>
 
-        {/* Form Content */}
         <main className={styles.mainContent}>
           <div className={styles.stepHeaderContent}>
             <h1 className={styles.stepPageTitle}>{stepTitles[currentStep - 1]}</h1>
@@ -362,16 +422,13 @@ export default function RegisterPage({ params }) {
                 {Array.from({ length: totalSteps }, (_, i) => (
                   <div
                     key={i}
-                    className={`${styles.progressDot} ${
-                      i + 1 === currentStep ? styles.active : i + 1 < currentStep ? styles.complete : ""
-                    }`}
+                    className={`${styles.progressDot} ${i + 1 === currentStep ? styles.active : i + 1 < currentStep ? styles.complete : ""}`}
                   />
                 ))}
               </div>
             </div>
           </div>
 
-          {/* STEP 1: Data Diri */}
           {currentStep === 1 && (
             <div className={styles.formGrid}>
               <div className={styles.formField}>
@@ -497,13 +554,11 @@ export default function RegisterPage({ params }) {
             </div>
           )}
 
-          {/* STEP 2: Deskripsi Diri (SJN Only) */}
           {currentStep === 2 && type !== "semesta-camp" && (
             <div className={styles.formSection}>
               <div className={styles.formField}>
                 <label className={styles.label}>
-                  Jelaskan mengapa anda ingin bergabung dalam kegiatan {program.title}?{" "}
-                  <span className={styles.required}>*</span>
+                  Jelaskan mengapa anda ingin bergabung dalam kegiatan {program.title}? <span className={styles.required}>*</span>
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.whyJoin ? styles.inputError : ""}`}
@@ -517,8 +572,7 @@ export default function RegisterPage({ params }) {
 
               <div className={styles.formField}>
                 <label className={styles.label}>
-                  Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?{" "}
-                  <span className={styles.required}>*</span>
+                  Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih? <span className={styles.required}>*</span>
                 </label>
                 <select
                   className={`${styles.select} ${errors.divisionChoice ? styles.inputError : ""}`}
@@ -550,8 +604,7 @@ export default function RegisterPage({ params }) {
 
               <div className={styles.formField}>
                 <label className={styles.label}>
-                  Apa program kerja yang akan anda ajukan untuk kegiatan {program.title}? (Jelaskan secara singkat dan detail){" "}
-                  <span className={styles.required}>*</span>
+                  Apa program kerja yang akan anda ajukan untuk kegiatan {program.title}? (Jelaskan secara singkat dan detail) <span className={styles.required}>*</span>
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.programProposal ? styles.inputError : ""}`}
@@ -565,8 +618,7 @@ export default function RegisterPage({ params }) {
 
               <div className={styles.formField}>
                 <label className={styles.label}>
-                  Apa harapan dan rencana anda jika terpilih menjadi delegasi {program.title}?{" "}
-                  <span className={styles.required}>*</span>
+                  Apa harapan dan rencana anda jika terpilih menjadi delegasi {program.title}? <span className={styles.required}>*</span>
                 </label>
                 <textarea
                   className={`${styles.textarea} ${errors.hopes ? styles.inputError : ""}`}
@@ -580,19 +632,16 @@ export default function RegisterPage({ params }) {
             </div>
           )}
 
-          {/* STEP 3: Kelengkapan Persyaratan (SJN) / STEP 2: Kelengkapan (Semesta Camp) */}
           {(currentStep === 3 || (currentStep === 2 && type === "semesta-camp")) && (
             <div className={styles.formSection}>
               <FileUpload
                 label="Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)"
                 field="instagramProof"
               />
-
               <FileUpload
                 label="Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)"
                 field="tiktokProof"
               />
-
               {type !== "semesta-camp" && (
                 <FileUpload
                   label="Bukti upload Invitation Story ke Story Instagram Anda"
@@ -600,12 +649,7 @@ export default function RegisterPage({ params }) {
                   instruction={
                     <span>
                       Link download dan ketentuan:{" "}
-                      <a
-                        href="https://bit.ly/kelengkapanSJN4"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.link}
-                      >
+                      <a href="https://bit.ly/kelengkapanSJN4" target="_blank" rel="noopener noreferrer" className={styles.link}>
                         https://bit.ly/kelengkapanSJN4
                       </a>
                       <br />
@@ -618,9 +662,7 @@ export default function RegisterPage({ params }) {
               <div className={styles.paymentSection}>
                 <h3 className={styles.paymentTitle}>Bukti pembayaran biaya pendaftaran</h3>
                 <div className={styles.paymentInfo}>
-                  <p>
-                    <strong>Biaya Pendaftaran {getFeeInfo().label} Sebesar {getFeeInfo().amount}</strong>
-                  </p>
+                  <p><strong>Biaya Pendaftaran {getFeeInfo().label} Sebesar {getFeeInfo().amount}</strong></p>
                   <p>NAIL AMMASHUN ALYAHYA</p>
                   <p>Bank Mandiri 1120022119304</p>
                   <p>E-Wallet an Na'il Ammashun Alyahya Putra</p>
@@ -637,35 +679,27 @@ export default function RegisterPage({ params }) {
             </div>
           )}
 
-          {/* Navigation Buttons */}
           <div className={styles.navigation}>
             {currentStep > 1 && (
-              <button
-                type="button"
-                className={styles.backButton}
-                onClick={handleBack}
-              >
+              <button type="button" className={styles.backButton} onClick={handleBack} disabled={isSubmitting}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
                 Back
               </button>
             )}
-            <button
-              type="button"
-              className={styles.continueButton}
-              onClick={handleNext}
-            >
-              {currentStep === totalSteps ? "Submit" : "Continue"}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
+            <button type="button" className={styles.continueButton} onClick={handleNext} disabled={isSubmitting}>
+              {currentStep === totalSteps ? (isSubmitting ? "Mengirim..." : "Submit") : "Continue"}
+              {!isSubmitting && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              )}
             </button>
           </div>
         </main>
       </div>
 
-      {/* Success Modal */}
       {showSuccessModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -679,17 +713,13 @@ export default function RegisterPage({ params }) {
             <p className={styles.modalText}>
               Terima kasih telah mendaftar sebagai volunteer. Tim kami akan segera menghubungi kamu melalui WhatsApp atau email yang telah diberikan.
             </p>
-            <button
-              className={styles.modalButton}
-              onClick={() => router.push(`/user/program/${programId}`)}
-            >
+            <button className={styles.modalButton} onClick={() => router.push(`/user/program/${programId}`)}>
               Kembali ke Halaman Program
             </button>
           </div>
         </div>
       )}
 
-      {/* Footer */}
       <Footer />
     </div>
   );

@@ -5,19 +5,6 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
-const initialPrograms = [
-  { id: 1, tanggal: "2 Jan 2023", nama: "Semesta Camp #10 Palembang", programId: "semesta-camp-10-palembang", lokasi: "Jl. Merdeka No.1, Palembang, Sumatera Selatan", status: "Dibuka", pendaftar: 105 },
-  { id: 2, tanggal: "14 Dec 2022", nama: "Semesta Camp #9 Yogyakarta", programId: "semesta-camp-9-yogyakarta", lokasi: "Jl. Malioboro No.5, Yogyakarta", status: "Dibuka", pendaftar: null },
-  { id: 3, tanggal: "12 Dec 2022", nama: "Semesta Camp #8 Bandung", programId: "semesta-camp-8-bandung", lokasi: "Jl. Braga No.10, Bandung, Jawa Barat", status: "Ditutup", pendaftar: 87 },
-  { id: 4, tanggal: "7 Dec 2022", nama: "Semesta Camp #7 Surabaya", programId: "semesta-camp-7-surabaya", lokasi: "Jl. Pemuda No.3, Surabaya, Jawa Timur", status: "Ditutup", pendaftar: 92 },
-  { id: 5, tanggal: "3 Dec 2022", nama: "Semesta Camp #6 Medan", programId: "semesta-camp-6-medan", lokasi: "Jl. Gatot Subroto No.7, Medan, Sumatera Utara", status: "Ditutup", pendaftar: 78 },
-  { id: 6, tanggal: "26 Nov 2022", nama: "Semesta Camp #5 Makassar", programId: "semesta-camp-5-makassar", lokasi: "Jl. Sam Ratulangi No.2, Makassar, Sulawesi Selatan", status: "Ditutup", pendaftar: 65 },
-  { id: 7, tanggal: "18 Nov 2022", nama: "Semesta Camp #4 Semarang", programId: "semesta-camp-4-semarang", lokasi: "Jl. Pandanaran No.8, Semarang, Jawa Tengah", status: "Ditutup", pendaftar: 71 },
-  { id: 8, tanggal: "13 Nov 2022", nama: "Semesta Camp #3 Jakarta", programId: "semesta-camp-3-jakarta", lokasi: "Jl. Sudirman No.15, Jakarta Selatan", status: "Ditutup", pendaftar: 110 },
-  { id: 9, tanggal: "11 Nov 2022", nama: "Semesta Camp #2 Bali", programId: "semesta-camp-2-bali", lokasi: "Jl. Sunset Road No.4, Kuta, Bali", status: "Ditutup", pendaftar: 95 },
-  { id: 10, tanggal: "9 Nov 2022", nama: "Semesta Camp #1 Jakarta", programId: "semesta-camp-1-jakarta", lokasi: "Jl. Thamrin No.1, Jakarta Pusat", status: "Ditutup", pendaftar: 88 },
-];
-
 const getStatusBadgeClass = (status) => {
   return status === "Dibuka" ? styles.badgeDibuka : styles.badgeDitutup;
 };
@@ -25,6 +12,13 @@ const getStatusBadgeClass = (status) => {
 export default function SemestaCampPage() {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // State untuk API Data
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // State untuk UI & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [sortDate, setSortDate] = useState(null);
@@ -35,6 +29,27 @@ export default function SemestaCampPage() {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const filterDropdownRef = useRef(null);
 
+  const itemsPerPage = 10;
+
+  // 1. Fetch Data dari API
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await fetch('/api/programs?category=Semesta Camp');
+        if (!response.ok) throw new Error('Gagal mengambil data program');
+        const data = await response.json();
+        setPrograms(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrograms();
+  }, []);
+
+  // 2. Klik di luar dropdown filter status
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
@@ -44,45 +59,86 @@ export default function SemestaCampPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  const itemsPerPage = 10;
 
   const toggleDropdown = (id) => {
     setActiveDropdown(activeDropdown === id ? null : id);
   };
 
-  const filteredPrograms = useMemo(() => {
-    let result = [...initialPrograms];
+  // --- FUNGSI UBAH STATUS (BUKA/TUTUP) ---
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === "Dibuka" ? "Ditutup" : "Dibuka";
+    
+    try {
+      const response = await fetch(`/api/programs/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-    // Search filter
+      if (!response.ok) throw new Error("Gagal mengubah status program");
+
+      // Update state lokal agar UI langsung berubah
+      setPrograms((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
+      );
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setActiveDropdown(null);
+    }
+  };
+
+  // --- FUNGSI HAPUS PROGRAM ---
+  const handleDelete = async (id) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus program ini? Seluruh data pendaftar yang terhubung juga akan ikut terhapus.")) return;
+
+    try {
+      const response = await fetch(`/api/programs/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Gagal menghapus program");
+
+      // Hapus dari state lokal agar langsung hilang dari tabel
+      setPrograms((prev) => prev.filter((p) => p.id !== id));
+      setSelectedRows((prev) => prev.filter((rowId) => rowId !== id));
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setActiveDropdown(null);
+    }
+  };
+
+  // 3. Logika Filter & Sort
+  const filteredPrograms = useMemo(() => {
+    let result = [...programs];
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((p) =>
-        p.nama.toLowerCase().includes(query) ||
-        p.lokasi.toLowerCase().includes(query)
+        (p.title && p.title.toLowerCase().includes(query)) ||
+        (p.location && p.location.toLowerCase().includes(query))
       );
     }
 
-    // Status filter
     if (statusFilter !== "Semua") {
       result = result.filter((p) => p.status === statusFilter);
     }
 
-    // Date sort
     if (sortDate === "asc") {
-      result.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+      result.sort((a, b) => new Date(a.event_start_date || a.created_at) - new Date(b.event_start_date || b.created_at));
     } else if (sortDate === "desc") {
-      result.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      result.sort((a, b) => new Date(b.event_start_date || b.created_at) - new Date(a.event_start_date || a.created_at));
     }
 
-    // Status sort
     if (sortStatus === "asc") {
-      result.sort((a, b) => a.status.localeCompare(b.status));
+      result.sort((a, b) => (a.status || "").localeCompare(b.status || ""));
     } else if (sortStatus === "desc") {
-      result.sort((a, b) => b.status.localeCompare(a.status));
+      result.sort((a, b) => (b.status || "").localeCompare(a.status || ""));
     }
 
     return result;
-  }, [searchQuery, statusFilter, sortDate, sortStatus]);
+  }, [programs, searchQuery, statusFilter, sortDate, sortStatus]);
 
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const paginatedPrograms = filteredPrograms.slice(
@@ -91,7 +147,7 @@ export default function SemestaCampPage() {
   );
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === paginatedPrograms.length) {
+    if (selectedRows.length === paginatedPrograms.length && paginatedPrograms.length > 0) {
       setSelectedRows([]);
     } else {
       setSelectedRows(paginatedPrograms.map((p) => p.id));
@@ -155,6 +211,15 @@ export default function SemestaCampPage() {
     );
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
@@ -162,9 +227,7 @@ export default function SemestaCampPage() {
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
-      {/* Main Content */}
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-        {/* Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerText}>
             <h1 className={styles.pageTitle}>Semesta Camp</h1>
@@ -174,9 +237,7 @@ export default function SemestaCampPage() {
           </div>
         </div>
 
-        {/* Card Table */}
         <div className={styles.tableCard}>
-          {/* Card Header */}
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>Daftar Program</h2>
             <button
@@ -191,7 +252,6 @@ export default function SemestaCampPage() {
             </button>
           </div>
 
-          {/* Search & Filter Bar */}
           <div className={styles.searchFilterBar}>
             <div className={styles.searchWrapper}>
               <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -250,143 +310,167 @@ export default function SemestaCampPage() {
             </div>
           </div>
 
-          {/* Table */}
           <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.checkboxCell}>
-                    <input
-                      type="checkbox"
-                      className={styles.checkbox}
-                      checked={selectedRows.length === paginatedPrograms.length && paginatedPrograms.length > 0}
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                  <th className={styles.sortableHeader} onClick={handleSortDate}>
-                    <span>Tanggal</span>
-                    <span className={styles.sortIcon}>{getSortIcon(sortDate, sortDate)}</span>
-                  </th>
-                  <th>Nama</th>
-                  <th>Lokasi</th>
-                  <th className={styles.sortableHeader} onClick={handleSortStatus}>
-                    <span>Status</span>
-                    <span className={styles.sortIcon}>{getSortIcon(sortStatus, sortStatus)}</span>
-                  </th>
-                  <th>Jumlah Pendaftar</th>
-                  <th>Aksi</th>
-                  <th>Opsi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedPrograms.map((program) => (
-                  <tr
-                    key={program.id}
-                    className={`${styles.tableRow} ${selectedRows.includes(program.id) ? styles.selected : ""}`}
-                  >
-                    <td className={styles.checkboxCell}>
+            {loading ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Memuat data...</div>
+            ) : error ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: '#ef4444' }}>Error: {error}</div>
+            ) : (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th className={styles.checkboxCell}>
                       <input
                         type="checkbox"
                         className={styles.checkbox}
-                        checked={selectedRows.includes(program.id)}
-                        onChange={() => toggleSelectRow(program.id)}
+                        checked={selectedRows.length === paginatedPrograms.length && paginatedPrograms.length > 0}
+                        onChange={toggleSelectAll}
                       />
-                    </td>
-                    <td className={styles.dateCell}>{program.tanggal}</td>
-                    <td className={styles.nameCell}>{program.nama}</td>
-                    <td className={styles.locationCell}>
-                      <span className={styles.locationText}>{program.lokasi}</span>
-                    </td>
-                    <td>
-                      <span className={`${styles.statusBadge} ${getStatusBadgeClass(program.status)}`}>
-                        {program.status}
-                      </span>
-                    </td>
-                    <td className={styles.pendaftarCell}>
-                      {program.pendaftar !== null ? program.pendaftar : "—"}
-                    </td>
-                    <td>
-                      <button
-                        className={styles.viewButton}
-                        onClick={() => router.push(`/admin/semesta-camp/${program.programId}`)}
+                    </th>
+                    <th className={styles.sortableHeader} onClick={handleSortDate}>
+                      <span>Tanggal</span>
+                      <span className={styles.sortIcon}>{getSortIcon(sortDate, sortDate)}</span>
+                    </th>
+                    <th>Nama</th>
+                    <th>Lokasi</th>
+                    <th className={styles.sortableHeader} onClick={handleSortStatus}>
+                      <span>Status</span>
+                      <span className={styles.sortIcon}>{getSortIcon(sortStatus, sortStatus)}</span>
+                    </th>
+                    <th>Jumlah Pendaftar</th>
+                    <th>Aksi</th>
+                    <th>Opsi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedPrograms.length > 0 ? (
+                    paginatedPrograms.map((program) => (
+                      <tr
+                        key={program.id}
+                        className={`${styles.tableRow} ${selectedRows.includes(program.id) ? styles.selected : ""}`}
                       >
-                        Lihat
-                      </button>
-                    </td>
-                    <td className={styles.optionsCell}>
-                      <button
-                        className={styles.optionsButton}
-                        onClick={() => toggleDropdown(program.id)}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="5" r="1" />
-                          <circle cx="12" cy="12" r="1" />
-                          <circle cx="12" cy="19" r="1" />
-                        </svg>
-                      </button>
-                      {activeDropdown === program.id && (
-                        <div className={styles.optionsDropdown}>
+                        <td className={styles.checkboxCell}>
+                          <input
+                            type="checkbox"
+                            className={styles.checkbox}
+                            checked={selectedRows.includes(program.id)}
+                            onChange={() => toggleSelectRow(program.id)}
+                          />
+                        </td>
+                        <td className={styles.dateCell}>{formatDate(program.event_start_date)}</td>
+                        <td className={styles.nameCell}>{program.title}</td>
+                        <td className={styles.locationCell}>
+                          <span className={styles.locationText}>{program.location || "-"}</span>
+                        </td>
+                        <td>
+                          <span className={`${styles.statusBadge} ${getStatusBadgeClass(program.status || "Dibuka")}`}>
+                            {program.status || "Dibuka"}
+                          </span>
+                        </td>
+                        <td className={styles.pendaftarCell}>
+                          {program.registration_count !== null ? program.registration_count : "0"}
+                        </td>
+                        <td>
                           <button
-                            className={styles.dropdownItem}
-                            onClick={() => router.push(`/admin/semesta-camp/${program.programId}/edit`)}
+                            className={styles.viewButton}
+                            onClick={() => router.push(`/admin/semesta-camp/${program.id}`)}
+                          >
+                            Lihat
+                          </button>
+                        </td>
+                        <td className={styles.optionsCell}>
+                          <button
+                            className={styles.optionsButton}
+                            onClick={() => toggleDropdown(program.id)}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              <circle cx="12" cy="5" r="1" />
+                              <circle cx="12" cy="12" r="1" />
+                              <circle cx="12" cy="19" r="1" />
                             </svg>
-                            <span>Edit</span>
                           </button>
-                          <button className={styles.dropdownItem}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                              <path d="M7 11V7a5 5 0 0110 0v4" />
-                            </svg>
-                            <span>{program.status === "Dibuka" ? "Tutup Program" : "Buka Program"}</span>
-                          </button>
-                          <button className={`${styles.dropdownItem} ${styles.deleteItem}`}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                            </svg>
-                            <span>Hapus</span>
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          {activeDropdown === program.id && (
+                            <div className={styles.optionsDropdown}>
+                              <button
+                                className={styles.dropdownItem}
+                                onClick={() => router.push(`/admin/semesta-camp/${program.id}/edit`)}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                                <span>Edit</span>
+                              </button>
+                              
+                              {/* TOMBOL BUKA/TUTUP STATUS PROGRAM */}
+                              <button 
+                                className={styles.dropdownItem}
+                                onClick={() => handleToggleStatus(program.id, program.status || "Dibuka")}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                                </svg>
+                                <span>{program.status === "Dibuka" ? "Tutup Program" : "Buka Program"}</span>
+                              </button>
+                              
+                              {/* TOMBOL HAPUS PROGRAM */}
+                              <button 
+                                className={`${styles.dropdownItem} ${styles.deleteItem}`}
+                                onClick={() => handleDelete(program.id)}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                </svg>
+                                <span>Hapus</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                        Tidak ada program ditemukan.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {/* Pagination */}
-          <div className={styles.pagination}>
-            <span className={styles.paginationInfo}>
-              {filteredPrograms.length > 0
-                ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredPrograms.length)} dari ${filteredPrograms.length}`
-                : "0 dari 0"}
-            </span>
-            <div className={styles.paginationButtons}>
-              <button
-                className={styles.paginationButton}
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <button
-                className={styles.paginationButton}
-                disabled={currentPage === totalPages || totalPages === 0}
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
+          {!loading && !error && (
+            <div className={styles.pagination}>
+              <span className={styles.paginationInfo}>
+                {filteredPrograms.length > 0
+                  ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredPrograms.length)} dari ${filteredPrograms.length}`
+                  : "0 dari 0"}
+              </span>
+              <div className={styles.paginationButtons}>
+                <button
+                  className={styles.paginationButton}
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  className={styles.paginationButton}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
