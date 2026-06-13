@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -36,6 +41,7 @@ export default function TambahSemestaCampProgramPage() {
   const searchParams = useSearchParams();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const fileInputRef = useRef(null);
+   const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [nama, setNama] = useState("");
@@ -170,11 +176,79 @@ export default function TambahSemestaCampProgramPage() {
     router.push(`/admin/semesta-camp/tambah/formulir?nama=${encodeURIComponent(nama)}`);
   };
 
-  const handleSave = () => {
+  // 2. Perbarui fungsi handleSave menjadi async
+  const handleSave = async () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwal) return showToast("Jadwal Pelaksanaan harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
-    router.push("/admin/semesta-camp");
+
+    setIsSaving(true);
+    let imageUrl = null;
+
+    try {
+      // TAHAP 1: Upload Poster ke Supabase Storage (Jika ada file yang dipilih)
+      if (posterFile) {
+        // Buat nama file unik untuk mencegah bentrok
+        const fileExt = posterFile.name.split('.').pop();
+        const fileName = `poster-${Date.now()}.${fileExt}`;
+        
+        // Simpan langsung di root bucket program-images
+        const filePath = fileName; 
+
+        // Proses upload ke bucket BARU
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('program-images') // <--- NAMA BUCKET BARU
+          .upload(filePath, posterFile);
+
+        if (uploadError) {
+          throw new Error(`Gagal upload poster: ${uploadError.message}`);
+        }
+
+        // Dapatkan Public URL dari file yang baru di-upload
+        const { data: publicUrlData } = supabase.storage
+          .from('program-images') // <--- NAMA BUCKET BARU
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData.publicUrl;
+      }
+
+      // TAHAP 2: Siapkan data untuk dikirim ke API
+      const payload = {
+        title: nama,
+        category: "Semesta Camp", 
+        description: deskripsi,
+        event_start_date: jadwal,
+        location: lokasi,
+        image_url: imageUrl, 
+        is_active: true,
+      };
+
+      // TAHAP 3: Simpan Data ke Database melalui API POST
+      const response = await fetch('/api/programs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Gagal menyimpan program ke database');
+      }
+
+      showToast("Program berhasil disimpan!");
+      
+      // Redirect setelah sukses
+      setTimeout(() => {
+        router.push("/admin/semesta-camp");
+      }, 1500);
+
+    } catch (error) {
+      showToast(error.message, true);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

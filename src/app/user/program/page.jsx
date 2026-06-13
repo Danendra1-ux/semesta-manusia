@@ -7,18 +7,48 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import styles from "./page.module.css";
-import { allPrograms, programCategories } from "../data/programs";
+// Pastikan programCategories masih ada jika Anda menggunakannya di tempat lain, 
+// allPrograms telah dihapus karena data kini berasal dari API.
+import { programCategories } from "../data/programs"; 
 
 export default function ProgramPage() {
   const router = useRouter();
+  
+  // State untuk API Data
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // State untuk UI & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("semua");
   const [sortBy, setSortBy] = useState("terbaru");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  
+  // State untuk Paginasi
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
 
+  // 1. Mengambil data dari API
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await fetch('/api/programs?is_active=true');
+        if (!response.ok) throw new Error('Gagal mengambil data program');
+        const data = await response.json();
+        setPrograms(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrograms();
+  }, []);
+
+  // 2. Menutup dropdown saat klik di luar area
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (showSortDropdown && !e.target.closest(`.${styles.sortWrapper}`)) {
@@ -49,8 +79,9 @@ export default function ProgramPage() {
     return filterOptions.find(f => f.value === activeFilter)?.label || "Filter";
   };
 
+  // 3. Logika Filter & Sort menggunakan data dari API (programs)
   const filteredPrograms = useMemo(() => {
-    let result = [...allPrograms];
+    let result = [...programs];
 
     if (activeFilter === "camp") {
       result = result.filter(p => p.category === "Semesta Camp");
@@ -61,13 +92,12 @@ export default function ProgramPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(p =>
-        p.title.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.location?.toLowerCase().includes(query)
+        (p.title && p.title.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query)) ||
+        (p.location && p.location.toLowerCase().includes(query))
       );
     }
 
-    // SJN selalu di atas, lalu sortir berdasarkan sortBy
     result.sort((a, b) => {
       if (sortBy === "terbaru") {
         if (a.category === "SJN" && b.category !== "SJN") return -1;
@@ -80,22 +110,23 @@ export default function ProgramPage() {
       } else if (sortBy === "az") {
         if (a.category === "SJN" && b.category !== "SJN") return -1;
         if (a.category !== "SJN" && b.category === "SJN") return 1;
-        const ta = a.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
-        const tb = b.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const ta = (a.title || "").replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const tb = (b.title || "").replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
         return ta.localeCompare(tb, "id", { sensitivity: "base" });
       } else if (sortBy === "za") {
         if (a.category === "SJN" && b.category !== "SJN") return -1;
         if (a.category !== "SJN" && b.category === "SJN") return 1;
-        const ta = a.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
-        const tb = b.title.replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const ta = (a.title || "").replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
+        const tb = (b.title || "").replace(/^Semesta (Camp|Jelajah Nusantara) #\d+[:]? /, "");
         return ta.localeCompare(tb, "id", { sensitivity: "base" }) * -1;
       }
       return 0;
     });
 
     return result;
-  }, [searchQuery, activeFilter, sortBy]);
+  }, [programs, searchQuery, activeFilter, sortBy]);
 
+  // 4. Logika Paginasi
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const paginatedPrograms = filteredPrograms.slice(
     (currentPage - 1) * itemsPerPage,
@@ -126,9 +157,7 @@ export default function ProgramPage() {
   const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       if (currentPage <= 4) {
         for (let i = 1; i <= 4; i++) pages.push(i);
@@ -157,9 +186,18 @@ export default function ProgramPage() {
     return styles.placeholder;
   };
 
-  const getGradient = (category) => {
-    if (category === "SJN") return programCategories.SJN.gradient;
-    return programCategories.SEMESTA_CAMP.gradient;
+  const formatDateRange = (start, end) => {
+    if (!start) return null;
+    
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const startDate = new Date(start).toLocaleDateString('id-ID', options);
+    
+    if (!end || start === end) {
+      return startDate;
+    }
+    
+    const endDate = new Date(end).toLocaleDateString('id-ID', options);
+    return `${startDate} - ${endDate}`;
   };
 
   return (
@@ -197,6 +235,7 @@ export default function ProgramPage() {
           </div>
 
           <div className={styles.actionButtons}>
+            {/* Filter Dropdown */}
             <div className={styles.filterWrapper}>
               <button
                 className={styles.actionButton}
@@ -234,6 +273,7 @@ export default function ProgramPage() {
               )}
             </div>
 
+            {/* Sort Dropdown */}
             <div className={styles.sortWrapper}>
               <button
                 className={styles.actionButton}
@@ -269,78 +309,105 @@ export default function ProgramPage() {
 
       {/* Main Content */}
       <main className={styles.mainContent}>
-        {/* Program Grid */}
-        <div className={styles.programGrid}>
-          {paginatedPrograms.length > 0 ? (
-            paginatedPrograms.map((program) => (
-              <div key={program.id} className={styles.programCard}>
-                <div className={styles.programCardImage}>
-                  <Image
-                    src={program.image}
-                    alt={program.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <span className={`${styles.programCardBadge} ${getBadgeClass(program.category)}`}>
-                    {program.category}
-                  </span>
-                </div>
-                <div className={styles.programCardBody}>
-                  <h3 className={styles.programCardTitle}>{program.title}</h3>
-                  <p className={styles.programCardDescription}>{program.description}</p>
-                  <div className={styles.programCardMeta}>
-                    <div className={styles.programCardMetaItem}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                      </svg>
-                      <span>{program.date || "Coming Soon"}</span>
-                    </div>
-                    <div className={styles.programCardMetaItem}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                      </svg>
-                      <span>{program.location || "Indonesia"}</span>
-                    </div>
-                  </div>
+        
+        {/* Indikator Loading & Error */}
+        {loading && (
+          <div className={styles.emptyState} style={{ padding: '4rem 2rem' }}>
+            <h3>Memuat program...</h3>
+          </div>
+        )}
 
-                  {/* Registration Deadline Badge */}
-                  <div className={`${styles.deadlineBadge} ${getBadgeClass(program.category)}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    <span>
-                      {program.category === "SJN" && typeof program.registrationDeadline === "object"
-                        ? `Batas Registrasi: ${program.registrationDeadline.fully}`
-                        : typeof program.registrationDeadline === "string"
-                          ? `Batas Registrasi: ${program.registrationDeadline}`
+        {error && !loading && (
+          <div className={styles.emptyState} style={{ padding: '4rem 2rem' }}>
+            <h3>Error Terjadi</h3>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Program Grid */}
+        {!loading && !error && (
+          <div className={styles.programGrid}>
+            {paginatedPrograms.length > 0 ? (
+              paginatedPrograms.map((program) => (
+                <div key={program.id} className={styles.programCard}>
+                  
+                  {/* Pengecekan URL Gambar. Menggunakan image_url dari API, atau fallback ke image */}
+                  {(program.image_url || program.image) && (
+                    <div className={styles.programCardImage}>
+                      <Image
+                        src={program.image_url || program.image}
+                        alt={program.title}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <span className={`${styles.programCardBadge} ${getBadgeClass(program.category)}`}>
+                        {program.category}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className={styles.programCardBody}>
+                    <h3 className={styles.programCardTitle}>{program.title}</h3>
+                    <p className={styles.programCardDescription}>{program.description}</p>
+                    <div className={styles.programCardMeta}>
+                      <div className={styles.programCardMetaItem}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                          <line x1="16" y1="2" x2="16" y2="6"/>
+                          <line x1="8" y1="2" x2="8" y2="6"/>
+                          <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        {/* Memanggil event_start_date ke icon kalender */}
+                        <span>
+                          {program.event_start_date 
+                            ? new Date(program.event_start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
+                            : "Segera Hadir"}
+                        </span>
+                      </div>
+                      <div className={styles.programCardMetaItem}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                          <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>{program.location || "Indonesia"}</span>
+                      </div>
+                    </div>
+
+                    {/* Registration / Event Deadline Badge */}
+                    <div className={`${styles.deadlineBadge} ${getBadgeClass(program.category)}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      {/* Memasukkan format tanggal ke dalam Badge */}
+                      <span>
+                        {program.event_start_date 
+                          ? formatDateRange(program.event_start_date, program.event_end_date)
                           : "Segera Daftar"}
-                    </span>
+                      </span>
+                    </div>
+
                   </div>
+                  <Link href={`/user/program/${program.id}`} className={styles.programCardButton}>
+                    <span>Daftar</span>
+                  </Link>
                 </div>
-                <Link href={`/user/program/${program.id}`} className={styles.programCardButton}>
-                  <span>Daftar</span>
-                </Link>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <h3>Tidak ada program ditemukan</h3>
+                <p>Coba ubah kata kunci pencarian atau filter yang digunakan.</p>
               </div>
-            ))
-          ) : (
-            <div className={styles.emptyState}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <h3>Tidak ada program ditemukan</h3>
-              <p>Coba ubah kata kunci pencarian atau filter yang digunakan.</p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Pagination */}
-        {filteredPrograms.length > 0 && (
+        {!loading && !error && filteredPrograms.length > 0 && (
           <div className={styles.pagination}>
             <button
               className={styles.paginationButton}
