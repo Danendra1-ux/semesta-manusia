@@ -205,6 +205,9 @@ export default function EditProgramPage({ params }) {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
+    if (batasRegistrasi && jadwalMulai && new Date(batasRegistrasi) > new Date(jadwalMulai)) {
+      return showToast("Batas Registrasi tidak boleh setelah jadwal mulai!", true);
+    }
 
     setIsSaving(true);
     try {

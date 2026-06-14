@@ -75,7 +75,6 @@ export default function FormulirPage({ params }) {
     {
       id: "data-diri-fixed",
       title: "Data Diri",
-      description: "Personal Info",
       isFixed: true,
       fields: [
         { id: "f1", label: "Nama Lengkap", type: "teks", placeholder: "Masukkan nama lengkap", required: true, isFixed: true, value: "" },
@@ -91,7 +90,6 @@ export default function FormulirPage({ params }) {
     {
       id: "kelengkapan-persyaratan",
       title: "Kelengkapan Persyaratan",
-      description: "Documents",
       isFixed: false,
       fields: [
         { id: "f9",  label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
@@ -112,8 +110,6 @@ export default function FormulirPage({ params }) {
   // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
-  const [editingDescription, setEditingDescription] = useState(null);
-  const [descriptionValue, setDescriptionValue] = useState("");
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -298,7 +294,6 @@ export default function FormulirPage({ params }) {
     const newSection = {
       id: `section-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       title: "Section Baru",
-      description: "",
       isFixed: false,
       fields: [],
     };
@@ -331,19 +326,6 @@ export default function FormulirPage({ params }) {
       prev.map((s) => (s.id === editingTitle ? { ...s, title: titleValue } : s))
     );
     setEditingTitle(null);
-  };
-
-  const startEditDescription = (sectionId, currentDescription) => {
-    setEditingDescription(sectionId);
-    setDescriptionValue(currentDescription || "");
-  };
-
-  const handleDescriptionChange = () => {
-    if (!editingDescription) return;
-    setSections((prev) =>
-      prev.map((s) => (s.id === editingDescription ? { ...s, description: descriptionValue } : s))
-    );
-    setEditingDescription(null);
   };
 
   const handleSave = () => {
@@ -403,41 +385,12 @@ export default function FormulirPage({ params }) {
                         autoFocus
                       />
                     ) : (
-                      <div className={styles.sectionTitleGroup}>
-                        <h2
-                          className={`${styles.sectionTitle} ${!section.isFixed ? styles.sectionTitleEditable : ""}`}
-                          onClick={() => !section.isFixed && startEditTitle(section.id, section.title)}
-                        >
-                          {section.title}
-                        </h2>
-
-                        {/* Description — editable jika tidak fixed */}
-                        {!section.isFixed ? (
-                          editingDescription === section.id ? (
-                            <input
-                              type="text"
-                              className={styles.sectionDescriptionInput}
-                              value={descriptionValue}
-                              onChange={(e) => setDescriptionValue(e.target.value)}
-                              onBlur={handleDescriptionChange}
-                              onKeyDown={(e) => e.key === "Enter" && handleDescriptionChange()}
-                              placeholder="Deskripsi section..."
-                              autoFocus
-                            />
-                          ) : (
-                            <span
-                              className={`${styles.sectionDescription} ${styles.sectionDescriptionEditable}`}
-                              onClick={() => startEditDescription(section.id, section.description)}
-                            >
-                              {section.description || "Klik untuk tambah deskripsi..."}
-                            </span>
-                          )
-                        ) : (
-                          section.description && (
-                            <span className={styles.sectionDescription}>{section.description}</span>
-                          )
-                        )}
-                      </div>
+                      <h2
+                        className={`${styles.sectionTitle} ${!section.isFixed ? styles.sectionTitleEditable : ""}`}
+                        onClick={() => !section.isFixed && startEditTitle(section.id, section.title)}
+                      >
+                        {section.title}
+                      </h2>
                     )}
                     {!section.isFixed && (
                       <button

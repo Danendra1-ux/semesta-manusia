@@ -415,15 +415,13 @@ export default function ProgramDetailPage({ params }) {
             {activeTab === "deskripsi" && (
               <div ref={(el) => (tabRefs.deskripsi = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Deskripsi</h2>
-                <p className={styles.contentText}>
-                  {program.description}
-                </p>
-                <p className={styles.contentText}>
-                  Program ini dirancang untuk memberikan pengalaman volunteering yang mendalam dan bermakna. Peserta akan berinteraksi langsung dengan masyarakat lokal, belajar tentang budaya, dan berkontribusi pada kegiatan pelestarian lingkungan atau sosial sesuai fokus program.
-                </p>
-                <p className={styles.contentText}>
-                  Selama program, peserta akan dibimbing oleh tim profesional yang berpengalaman dan didukung oleh jaringan komunitas yang luas. Kegiatan sehari-hari mencakup kerja volunteer di pagi hari, workshop dan pelatihan di siang hari, serta kegiatan bonding dan refleksi di malam hari.
-                </p>
+                {program.description ? (
+                  <p className={styles.contentText}>
+                    {program.description}
+                  </p>
+                ) : (
+                  <p className={styles.contentText}>Belum ada deskripsi untuk program ini.</p>
+                )}
               </div>
             )}
 
@@ -431,9 +429,41 @@ export default function ProgramDetailPage({ params }) {
             {activeTab === "detail" && (
               <div ref={(el) => (tabRefs.detail = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Detail Aktivitas</h2>
-                <p className={styles.contentText}>
-                  Aktivitas dalam program ini mencakup berbagai kegiatan volunteering yang disesuaikan dengan kebutuhan lokasi dan jadwal yang telah ditentukan. Peserta akan mengikuti Orientasi Hari Pertama untuk pengenalan program, lingkungan, dan tim, kemudian memasuki fase Kerja Volunteer Utama selama beberapa hari dengan fokus pada tugas spesifik sesuai deskripsi pekerjaan, serta ditutup dengan Kegiatan Penutup dan Evaluasi Program.
-                </p>
+                {formConfig && formConfig.length > 0 ? (
+                  formConfig
+                    .filter(section => section.section_key === "detail")
+                    .map(section => (
+                      <div key={section.id} className={styles.detailSection}>
+                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
+                        {section.description && (
+                          <p className={styles.contentText}>{section.description}</p>
+                        )}
+                        {section.form_fields && section.form_fields.length > 0 && (
+                          <div className={styles.detailFields}>
+                            {section.form_fields.map(field => (
+                              <div key={field.id} className={styles.detailField}>
+                                <span className={styles.detailFieldLabel}>{field.label}</span>
+                                {field.value && (
+                                  <span className={styles.detailFieldValue}>
+                                    {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 ? (
+                                      field.form_field_options
+                                        .filter(opt => field.value.includes(opt.value))
+                                        .map(opt => opt.label)
+                                        .join(", ")
+                                    ) : (
+                                      field.value
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                ) : (
+                  <p className={styles.contentText}>Detail aktivitas akan segera diumumkan.</p>
+                )}
 
                 {/* Download Guide Book — SJN Only */}
                 {isSJN && (
@@ -455,39 +485,43 @@ export default function ProgramDetailPage({ params }) {
             {isSJN && activeTab === "divisi" && (
               <div ref={(el) => (tabRefs.divisi = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Divisi</h2>
-                <p className={styles.contentText}>
-                  Program ini terbagi menjadi beberapa divisi kerja yang masing-masing memiliki peran dan tanggung jawab spesifik. Peserta akan ditempatkan pada divisi yang sesuai dengan minat, keahlian, dan kebutuhan program.
-                </p>
-
-                <div className={styles.divisiSection}>
-                  <div className={styles.divisiItem}>
-                    <div className={styles.divisiInfo}>
-                      <h4>Pendidikan</h4>
-                      <p>Mengajar, membuat materi ajar, pendampingan belajar anak-anak, dan pengembangan literasi masyarakat</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.divisiItem}>
-                    <div className={styles.divisiInfo}>
-                      <h4>Kesehatan</h4>
-                      <p>Penyuluhan kesehatan, pendampingan masyarakat, dan edukasi gaya hidup sehat di lingkungan program</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.divisiItem}>
-                    <div className={styles.divisiInfo}>
-                      <h4>Pariwisata</h4>
-                      <p>Pengembangan destinasi, promosi wisata lokal, dan peningkatan daya tarik budaya daerah</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.divisiItem}>
-                    <div className={styles.divisiInfo}>
-                      <h4>Lingkungan</h4>
-                      <p>Pelestarian alam, penanaman pohon, pembersihan area konservasi, dan edukasi lingkungan hidup</p>
-                    </div>
-                  </div>
-                </div>
+                {formConfig && formConfig.length > 0 ? (
+                  formConfig
+                    .filter(section => section.section_key === "divisi")
+                    .map(section => (
+                      <div key={section.id} className={styles.detailSection}>
+                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
+                        {section.description && (
+                          <p className={styles.contentText}>{section.description}</p>
+                        )}
+                        {section.form_fields && section.form_fields.length > 0 && (
+                          <div className={styles.divisiSection}>
+                            {section.form_fields.map(field => (
+                              <div key={field.id} className={styles.divisiItem}>
+                                <div className={styles.divisiInfo}>
+                                  <h4>{field.label}</h4>
+                                  {field.placeholder && (
+                                    <p>{field.placeholder}</p>
+                                  )}
+                                  {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 && (
+                                    <div className={styles.divisiOptions}>
+                                      {field.form_field_options.map(opt => (
+                                        <span key={opt.id} className={styles.divisiOption}>
+                                          <span className={styles.divisiBullet}>-</span> {opt.label}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                ) : (
+                  <p className={styles.contentText}>Informasi divisi akan segera diumumkan.</p>
+                )}
               </div>
             )}
 
@@ -495,15 +529,41 @@ export default function ProgramDetailPage({ params }) {
             {!isSJN && activeTab === "pekerjaan" && (
               <div ref={(el) => (tabRefs.pekerjaan = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Pekerjaan</h2>
-                <p className={styles.contentText}>
-                  Sebagai volunteer dalam program ini, kamu akan dipercaya untuk mengerjakan berbagai tugas yang mendukung kelancaran operasional dan pencapaian tujuan program. Setiap volunteer diharapkan mampu bekerja secara mandiri maupun dalam tim, menunjukkan inisiatif, dan menjaga profesionalisme selama masa volunteering.
-                </p>
-                <p className={styles.contentText}>
-                  Deskripsi pekerjaan dapat meliputi bidang pendidikan dan pengajaran untuk anak-anak dan remaja di sekitar lokasi program, pendampingan dan bimbingan kepada masyarakat lokal dalam pengembangan keterampilan tertentu, serta partisipasi aktif dalam kegiatan pelestarian lingkungan dan ekosistem.
-                </p>
-                <p className={styles.contentText}>
-                  Setiap volunteer diharapkan untuk sepenuhnya hadir dan berpartisipasi aktif dalam seluruh rangkaian kegiatan yang telah dijadwalkan. Komitmen, fleksibilitas, dan semangat gotong royong adalah kunci keberhasilan dalam program volunteering ini.
-                </p>
+                {formConfig && formConfig.length > 0 ? (
+                  formConfig
+                    .filter(section => section.section_key === "pekerjaan")
+                    .map(section => (
+                      <div key={section.id} className={styles.detailSection}>
+                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
+                        {section.description && (
+                          <p className={styles.contentText}>{section.description}</p>
+                        )}
+                        {section.form_fields && section.form_fields.length > 0 && (
+                          <div className={styles.detailFields}>
+                            {section.form_fields.map(field => (
+                              <div key={field.id} className={styles.detailField}>
+                                <span className={styles.detailFieldLabel}>{field.label}</span>
+                                {field.placeholder && (
+                                  <span className={styles.detailFieldValue}>{field.placeholder}</span>
+                                )}
+                                {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 && (
+                                  <div className={styles.divisiOptions}>
+                                    {field.form_field_options.map(opt => (
+                                      <span key={opt.id} className={styles.divisiOption}>
+                                        <span className={styles.divisiBullet}>-</span> {opt.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                ) : (
+                  <p className={styles.contentText}>Informasi pekerjaan akan segera diumumkan.</p>
+                )}
               </div>
             )}
           </div>

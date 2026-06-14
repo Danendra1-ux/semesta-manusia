@@ -291,17 +291,6 @@
   color: var(--success);
 }
 
-.stepLabel {
-  font-size: 0.75rem;
-  color: var(--text-light);
-  opacity: 0.7;
-}
-
-.stepLabel.activeLabel {
-  color: var(--primary);
-  opacity: 1;
-}
-
 .stepLine {
   width: 2px;
   height: 2rem;

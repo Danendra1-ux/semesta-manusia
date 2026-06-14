@@ -564,7 +564,7 @@
 
 .divisiItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: white;
@@ -587,8 +587,67 @@
 
 .divisiInfo p {
   font-size: 0.85rem;
-  color: #9ca3af;
+  color: #4b5563;
   margin: 0;
+  line-height: 1.6;
+}
+
+.divisiOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.divisiOption {
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.divisiBullet {
+  margin-right: 0.3rem;
+}
+
+/* Detail Activity Fields */
+.detailSection {
+  margin-bottom: 2rem;
+}
+
+.detailSectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem;
+}
+
+.detailFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detailField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.detailFieldLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detailFieldValue {
+  font-size: 0.9rem;
+  color: #1f2937;
+  line-height: 1.6;
 }
 
 /* Not Found State */

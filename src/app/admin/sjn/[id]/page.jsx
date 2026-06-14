@@ -82,6 +82,33 @@ const CheckIcon = () => (
   </svg>
 );
 
+// Indonesian month mapping for date parsing
+const MONTH_MAP = {
+  "jan": 0, "januari": 0,
+  "feb": 1, "februari": 1,
+  "mar": 2, "maret": 2, "mara": 2,
+  "apr": 3, "april": 3,
+  "mei": 4,
+  "jun": 5, "juni": 5,
+  "jul": 6, "juli": 6,
+  "ags": 7, "agustus": 7,
+  "sep": 8, "september": 8,
+  "okt": 9, "oktober": 9,
+  "nov": 10, "nop": 10, "november": 10, "nopember": 10,
+  "des": 11, "dés": 11, "desember": 11,
+};
+
+/** Parse Indonesian-format date string like "3 Jan 2026" into a Date object */
+function parseIndonesianDate(str) {
+  const parts = str.trim().split(/\s+/);
+  if (parts.length < 3) return new Date(NaN);
+  const day = parseInt(parts[0], 10);
+  const month = MONTH_MAP[parts[1].toLowerCase().replace(/é/g, 'e')];
+  const year = parseInt(parts[2], 10);
+  if (isNaN(day) || month === undefined || isNaN(year)) return new Date(NaN);
+  return new Date(year, month, day);
+}
+
 const getStatusBadgeClass = (status) => {
   if (status === "Diterima") return styles.badgeDiterima;
   if (status === "Ditolak") return styles.badgeDitolak;
@@ -153,9 +180,9 @@ export default function SJNDetailPage({ params }) {
     }
 
     if (sortBy === "terbaru") {
-      result.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      result.sort((a, b) => parseIndonesianDate(b.tanggal) - parseIndonesianDate(a.tanggal));
     } else if (sortBy === "terlama") {
-      result.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+      result.sort((a, b) => parseIndonesianDate(a.tanggal) - parseIndonesianDate(b.tanggal));
     } else if (sortBy === "nama-az") {
       result.sort((a, b) => a.nama.localeCompare(b.nama, "id", { sensitivity: "base" }));
     } else if (sortBy === "nama-za") {

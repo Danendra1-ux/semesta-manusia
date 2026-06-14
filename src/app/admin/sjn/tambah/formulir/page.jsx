@@ -276,7 +276,7 @@ export default function FormulirTambahSJNPage() {
     const newField = {
       id: `f-${Date.now()}`,
       label: modalLabel,
-      type: modalFieldType.toLowerCase(),
+      type: modalFieldType === "Upload File" ? "upload" : modalFieldType.toLowerCase(),
       placeholder: modalPlaceholder,
       required: false,
       isFixed: false,

@@ -267,7 +267,6 @@ export default function RegisterPage({ params }) {
 
   const renderStepper = () => {
     const steps = getStepTitles();
-    const labels = ["Personal Info", "Essay", "Documents"];
     return (
       <div className={styles.stepper}>
         {steps.map((title, index) => {
@@ -290,9 +289,6 @@ export default function RegisterPage({ params }) {
                 <div className={styles.stepText}>
                   <span className={`${styles.stepTitle} ${isActive ? styles.activeTitle : isComplete ? styles.completeTitle : ""}`}>
                     {title}
-                  </span>
-                  <span className={`${styles.stepLabel} ${isActive ? styles.activeLabel : ""}`}>
-                    {labels[index] || `Step ${stepNum}`}
                   </span>
                 </div>
               </div>

@@ -133,7 +133,8 @@ export default function EditSJNProgramPage({ params }) {
 
   // Form state
   const [nama, setNama] = useState("");
-  const [jadwal, setJadwal] = useState("");
+  const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
+  const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
   const [lokasi, setLokasi] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [posterPreview, setPosterPreview] = useState(null);
@@ -165,7 +166,8 @@ export default function EditSJNProgramPage({ params }) {
     if (programId && programDetailData[programId]) {
       const data = programDetailData[programId];
       setNama(data.nama);
-      setJadwal(data.jadwal);
+      setJadwalMulai(data.jadwal);
+      setJadwalSelesai(data.jadwal);
       setLokasi(data.lokasi);
       setDeskripsi(data.deskripsi);
       setDetailFields(data.detailFields);
@@ -273,10 +275,16 @@ export default function EditSJNProgramPage({ params }) {
 
   const handleSave = () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!");
-    if (!jadwal) return showToast("Jadwal Pelaksanaan harus diisi!");
+    if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!");
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!");
     if (!fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!");
     if (!selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!");
+    if (new Date(fullyFundedBatasReg) > new Date(jadwalMulai)) {
+      return showToast("Batas Registrasi Fully Funded tidak boleh setelah jadwal mulai!");
+    }
+    if (new Date(selfFundedBatasReg) > new Date(jadwalMulai)) {
+      return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!");
+    }
     showToast("Perubahan berhasil disimpan!");
   };
 
@@ -392,21 +400,27 @@ export default function EditSJNProgramPage({ params }) {
                     />
                   </div>
                 </div>
+                {/* JADWAL PELAKSANAAN: RANGE DATE PICKER */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>Jadwal Pelaksanaan <span className={styles.required}>*</span></label>
-                  <div className={styles.inputWrapper}>
-                    <input
-                      type="date"
-                      className={styles.input}
-                      value={jadwal}
-                      onChange={(e) => setJadwal(e.target.value)}
-                    />
-                    <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalMulai}
+                        onChange={(e) => setJadwalMulai(e.target.value)}
+                      />
+                    </div>
+                    <span style={{ color: '#6b7280', fontWeight: 500 }}>-</span>
+                    <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={jadwalSelesai}
+                        onChange={(e) => setJadwalSelesai(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

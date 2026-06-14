@@ -836,7 +836,9 @@
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
   width: 400px;
   animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  overflow: hidden;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideIn {
@@ -910,6 +912,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modalField {
@@ -1027,6 +1031,17 @@
   width: 18px;
   height: 18px;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+/* =================== TRASH + EDIT ICONS =================== */
+.trashSvg {
+  width: 18px;
+  height: 18px;
+}
+
+.editIcon {
+  width: 18px;
+  height: 18px;
 }
 
 /* =================== RESPONSIVE =================== */

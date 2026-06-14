@@ -66,6 +66,8 @@ export default function TambahSemestaCampProgramPage() {
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
+  const [modalPlaceholder, setModalPlaceholder] = useState("");
+  const [modalOptions, setModalOptions] = useState([""]);
 
   // Toast
   const [toastShow, setToastShow] = useState(false);
@@ -75,13 +77,54 @@ export default function TambahSemestaCampProgramPage() {
   // Tooltip state for "Buat Formulir" button
   const [tooltipShow, setTooltipShow] = useState(false);
 
-  // Read formulir creation status from sessionStorage on mount
+  // 1. Load draft from sessionStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const scCreated = sessionStorage.getItem("sc_formulir_created");
       if (scCreated === "true") setFormulirCreated(true);
+
+      const draft = sessionStorage.getItem("sc_draft");
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        if (parsed.nama) setNama(parsed.nama);
+        if (parsed.jadwalMulai) setJadwalMulai(parsed.jadwalMulai);
+        if (parsed.jadwalSelesai) setJadwalSelesai(parsed.jadwalSelesai);
+        if (parsed.lokasi) setLokasi(parsed.lokasi);
+        if (parsed.deskripsi) setDeskripsi(parsed.deskripsi);
+        if (parsed.batasRegistrasi) setBatasRegistrasi(parsed.batasRegistrasi);
+        if (parsed.detailFields) setDetailFields(parsed.detailFields);
+        if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
+      }
+
+      // Reconstruct Poster File from Base64
+      const posterDraft = sessionStorage.getItem("sc_poster_draft");
+      const posterName = sessionStorage.getItem("sc_poster_name");
+      const posterType = sessionStorage.getItem("sc_poster_type");
+      if (posterDraft && posterName && posterType) {
+        setPosterPreview(posterDraft);
+        try {
+          const arr = posterDraft.split(",");
+          const bstr = atob(arr[1]);
+          const n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          let i = n;
+          while (i--) u8arr[i] = bstr.charCodeAt(i);
+          setPosterFile(new File([u8arr], posterName, { type: posterType }));
+        } catch (e) {
+          console.error("Failed to restore poster from storage:", e);
+        }
+      }
     }
   }, []);
+
+  // 2. Auto-save form state to sessionStorage on every change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("sc_draft", JSON.stringify({
+        nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields
+      }));
+    }
+  }, [nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields]);
 
   // Check if navigated back from formulir page with created=true
   useEffect(() => {
@@ -110,7 +153,16 @@ export default function TambahSemestaCampProgramPage() {
     if (file) {
       setPosterFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => setPosterPreview(reader.result);
+      reader.onloadend = () => {
+        setPosterPreview(reader.result);
+        try {
+          sessionStorage.setItem("sc_poster_draft", reader.result);
+          sessionStorage.setItem("sc_poster_name", file.name);
+          sessionStorage.setItem("sc_poster_type", file.type);
+        } catch (err) {
+          console.warn("File too large for auto-save.");
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -119,24 +171,45 @@ export default function TambahSemestaCampProgramPage() {
     setPosterPreview(null);
     setPosterFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    sessionStorage.removeItem("sc_poster_draft");
+    sessionStorage.removeItem("sc_poster_name");
+    sessionStorage.removeItem("sc_poster_type");
   };
 
   const openModal = (section) => {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
+    setModalPlaceholder("");
+    setModalOptions([""]);
     setModalOpen(true);
+  };
+
+  const handleAddOption = () => setModalOptions((prev) => [...prev, ""]);
+
+  const handleOptionChange = (index, value) => {
+    setModalOptions((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const handleRemoveOption = (index) => {
+    setModalOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddField = () => {
     if (!modalLabel.trim()) return;
 
+    const validOptions = modalOptions.filter((o) => o.trim() !== "");
     const newField = {
       id: `${targetSection === "detail" ? "df" : "pf"}-${Date.now()}`,
       label: modalLabel,
-      type: modalFieldType.toLowerCase(),
+      type: modalFieldType.toLowerCase().replace(/\s+/g, "-"),
       value: "",
-      placeholder: "",
+      placeholder: modalPlaceholder,
+      ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 
     if (targetSection === "detail") {
@@ -182,6 +255,9 @@ export default function TambahSemestaCampProgramPage() {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
+    if (batasRegistrasi && jadwalMulai && new Date(batasRegistrasi) > new Date(jadwalMulai)) {
+      return showToast("Batas Registrasi tidak boleh setelah jadwal mulai!", true);
+    }
 
     setIsSaving(true);
     let imageUrl = null;
@@ -236,7 +312,14 @@ export default function TambahSemestaCampProgramPage() {
       }
 
       showToast("Program berhasil disimpan!");
-      
+
+      // Clean up drafts on successful save
+      sessionStorage.removeItem("sc_draft");
+      sessionStorage.removeItem("sc_poster_draft");
+      sessionStorage.removeItem("sc_poster_name");
+      sessionStorage.removeItem("sc_poster_type");
+      sessionStorage.removeItem("sc_formulir_created");
+
       // Redirect setelah sukses
       setTimeout(() => {
         router.push("/admin/semesta-camp");
@@ -487,21 +570,50 @@ export default function TambahSemestaCampProgramPage() {
                     onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
                   />
                 ) : field.type === "dropdown" ? (
-                  <select
-                    className={styles.input}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
-                  >
-                    <option value="">Placeholder</option>
-                  </select>
-                ) : field.type === "upload file" ? (
-                  <div className={styles.uploadBox}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <p className={styles.uploadText}>Klik untuk upload file</p>
+                  <div className={styles.dropdownList}>
+                    {(field.options || []).map((opt, i) => (
+                      <span key={i} className={styles.dropdownOption}>
+                        <span className={styles.dropdownBullet}>-</span> {opt}
+                      </span>
+                    ))}
+                  </div>
+                ) : field.type === "upload-file" ? (
+                  <div className={styles.uploadFileArea}>
+                    <div className={styles.uploadFileBox}>
+                      {field.value ? (
+                        <span className={styles.uploadFileName}>
+                          {field.value}
+                          <button
+                            className={styles.clearUploadBtn}
+                            onClick={() => handleFieldChange("detail", field.id, "")}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </span>
+                      ) : (
+                        <div className={styles.uploadPlaceholder}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                          </svg>
+                          <p className={styles.uploadPlaceholderText}>
+                            Pilih file untuk diupload
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className={styles.fileInput}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFieldChange("detail", field.id, file.name);
+                      }}
+                    />
                   </div>
                 ) : (
                   <input
@@ -567,21 +679,50 @@ export default function TambahSemestaCampProgramPage() {
                     onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
                   />
                 ) : field.type === "dropdown" ? (
-                  <select
-                    className={styles.input}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
-                  >
-                    <option value="">Placeholder</option>
-                  </select>
-                ) : field.type === "upload file" ? (
-                  <div className={styles.uploadBox}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <p className={styles.uploadText}>Klik untuk upload file</p>
+                  <div className={styles.dropdownList}>
+                    {(field.options || []).map((opt, i) => (
+                      <span key={i} className={styles.dropdownOption}>
+                        <span className={styles.dropdownBullet}>-</span> {opt}
+                      </span>
+                    ))}
+                  </div>
+                ) : field.type === "upload-file" ? (
+                  <div className={styles.uploadFileArea}>
+                    <div className={styles.uploadFileBox}>
+                      {field.value ? (
+                        <span className={styles.uploadFileName}>
+                          {field.value}
+                          <button
+                            className={styles.clearUploadBtn}
+                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </span>
+                      ) : (
+                        <div className={styles.uploadPlaceholder}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                          </svg>
+                          <p className={styles.uploadPlaceholderText}>
+                            Pilih file untuk diupload
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className={styles.fileInput}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                      }}
+                    />
                   </div>
                 ) : (
                   <input
@@ -659,9 +800,59 @@ export default function TambahSemestaCampProgramPage() {
                     className={styles.input}
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
-                    placeholder="Label"
+                    placeholder="Contoh: Divisi"
                   />
                 </div>
+
+                <div className={styles.modalField}>
+                  <label className={styles.fieldLabel}>Placeholder</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={modalPlaceholder}
+                    onChange={(e) => setModalPlaceholder(e.target.value)}
+                    placeholder="Contoh: Masukkan nama"
+                  />
+                </div>
+
+                {/* Dropdown Options */}
+                {modalFieldType === "Dropdown" && (
+                  <div className={styles.modalField}>
+                    <label className={styles.fieldLabel}>Opsi</label>
+                    <div className={styles.optionsList}>
+                      {modalOptions.map((opt, idx) => (
+                        <div key={idx} className={styles.optionItem}>
+                          <input
+                            type="text"
+                            className={styles.input}
+                            value={opt}
+                            onChange={(e) => handleOptionChange(idx, e.target.value)}
+                            placeholder={`Opsi ${idx + 1}`}
+                          />
+                          {modalOptions.length > 1 && (
+                            <button
+                              className={styles.removeOptionBtn}
+                              onClick={() => handleRemoveOption(idx)}
+                              title="Hapus opsi"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <button className={styles.addOptionBtn} onClick={handleAddOption}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Tambah Opsi
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button
