@@ -74,6 +74,7 @@ export default function EditProgramPage({ params }) {
   const [toastIsError, setToastIsError] = useState(false);
 
   // 1. Fetch Data Lama dari Database
+  // 1. Fetch Data Lama dari Database
   useEffect(() => {
     if (!programId) return;
 
@@ -84,14 +85,10 @@ export default function EditProgramPage({ params }) {
         
         const data = await response.json();
         
-        // Memasukkan data ke dalam form
         setNama(data.title || "");
-        
-        // Memasukkan Range Date Jadwal Pelaksanaan
         setJadwalMulai(data.event_start_date ? data.event_start_date.split('T')[0] : "");
         setJadwalSelesai(data.event_end_date ? data.event_end_date.split('T')[0] : "");
         
-        // Menarik Batas Registrasi dari relasi program_funding_types jika ada
         if (data.program_funding_types && data.program_funding_types.length > 0) {
           const deadline = data.program_funding_types[0].deadline;
           setBatasRegistrasi(deadline ? deadline.split('T')[0] : "");
@@ -99,6 +96,11 @@ export default function EditProgramPage({ params }) {
         
         setLokasi(data.location || "");
         setDeskripsi(data.description || "");
+
+        // --- TAMBAHAN BARU: Set state dynamic fields dari database ---
+        setDetailFields(data.detail_program || []);
+        setPekerjaanFields(data.pekerjaan || []);
+        // -------------------------------------------------------------
         
         if (data.image_url) {
           setPosterPreview(data.image_url);
@@ -239,6 +241,10 @@ export default function EditProgramPage({ params }) {
         description: deskripsi,
         image_url: imageUrl,
         funding_deadline: batasRegistrasi,
+        // --- TAMBAHAN BARU ---
+        detail_program: detailFields,
+        pekerjaan: pekerjaanFields
+        // ---------------------
       };
 
       const response = await fetch(`/api/programs/${programId}`, {

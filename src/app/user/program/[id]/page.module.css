@@ -491,11 +491,15 @@
 /* Tab Panel */
 .tabPanel {
   padding: 3rem 0 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* Content Sections */
 .contentSection {
   max-width: 900px;
+  width: 100%;
 }
 
 .sectionTitle {
@@ -504,6 +508,29 @@
   color: #1f2937;
   margin: 0 0 1.25rem;
   line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.sectionTitle::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 1.5rem;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #00BFFF 0%, #0099CC 100%);
+  flex-shrink: 0;
+}
+
+.contentSection:nth-of-type(3) .sectionTitle::before,
+.contentSection:nth-of-type(5) .sectionTitle::before,
+.contentSection:nth-of-type(7) .sectionTitle::before {
+  background: linear-gradient(180deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.sjn .sectionTitle::before {
+  background: linear-gradient(180deg, #7C3AED 0%, #A855F7 100%);
 }
 
 .contentText {
@@ -511,10 +538,39 @@
   color: #4b5563;
   line-height: 1.85;
   margin: 0 0 1.5rem;
+  text-align: justify;
 }
 
 .contentText:last-child {
   margin-bottom: 0;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 2rem;
+  background: #f9fafb;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyState svg {
+  width: 40px;
+  height: 40px;
+  color: #9ca3af;
+  opacity: 0.6;
+}
+
+.emptyState p {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Download Button */
@@ -538,6 +594,7 @@
 .downloadButton:hover {
   background: rgba(0, 191, 255, 0.06);
   box-shadow: 0 4px 16px rgba(0, 191, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .downloadButton.sjn {
@@ -555,34 +612,122 @@
   height: 20px;
 }
 
+/* Divisi Section Card */
+.divisiSectionCard {
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.divisiSectionCard:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 20px rgba(0, 191, 255, 0.07);
+}
+
+.sjn .divisiSectionCard {
+  border-color: #ede9fe;
+}
+
+.sjn .divisiSectionCard:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+}
+
+/* Divisi Section Title */
+.detailSectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detailSectionTitle::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 1.125rem;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #00BFFF 0%, #0099CC 100%);
+  flex-shrink: 0;
+}
+
+.sjn .detailSectionTitle::before {
+  background: linear-gradient(180deg, #7C3AED 0%, #A855F7 100%);
+}
+
 /* Divisi List */
 .divisiSection {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.875rem;
+  margin-top: 1rem;
 }
 
 .divisiItem {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: white;
+  padding: 1.125rem 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
   border: 1.5px solid #e5e7eb;
   border-radius: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.divisiItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #00BFFF 0%, #0099CC 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .divisiItem:hover {
-  border-color: #00BFFF;
-  box-shadow: 0 4px 16px rgba(0, 191, 255, 0.08);
+  border-color: #38bdf8;
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.divisiItem:hover::before {
+  opacity: 1;
+}
+
+.sjn .divisiItem::before {
+  background: linear-gradient(180deg, #7C3AED 0%, #A855F7 100%);
+}
+
+.sjn .divisiItem:hover {
+  border-color: #a78bfa;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.1);
 }
 
 .divisiInfo h4 {
   font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.2rem;
+  margin: 0 0 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.divisiInfo h4 .divider {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
 }
 
 .divisiInfo p {
@@ -594,60 +739,145 @@
 
 .divisiOptions {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.3rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.625rem;
 }
 
 .divisiOption {
-  font-size: 0.85rem;
-  color: #4b5563;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.divisiItem:hover .divisiOption {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+.sjn .divisiItem:hover .divisiOption {
+  background: #f3e8ff;
+  border-color: #e9d5ff;
+  color: #6d28d9;
 }
 
 .divisiBullet {
-  margin-right: 0.3rem;
-}
-
-/* Detail Activity Fields */
-.detailSection {
-  margin-bottom: 2rem;
-}
-
-.detailSectionTitle {
-  font-size: 1.125rem;
+  margin-right: 0.1rem;
   font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 1rem;
 }
 
+/* Detail Fields — card layout */
 .detailFields {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
+/* Detail Field — single card row */
 .detailField {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   background: white;
   border: 1.5px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
+.detailField:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 2px 12px rgba(0, 191, 255, 0.06);
+}
+
+.sjn .detailField {
+  border-color: #ede9fe;
+}
+
+.sjn .detailField:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.07);
+}
+
+/* Label — uppercase, muted, with subtle indicator dot */
 .detailFieldLabel {
-  font-size: 0.8rem;
+  font-size: 0.725rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.6px;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
+.detailFieldLabel::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.sjn .detailFieldLabel::before {
+  background: #c4b5fd;
+}
+
+/* Value — larger, darker, prominent */
 .detailFieldValue {
-  font-size: 0.9rem;
-  color: #1f2937;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0f172a;
+  line-height: 1.65;
+}
+
+.detailFieldValue.placeholder {
+  color: #cbd5e1;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Dropdown options inside value column */
+.detailFields .divisiOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+/* Upload-file area inside value column */
+.detailFieldUpload {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+/* Responsive — stack vertically on small screens */
+@media (max-width: 640px) {
+  .detailFieldValue,
+  .detailFieldUpload {
+    padding-top: 0.75rem;
+  }
+
+  .detailFields .divisiOptions {
+    padding-top: 0;
+  }
+}
+
+/* Detail Section Card (for divisi/tab divisi) */
+.detailSection {
+  margin-bottom: 1.5rem;
 }
 
 /* Not Found State */

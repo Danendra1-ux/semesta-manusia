@@ -390,7 +390,7 @@ export default function ProgramDetailPage({ params }) {
               className={`${styles.tab} ${activeTab === "detail" ? styles.active : ""}`}
               onClick={() => handleTabChange("detail")}
             >
-              Detail Aktivitas
+              Detail Program
             </button>
             {isSJN ? (
               <button
@@ -420,64 +420,78 @@ export default function ProgramDetailPage({ params }) {
                     {program.description}
                   </p>
                 ) : (
-                  <p className={styles.contentText}>Belum ada deskripsi untuk program ini.</p>
-                )}
-              </div>
-            )}
-
-            {/* === Tab: Detail Aktivitas === */}
-            {activeTab === "detail" && (
-              <div ref={(el) => (tabRefs.detail = el)} className={styles.contentSection}>
-                <h2 className={styles.sectionTitle}>Detail Aktivitas</h2>
-                {formConfig && formConfig.length > 0 ? (
-                  formConfig
-                    .filter(section => section.section_key === "detail")
-                    .map(section => (
-                      <div key={section.id} className={styles.detailSection}>
-                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
-                        {section.description && (
-                          <p className={styles.contentText}>{section.description}</p>
-                        )}
-                        {section.form_fields && section.form_fields.length > 0 && (
-                          <div className={styles.detailFields}>
-                            {section.form_fields.map(field => (
-                              <div key={field.id} className={styles.detailField}>
-                                <span className={styles.detailFieldLabel}>{field.label}</span>
-                                {field.value && (
-                                  <span className={styles.detailFieldValue}>
-                                    {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 ? (
-                                      field.form_field_options
-                                        .filter(opt => field.value.includes(opt.value))
-                                        .map(opt => opt.label)
-                                        .join(", ")
-                                    ) : (
-                                      field.value
-                                    )}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                ) : (
-                  <p className={styles.contentText}>Detail aktivitas akan segera diumumkan.</p>
-                )}
-
-                {/* Download Guide Book — SJN Only */}
-                {isSJN && (
-                  <button className={`${styles.downloadButton} ${getCategoryClass()}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <div className={styles.emptyState}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                       <line x1="16" y1="13" x2="8" y2="13" />
                       <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
                     </svg>
-                    Download Guide Book
-                  </button>
+                    <p>Belum ada deskripsi untuk program ini.</p>
+                  </div>
                 )}
+              </div>
+            )}
+
+            {/* === Tab: Detail Program === */}
+            {activeTab === "detail" && (
+              <div ref={(el) => (tabRefs.detail = el)} className={styles.contentSection}>
+                <h2 className={styles.sectionTitle}>Detail Program</h2>
+                {program.detail_program && program.detail_program.length > 0 ? (
+                  <div className={`${styles.detailFields} ${styles.horizontal}`}>
+                    {program.detail_program.map((field) => (
+                      <div key={field.id} className={styles.detailField}>
+                        <span className={styles.detailFieldLabel}>{field.label}</span>
+
+                        {/* Render berdasarkan tipe datanya */}
+                        {field.type === "dropdown" ? (
+                          <div className={styles.divisiOptions}>
+                            {field.options && field.options.map((opt, i) => (
+                              <span key={i} className={styles.divisiOption}>
+                                <span className={styles.divisiBullet}>-</span> {opt}
+                              </span>
+                            ))}
+                          </div>
+                        ) : field.type === "upload-file" ? (
+                          <div className={styles.detailFieldUpload}>
+                            {field.value ? (
+                              <a
+                                href={field.value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${styles.downloadButton} ${getCategoryClass()}`}
+                                style={{ marginBottom: 0, padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="16" y1="13" x2="8" y2="13" />
+                                  <line x1="16" y1="17" x2="8" y2="17" />
+                                  <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                                Download {field.label}
+                              </a>
+                            ) : (
+                              <span className={`${styles.detailFieldValue} ${styles.placeholder}`}>-</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className={`${styles.detailFieldValue} ${field.value ? '' : styles.placeholder}`}>{field.value || "-"}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 8v4M12 16h.01" />
+                    </svg>
+                    <p>Detail program belum tersedia.</p>
+                  </div>
+                )}
+
+                {/* Hapus tombol Download Guide Book statis yang lama dari sini karena sekarang sudah dinamis */}
               </div>
             )}
 
@@ -489,7 +503,7 @@ export default function ProgramDetailPage({ params }) {
                   formConfig
                     .filter(section => section.section_key === "divisi")
                     .map(section => (
-                      <div key={section.id} className={styles.detailSection}>
+                      <div key={section.id} className={styles.divisiSectionCard}>
                         {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
                         {section.description && (
                           <p className={styles.contentText}>{section.description}</p>
@@ -499,7 +513,7 @@ export default function ProgramDetailPage({ params }) {
                             {section.form_fields.map(field => (
                               <div key={field.id} className={styles.divisiItem}>
                                 <div className={styles.divisiInfo}>
-                                  <h4>{field.label}</h4>
+                                  <h4>{field.label} <span className={styles.divider}></span></h4>
                                   {field.placeholder && (
                                     <p>{field.placeholder}</p>
                                   )}
@@ -520,7 +534,14 @@ export default function ProgramDetailPage({ params }) {
                       </div>
                     ))
                 ) : (
-                  <p className={styles.contentText}>Informasi divisi akan segera diumumkan.</p>
+                  <div className={styles.emptyState}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                    </svg>
+                    <p>Informasi divisi akan segera diumumkan.</p>
+                  </div>
                 )}
               </div>
             )}
@@ -529,40 +550,57 @@ export default function ProgramDetailPage({ params }) {
             {!isSJN && activeTab === "pekerjaan" && (
               <div ref={(el) => (tabRefs.pekerjaan = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Pekerjaan</h2>
-                {formConfig && formConfig.length > 0 ? (
-                  formConfig
-                    .filter(section => section.section_key === "pekerjaan")
-                    .map(section => (
-                      <div key={section.id} className={styles.detailSection}>
-                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
-                        {section.description && (
-                          <p className={styles.contentText}>{section.description}</p>
-                        )}
-                        {section.form_fields && section.form_fields.length > 0 && (
-                          <div className={styles.detailFields}>
-                            {section.form_fields.map(field => (
-                              <div key={field.id} className={styles.detailField}>
-                                <span className={styles.detailFieldLabel}>{field.label}</span>
-                                {field.placeholder && (
-                                  <span className={styles.detailFieldValue}>{field.placeholder}</span>
-                                )}
-                                {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 && (
-                                  <div className={styles.divisiOptions}>
-                                    {field.form_field_options.map(opt => (
-                                      <span key={opt.id} className={styles.divisiOption}>
-                                        <span className={styles.divisiBullet}>-</span> {opt.label}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+                {program.pekerjaan && program.pekerjaan.length > 0 ? (
+                  <div className={`${styles.detailFields} ${styles.horizontal}`}>
+                    {program.pekerjaan.map((field) => (
+                      <div key={field.id} className={styles.detailField}>
+                        <span className={styles.detailFieldLabel}>{field.label}</span>
+                        {/* Render berdasarkan tipe datanya */}
+                        {field.type === "dropdown" ? (
+                          <div className={styles.divisiOptions}>
+                            {field.options && field.options.map((opt, i) => (
+                              <span key={i} className={styles.divisiOption}>
+                                <span className={styles.divisiBullet}>-</span> {opt}
+                              </span>
                             ))}
                           </div>
+                        ) : field.type === "upload-file" ? (
+                          <div className={styles.detailFieldUpload}>
+                            {field.value ? (
+                              <a
+                                href={field.value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${styles.downloadButton} ${getCategoryClass()}`}
+                                style={{ marginBottom: 0, padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="16" y1="13" x2="8" y2="13" />
+                                  <line x1="16" y1="17" x2="8" y2="17" />
+                                  <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                                Download {field.label}
+                              </a>
+                            ) : (
+                              <span className={`${styles.detailFieldValue} ${styles.placeholder}`}>-</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className={`${styles.detailFieldValue} ${field.value ? '' : styles.placeholder}`}>{field.value || "-"}</span>
                         )}
                       </div>
-                    ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className={styles.contentText}>Informasi pekerjaan akan segera diumumkan.</p>
+                  <div className={styles.emptyState}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+                    </svg>
+                    <p>Informasi pekerjaan belum tersedia.</p>
+                  </div>
                 )}
               </div>
             )}
