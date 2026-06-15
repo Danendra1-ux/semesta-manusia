@@ -67,7 +67,6 @@ export default function EditProgramPage({ params }) {
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
-  const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
   // Status & Toast
@@ -152,7 +151,6 @@ export default function EditProgramPage({ params }) {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
-    setModalPlaceholder("");
     setModalOptions([""]);
     setModalOpen(true);
   };
@@ -180,7 +178,6 @@ export default function EditProgramPage({ params }) {
       label: modalLabel,
       type: modalFieldType.toLowerCase().replace(/\s+/g, "-"),
       value: "",
-      placeholder: modalPlaceholder,
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 

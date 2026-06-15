@@ -66,7 +66,6 @@ export default function TambahSemestaCampProgramPage() {
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
-  const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
   // Toast
@@ -180,7 +179,6 @@ export default function TambahSemestaCampProgramPage() {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
-    setModalPlaceholder("");
     setModalOptions([""]);
     setModalOpen(true);
   };
@@ -208,7 +206,6 @@ export default function TambahSemestaCampProgramPage() {
       label: modalLabel,
       type: modalFieldType.toLowerCase().replace(/\s+/g, "-"),
       value: "",
-      placeholder: modalPlaceholder,
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 
@@ -823,17 +820,6 @@ export default function TambahSemestaCampProgramPage() {
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
                     placeholder="Contoh: Divisi"
-                  />
-                </div>
-
-                <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Placeholder</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={modalPlaceholder}
-                    onChange={(e) => setModalPlaceholder(e.target.value)}
-                    placeholder="Contoh: Masukkan nama"
                   />
                 </div>
 
