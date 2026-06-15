@@ -17,8 +17,7 @@ export async function GET(request, { params }) {
       program_funding_types(code, label),
       divisions(code, name),
       registration_answers(
-        id, value_text, value_date, value_number,
-        form_fields(field_key, label, field_type)
+        id, field_id, field_label, value_text, value_date, value_number
       ),
       registration_files(
         id, field_key, file_url, file_name, file_size, mime_type, uploaded_at

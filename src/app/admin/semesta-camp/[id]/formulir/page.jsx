@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
+import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];
 
@@ -60,6 +62,7 @@ const EditIcon = () => (
 export default function FormulirPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
+  const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -70,34 +73,8 @@ export default function FormulirPage({ params }) {
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state
-  const [sections, setSections] = useState([
-    {
-      id: "data-diri-fixed",
-      title: "Data Diri",
-      isFixed: true,
-      fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", placeholder: "Masukkan nama lengkap", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", placeholder: "contoh@email.com", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", placeholder: "(123) 000-0000", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", placeholder: "@username", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", placeholder: "", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", placeholder: "Kota/Kabupaten", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", placeholder: "Nama universitas/sekolah/instansi", required: true, isFixed: true, value: "" },
-        { id: "f8", label: "Alasan Mengikuti Kegiatan Semesta Camp", type: "textarea", placeholder: "Jelaskan alasan Anda ingin mengikuti kegiatan ini", required: true, isFixed: true, value: "" },
-      ],
-    },
-    {
-      id: "kelengkapan-persyaratan",
-      title: "Kelengkapan Persyaratan",
-      isFixed: false,
-      fields: [
-        { id: "f9",  label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-        { id: "f10", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-        { id: "f11", label: "Upload Bukti Pembayaran", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-      ],
-    },
-  ]);
+  // Section state — initialize with default template
+  const [sections, setSections] = useState(DEFAULT_FORM_TEMPLATE);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -115,6 +92,44 @@ export default function FormulirPage({ params }) {
     setToastMessage(msg);
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3000);
+  };
+
+  // Fetch form data from program when page loads
+  // If no saved form exists in DB, keep the default template (useState initialization)
+  useEffect(() => {
+    if (!programId) return;
+    const fetchForm = async () => {
+      try {
+        const res = await fetch(`/api/programs/${programId}`);
+        const data = await res.json();
+        if (data.custom_registration_form && data.custom_registration_form.length > 0) {
+          setSections(data.custom_registration_form);
+        }
+      } catch (err) {
+        showToast("Gagal memuat form", true);
+      }
+    };
+    fetchForm();
+  }, [programId]);
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`/api/programs/${programId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_registration_form: sections })
+      });
+
+      if (!response.ok) throw new Error("Gagal menyimpan");
+
+      showToast("Form berhasil disimpan!", false);
+
+      setTimeout(() => {
+        router.push(`/admin/semesta-camp/${programId}/edit`);
+      }, 1000);
+    } catch (err) {
+      showToast(err.message, true);
+    }
   };
 
   const openEditPlaceholder = (field, sectionId) => {
@@ -326,10 +341,6 @@ export default function FormulirPage({ params }) {
       prev.map((s) => (s.id === editingTitle ? { ...s, title: titleValue } : s))
     );
     setEditingTitle(null);
-  };
-
-  const handleSave = () => {
-    showToast("Form berhasil disimpan!");
   };
 
   // Filter only real sections (not the add section trigger at bottom)

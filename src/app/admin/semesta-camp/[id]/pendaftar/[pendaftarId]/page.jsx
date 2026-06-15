@@ -11,26 +11,34 @@ export default function PendaftarDetailPage({ params }) {
   const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // State untuk Data Pendaftar dari API
+  // State untuk Data
   const [pendaftar, setPendaftar] = useState(null);
+  const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch Data Pendaftar
+  // Fetch Data Pendaftar & Program
   useEffect(() => {
-    if (!pendaftarId) {
+    if (!pendaftarId || !programId) {
       setLoading(false);
       return;
     }
 
-    const fetchPendaftarDetail = async () => {
+    const fetchData = async () => {
       try {
-        // Asumsi struktur folder API Anda adalah /api/registrations/[id]/route.js
-        const response = await fetch(`/api/registrations/${pendaftarId}`);
-        if (!response.ok) throw new Error("Gagal mengambil data pendaftar");
-        
-        const data = await response.json();
-        setPendaftar(data);
+        const [resPendaftar, resProgram] = await Promise.all([
+          fetch(`/api/registrations/${pendaftarId}`),
+          fetch(`/api/programs/${programId}`)
+        ]);
+
+        if (!resPendaftar.ok) throw new Error("Gagal mengambil data pendaftar");
+        if (!resProgram.ok) throw new Error("Gagal mengambil data program");
+
+        const dataPendaftar = await resPendaftar.json();
+        const dataProgram = await resProgram.json();
+
+        setPendaftar(dataPendaftar);
+        setProgram(dataProgram);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -38,8 +46,8 @@ export default function PendaftarDetailPage({ params }) {
       }
     };
 
-    fetchPendaftarDetail();
-  }, [pendaftarId]);
+    fetchData();
+  }, [pendaftarId, programId]);
 
   const getStatusBadgeClass = (status) => {
     if (status === "Diterima") return styles.badgeDiterima;
@@ -47,7 +55,6 @@ export default function PendaftarDetailPage({ params }) {
     return styles.badgePending;
   };
 
-  // Helper untuk memformat tanggal
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -57,25 +64,48 @@ export default function PendaftarDetailPage({ params }) {
     });
   };
 
-  // Helper untuk format ukuran file (Bytes ke KB)
   const formatFileSize = (bytes) => {
     if (!bytes) return "";
     return `${(bytes / 1024).toFixed(0)} KB`;
   };
 
-  // Helper untuk me-mapping array file dari database
-  const berkasList = (files) => {
-    if (!files || !Array.isArray(files)) return [];
+  // Helper untuk mendapatkan jawaban Teks / Tipe Lainnya
+  const getAnswerForField = (field) => {
+    // 1. Coba cari di jawaban dinamis
+    const dynamicAns = pendaftar?.registration_answers?.find(a => a.field_id === field.id);
+    if (dynamicAns) {
+      return dynamicAns.value_text || dynamicAns.value_date || dynamicAns.value_number || "-";
+    }
+
+    // 2. Fallback untuk data yang tersimpan di kolom statis lama
+    const labelLower = field.label.toLowerCase();
+    if (labelLower.includes("nama lengkap")) return pendaftar.full_name;
+    if (labelLower.includes("email")) return pendaftar.email;
+    if (labelLower.includes("whatsapp")) return pendaftar.whatsapp;
+    if (labelLower.includes("instagram")) return pendaftar.instagram;
+    if (labelLower.includes("tanggal lahir")) return formatDate(pendaftar.birth_date);
+    if (labelLower.includes("asal daerah")) return pendaftar.region;
+    if (labelLower.includes("instansi")) return pendaftar.institution;
+    if (labelLower.includes("alasan")) return pendaftar.reason || pendaftar.why_join;
     
-    const getFile = (key) => files.find(f => f.field_key === key);
+    return "-";
+  };
+
+  // Helper untuk mendapatkan URL & Info File Upload
+  const getFileForField = (field) => {
+    // 1. Cari berdasarkan ID field (Sistem baru)
+    let fileObj = pendaftar?.registration_files?.find(f => f.field_key === field.id);
     
-    // Daftar file yang dicari (disesuaikan dengan form)
-    return [
-      { key: "instagramProof", label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", file: getFile("instagramProof") },
-      { key: "tiktokProof", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", file: getFile("tiktokProof") },
-      { key: "storyProof", label: "Bukti upload Invitation Story ke Story Instagram", file: getFile("storyProof") }, // Hanya muncul jika ada (contoh: SJN)
-      { key: "paymentProof", label: "Upload Bukti Pembayaran", file: getFile("paymentProof") },
-    ].filter(item => item.file); // Hanya kembalikan file yang benar-benar di-upload
+    // 2. Fallback berdasarkan Keyword Label (Sistem lama)
+    if (!fileObj) {
+      const labelLower = field.label.toLowerCase();
+      if (labelLower.includes("instagram")) fileObj = pendaftar?.registration_files?.find(f => f.field_key === "instagramProof");
+      else if (labelLower.includes("tiktok")) fileObj = pendaftar?.registration_files?.find(f => f.field_key === "tiktokProof");
+      else if (labelLower.includes("pembayaran")) fileObj = pendaftar?.registration_files?.find(f => f.field_key === "paymentProof");
+      else if (labelLower.includes("story")) fileObj = pendaftar?.registration_files?.find(f => f.field_key === "storyProof");
+    }
+    
+    return fileObj;
   };
 
   if (loading) {
@@ -89,13 +119,10 @@ export default function PendaftarDetailPage({ params }) {
     );
   }
 
-  if (error || !pendaftar) {
+  if (error || !pendaftar || !program) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
         <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
           <div className={styles.notFound}>
             <h2>Pendaftar tidak ditemukan atau terjadi kesalahan</h2>
@@ -109,10 +136,11 @@ export default function PendaftarDetailPage({ params }) {
     );
   }
 
-  // Dapatkan inisial untuk avatar (Contoh: "Budi Santoso" -> "BS")
-  const avatarInitials = pendaftar.full_name
-    ? pendaftar.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
-    : "U";
+  const fullName = pendaftar.full_name || "User";
+  const avatarInitials = fullName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+
+  // Ambil struktur form pendaftaran
+  const formSections = program?.custom_registration_form || [];
 
   return (
     <div className={styles.pageLayout}>
@@ -133,7 +161,7 @@ export default function PendaftarDetailPage({ params }) {
           </div>
           <div className={styles.headerText}>
             <div className={styles.headerTitleRow}>
-              <h1 className={styles.pageTitle}>{pendaftar.full_name}</h1>
+              <h1 className={styles.pageTitle}>{fullName}</h1>
               <span className={`${styles.statusBadge} ${getStatusBadgeClass(pendaftar.status)}`}>
                 {pendaftar.status}
               </span>
@@ -148,111 +176,73 @@ export default function PendaftarDetailPage({ params }) {
             {avatarInitials}
           </div>
           <div className={styles.profileInfo}>
-            <h2 className={styles.profileName}>{pendaftar.full_name}</h2>
-            <p className={styles.profileInstitution}>{pendaftar.institution}</p>
+            <h2 className={styles.profileName}>{fullName}</h2>
+            <p className={styles.profileInstitution}>{pendaftar.institution || "-"}</p>
           </div>
         </div>
 
-        {/* Info Grid */}
+        {/* RENDER SECTIONS SECARA DINAMIS */}
         <div className={styles.infoGrid}>
-          <div className={styles.infoCard}>
-            <h3 className={styles.infoCardTitle}>Data Diri</h3>
-            <div className={styles.infoList}>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Nama Lengkap</span>
-                <span className={styles.infoValue}>{pendaftar.full_name}</span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Tanggal Lahir</span>
-                <span className={styles.infoValue}>{formatDate(pendaftar.birth_date)}</span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Asal Daerah</span>
-                <span className={styles.infoValue}>{pendaftar.region}</span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Nama Instansi</span>
-                <span className={styles.infoValue}>{pendaftar.institution}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.infoCard}>
-            <h3 className={styles.infoCardTitle}>Kontak & Media Sosial</h3>
-            <div className={styles.infoList}>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>No. WhatsApp</span>
-                <a
-                  href={`https://wa.me/${pendaftar.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.infoLink}
-                >
-                  {pendaftar.whatsapp}
-                </a>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Email</span>
-                <a href={`mailto:${pendaftar.email}`} className={styles.infoLink}>
-                  {pendaftar.email}
-                </a>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Akun Instagram</span>
-                <a
-                  href={`https://instagram.com/${(pendaftar.instagram || "").replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.infoLink}
-                >
-                  {pendaftar.instagram}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Motivation Card */}
-        <div className={styles.motivationCard}>
-          <h3 className={styles.motivationTitle}>Alasan Mengikuti Kegiatan</h3>
-          <p className={styles.motivationText}>{pendaftar.reason || pendaftar.why_join || "-"}</p>
-        </div>
-
-        {/* Kelengkapan Persyaratan (Berkas) Card */}
-        <div className={styles.berkasCard}>
-          <h3 className={styles.berkasTitle}>Kelengkapan Persyaratan</h3>
-          <div className={styles.berkasList}>
-            {berkasList(pendaftar.registration_files).length > 0 ? (
-              berkasList(pendaftar.registration_files).map((item) => (
-                <div key={item.key} className={styles.berkasItem}>
-                  <div className={styles.berkasIcon}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                  <div className={styles.berkasInfo}>
-                    <span className={styles.berkasLabel}>{item.label}</span>
-                    <span className={styles.berkasName}>{item.file.file_name}</span>
-                    <span className={styles.berkasSize}>{formatFileSize(item.file.file_size)}</span>
-                  </div>
-                  <a 
-                    href={item.file.file_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className={styles.berkasDownload} 
-                    aria-label="Lihat/Download Berkas"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                    </svg>
-                  </a>
+          {formSections.length > 0 ? (
+            formSections.map((section) => (
+              <div key={section.id} className={styles.infoCard} style={{ gridColumn: '1 / -1' }}>
+                <h3 className={styles.infoCardTitle}>{section.title}</h3>
+                
+                <div className={styles.infoList} style={{ gap: '1.25rem' }}>
+                  {section.fields.map((field) => {
+                    // Cek apakah ada file yang terupload untuk field ini
+                    const fileObj = pendaftar?.registration_files?.find(f => f.field_key === field.id);
+                    
+                    return (
+                      <div key={field.id} className={styles.infoItem} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem', width: '100%' }}>
+                        <span className={styles.infoLabel}>{field.label}</span>
+                        
+                        {field.type === "upload" ? (
+                          // RENDER FILE UPLOAD
+                          fileObj ? (
+                            <div className={styles.berkasItem} style={{ width: '100%', maxWidth: '600px', marginTop: '0.2rem' }}>
+                              <div className={styles.berkasIcon}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                              </div>
+                              <div className={styles.berkasInfo}>
+                                <span className={styles.berkasName} style={{ fontWeight: "normal", color: "#6b7280", fontSize: "0.8rem" }}>
+                                  {fileObj.file_name} • {formatFileSize(fileObj.file_size)}
+                                </span>
+                              </div>
+                              <a 
+                                href={fileObj.file_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className={styles.berkasDownload} 
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                                </svg>
+                              </a>
+                            </div>
+                          ) : (
+                            <span className={styles.infoValue} style={{ color: "#9ca3af" }}>Tidak ada berkas.</span>
+                          )
+                        ) : (
+                          // RENDER TEKS / DROPDOWN / LAINNYA
+                          <span className={styles.infoValue} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                            {getAnswerForField(field)}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))
-            ) : (
-              <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Belum ada berkas yang diunggah.</p>
-            )}
-          </div>
+              </div>
+            ))
+          ) : (
+            <div className={styles.infoCard} style={{ gridColumn: '1 / -1' }}>
+              <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Konfigurasi form belum tersedia.</p>
+            </div>
+          )}
         </div>
 
         {/* Registration Info Card */}
@@ -282,7 +272,7 @@ export default function PendaftarDetailPage({ params }) {
           </Link>
           <div className={styles.actionRight}>
             <a
-              href={`https://wa.me/${pendaftar.whatsapp}`}
+              href={`https://wa.me/${pendaftar.whatsapp || ""}`}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.whatsappBtn}

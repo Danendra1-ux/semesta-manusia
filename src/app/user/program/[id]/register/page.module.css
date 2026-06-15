@@ -751,58 +751,6 @@
 }
 
 /* ==========================================
-   PAYMENT SECTION
-   ========================================== */
-.paymentSection {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  border: 2px solid #fcd34d;
-  border-radius: 16px;
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.paymentSection::before {
-  content: "";
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(251, 191, 36, 0.2);
-}
-
-.paymentTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 1rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.paymentTitle::before {
-  content: "💳";
-}
-
-.paymentInfo {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-
-.paymentInfo p {
-  margin: 0;
-}
-
-.paymentInfo strong {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-
-/* ==========================================
    NAVIGATION BUTTONS
    ========================================== */
 .navigation {

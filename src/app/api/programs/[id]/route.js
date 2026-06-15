@@ -19,37 +19,47 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  // 1. PERBAIKAN DI SINI: Await params
   const resolvedParams = await params;
   const { id } = resolvedParams;
   
   const body = await request.json();
   
-  // Tangkap field baru dari body
-  const { 
-    title, event_start_date, event_end_date, location, description, 
-    image_url, detail_program, pekerjaan 
+  // Tangkap field form pendaftaran
+  const {
+    title, event_start_date, event_end_date, location, description,
+    image_url, detail_program, pekerjaan,
+    custom_registration_form, // <--- TAMBAHAN BARU
+    funding_deadline
   } = body;
 
   const { data, error } = await supabase
     .from('programs')
     .update({
       title,
-      // Pastikan string kosong tidak dikirim ke kolom date, gunakan null
       event_start_date: event_start_date || null,
       event_end_date: event_end_date || null,
       location,
       description,
       image_url,
-      detail_program, 
-      pekerjaan,      
+      detail_program,
+      pekerjaan,
+      custom_registration_form, // <--- TAMBAHAN BARU
       updated_at: new Date().toISOString()
     })
     .eq('id', id)
     .select();
 
-  // 2. PERBAIKAN RESPONSE: Gunakan NextResponse untuk konsistensi
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Update funding deadline in program_funding_types (self-funded record)
+  if (funding_deadline !== undefined) {
+    await supabase
+      .from('program_funding_types')
+      .update({ deadline: funding_deadline || null })
+      .eq('program_id', id)
+      .eq('code', 'self');
+  }
+
   return NextResponse.json(data);
 }
 

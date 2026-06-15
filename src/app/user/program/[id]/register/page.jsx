@@ -31,6 +31,16 @@ const Toast = ({ message, show, isError }) => (
   </div>
 );
 
+// Ikon Kalender
+const CalendarIcon = () => (
+  <svg className={styles.calendarIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
 export default function RegisterPage({ params }) {
   const { id } = use(params);
   const programId = Number(id);
@@ -74,17 +84,24 @@ export default function RegisterPage({ params }) {
     fetchProgram();
   }, [programId]);
 
-  // Helper memunculkan Toast
   const showToast = (msg, isErr = true) => {
     setToastMessage(msg);
     setToastIsError(isErr);
     setToastShow(true);
-    setTimeout(() => setToastShow(false), 4000); // Hilang otomatis setelah 4 detik
+    setTimeout(() => setToastShow(false), 4000); 
   };
 
-  const getTotalSteps = () => type === "semesta-camp" ? 2 : 3;
+  // Mengambil total step berdasarkan array dari custom_registration_form (default ke fungsi lama jika blm ada)
+  const getTotalSteps = () => {
+    if (program?.custom_registration_form) return program.custom_registration_form.length;
+    return type === "semesta-camp" ? 2 : 3;
+  };
 
   const getStepTitles = () => {
+    if (program?.custom_registration_form) {
+      return program.custom_registration_form.map(section => section.title);
+    }
+    // Fallback lama
     const baseSteps = ["Data Diri"];
     if (type !== "semesta-camp") baseSteps.push("Deskripsi Diri");
     baseSteps.push("Kelengkapan Persyaratan");
@@ -103,57 +120,39 @@ export default function RegisterPage({ params }) {
     return program.title;
   };
 
-  const getFeeInfo = () => {
-    if (type === "fully-funded") return { amount: "Rp. 85.000", label: "Fully Funded" };
-    if (type === "self-funded") return { amount: "Rp. 50.000", label: "Self Funded" };
-    return { amount: "Rp. 25.000", label: "Semesta Camp" };
+  const handleInputChange = (fieldId, value) => {
+    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    if (errors[fieldId]) setErrors((prev) => ({ ...prev, [fieldId]: null }));
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+  const handleFileChange = (fieldId, file) => {
+    setFiles((prev) => ({ ...prev, [fieldId]: file }));
+    if (errors[fieldId]) setErrors((prev) => ({ ...prev, [fieldId]: null }));
   };
 
-  const handleFileChange = (field, file) => {
-    setFiles((prev) => ({ ...prev, [field]: file }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
-  };
-
-  const handleRemoveFile = (field) => {
+  const handleRemoveFile = (fieldId) => {
     setFiles((prev) => {
       const newFiles = { ...prev };
-      delete newFiles[field];
+      delete newFiles[fieldId];
       return newFiles;
     });
   };
 
   const validateStep = (step) => {
     const newErrors = {};
+    const customSections = program?.custom_registration_form;
 
-    if (step === 1) {
-      const requiredFields = ["fullName", "email", "whatsapp", "instagram", "birthDate", "region", "institution"];
-      if (type === "semesta-camp") requiredFields.push("reason");
-      requiredFields.forEach((field) => {
-        if (!formData[field]?.trim()) newErrors[field] = "Field ini wajib diisi";
-      });
-    }
-
-    if (step === 2 && type !== "semesta-camp") {
-      const requiredFields = ["whyJoin", "divisionChoice", "divisionReason", "programProposal", "hopes"];
-      requiredFields.forEach((field) => {
-        if (!formData[field]?.trim()) newErrors[field] = "Field ini wajib diisi";
-      });
-    }
-
-    if (step === 3 || (step === 2 && type === "semesta-camp")) {
-      const requiredUploads = [];
-      if (type === "fully-funded" || type === "self-funded") {
-        requiredUploads.push("instagramProof", "tiktokProof", "storyProof", "paymentProof");
-      } else {
-        requiredUploads.push("instagramProof", "tiktokProof", "paymentProof");
-      }
-      requiredUploads.forEach((field) => {
-        if (!files[field]) newErrors[field] = "File ini wajib diupload";
+    if (customSections && customSections[step - 1]) {
+      const currentSection = customSections[step - 1];
+      
+      currentSection.fields.forEach((field) => {
+        if (field.required) {
+          if (field.type === "upload") {
+            if (!files[field.id]) newErrors[field.id] = "File ini wajib diupload";
+          } else {
+            if (!formData[field.id]?.trim()) newErrors[field.id] = "Field ini wajib diisi";
+          }
+        }
       });
     }
 
@@ -219,25 +218,40 @@ export default function RegisterPage({ params }) {
         }
       }
 
+      // Menyiapkan payload dynamic answers dan mencari labelnya
+      const dynamic_answers = Object.entries(formData).map(([key, value]) => {
+        let labelText = key;
+        // Cari label asli dari konfigurasi form
+        program?.custom_registration_form?.forEach((sec) => {
+          const foundField = sec.fields.find((f) => f.id === key);
+          if (foundField) labelText = foundField.label;
+        });
+
+        return {
+          field_id: key, 
+          field_key: key, 
+          field_label: labelText, // <--- Menyimpan teks pertanyaan
+          value_text: value
+        };
+      });
+
+      // Mapping fallback untuk API yang belum diperbarui (jika API masih menggunakan kolom statis)
+      // Sebaiknya API Anda diubah untuk bergantung 100% pada dynamic_answers
       const payload = {
         program_id: programId,
         funding_type_id: fundingTypeId,
         
-        full_name: formData.fullName,
-        email: formData.email,
-        whatsapp: formData.whatsapp,
-        instagram: formData.instagram,
-        birth_date: formData.birthDate,
-        region: formData.region,
-        institution: formData.institution,
-        reason: formData.reason,
+        full_name: formData.f1 || formData.fullName, 
+        email: formData.f2 || formData.email,
+        whatsapp: formData.f3 || formData.whatsapp,
+        instagram: formData.f4 || formData.instagram,
+        birth_date: formData.f5 || formData.birthDate,
+        region: formData.f6 || formData.region,
+        institution: formData.f7 || formData.institution,
+        reason: formData.f8 || formData.reason,
         
-        why_join: formData.whyJoin,
-        division_code: formData.divisionChoice,
-        division_reason: formData.divisionReason,
-        program_proposal: formData.programProposal,
-        hopes: formData.hopes,
-        
+        // Memasukkan array dinamis
+        dynamic_answers: dynamic_answers,
         uploaded_files: uploaded_files
       };
 
@@ -256,7 +270,6 @@ export default function RegisterPage({ params }) {
 
     } catch (error) {
       console.error("Error submitting form:", error);
-      // GANTI ALERT MENJADI TOAST
       showToast(error.message, true);
     } finally {
       setIsSubmitting(false);
@@ -300,9 +313,9 @@ export default function RegisterPage({ params }) {
     );
   };
 
-  const FileUpload = ({ label, field, instruction }) => {
-    const file = files[field];
-    const error = errors[field];
+  const FileUpload = ({ label, fieldId, instruction }) => {
+    const file = files[fieldId];
+    const error = errors[fieldId];
 
     return (
       <div className={styles.uploadField}>
@@ -312,7 +325,7 @@ export default function RegisterPage({ params }) {
         {instruction && <p className={styles.uploadInstruction}>{instruction}</p>}
         <div
           className={`${styles.uploadBox} ${file ? styles.hasFile : ""} ${error ? styles.hasError : ""}`}
-          onClick={() => !file && document.getElementById(`file-${field}`)?.click()}
+          onClick={() => !file && document.getElementById(`file-${fieldId}`)?.click()}
         >
           {file ? (
             <div className={styles.filePreview}>
@@ -330,7 +343,7 @@ export default function RegisterPage({ params }) {
                   className={styles.removeFile}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleRemoveFile(field);
+                    handleRemoveFile(fieldId);
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -350,11 +363,11 @@ export default function RegisterPage({ params }) {
           )}
         </div>
         <input
-          id={`file-${field}`}
+          id={`file-${fieldId}`}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf"
           className={styles.fileInput}
-          onChange={(e) => handleFileChange(field, e.target.files[0])}
+          onChange={(e) => handleFileChange(fieldId, e.target.files[0])}
         />
         {error && <span className={styles.errorText}>{error}</span>}
       </div>
@@ -372,12 +385,11 @@ export default function RegisterPage({ params }) {
 
   const stepTitles = getStepTitles();
   const totalSteps = getTotalSteps();
+  const currentSectionData = program?.custom_registration_form?.[currentStep - 1];
 
   return (
     <div className={styles.page}>
       <Navbar />
-
-      {/* Komponen Toast dirender di sini */}
       <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
       <div className={styles.container}>
@@ -425,255 +437,100 @@ export default function RegisterPage({ params }) {
             </div>
           </div>
 
-          {currentStep === 1 && (
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Nama Lengkap <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className={`${styles.input} ${errors.fullName ? styles.inputError : ""}`}
-                  placeholder="Masukkan nama lengkap"
-                  value={formData.fullName || ""}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
-                />
-                {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
-              </div>
+          <div className={styles.formGrid}>
+            {/* RENDER FORM DINAMIS */}
+            {currentSectionData && currentSectionData.fields.map((field) => {
+              const isFullWidth = field.type === 'textarea' || field.type === 'upload' || field.label.includes('Nama Instansi');
+              
+              return (
+                <div key={field.id} className={`${styles.formField} ${isFullWidth ? styles.fullWidth : ''}`}>
+                  
+                  {/* Field Teks / Email / Telp / Angka */}
+                  {(field.type === "teks" || field.type === "angka") && (
+                    <>
+                      <label className={styles.label}>
+                        {field.label} {field.required && <span className={styles.required}>*</span>}
+                      </label>
+                      <input
+                        type={field.label.toLowerCase().includes("email") ? "email" : field.label.toLowerCase().includes("whatsapp") ? "tel" : field.type === "angka" ? "number" : "text"}
+                        className={`${styles.input} ${errors[field.id] ? styles.inputError : ""}`}
+                        placeholder={field.placeholder || ""}
+                        value={formData[field.id] || ""}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      />
+                      {errors[field.id] && <span className={styles.errorText}>{errors[field.id]}</span>}
+                    </>
+                  )}
 
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Email <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="email"
-                  className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
-                  placeholder="contoh@email.com"
-                  value={formData.email || ""}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                />
-                {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-              </div>
+                  {/* Field Textarea */}
+                  {field.type === "textarea" && (
+                    <>
+                      <label className={styles.label}>
+                        {field.label} {field.required && <span className={styles.required}>*</span>}
+                      </label>
+                      <textarea
+                        className={`${styles.textarea} ${errors[field.id] ? styles.inputError : ""}`}
+                        placeholder={field.placeholder || ""}
+                        rows={4}
+                        value={formData[field.id] || ""}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      />
+                      {errors[field.id] && <span className={styles.errorText}>{errors[field.id]}</span>}
+                    </>
+                  )}
 
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  No. WhatsApp <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="tel"
-                  className={`${styles.input} ${errors.whatsapp ? styles.inputError : ""}`}
-                  placeholder="(123) 000-0000"
-                  value={formData.whatsapp || ""}
-                  onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-                />
-                {errors.whatsapp && <span className={styles.errorText}>{errors.whatsapp}</span>}
-              </div>
+                  {/* Field Dropdown */}
+                  {field.type === "dropdown" && (
+                    <>
+                      <label className={styles.label}>
+                        {field.label} {field.required && <span className={styles.required}>*</span>}
+                      </label>
+                      <select
+                        className={`${styles.select} ${errors[field.id] ? styles.inputError : ""}`}
+                        value={formData[field.id] || ""}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      >
+                        <option value="">{field.placeholder || "Pilih"}</option>
+                        {field.options?.map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                      {errors[field.id] && <span className={styles.errorText}>{errors[field.id]}</span>}
+                    </>
+                  )}
 
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Akun Instagram <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className={`${styles.input} ${errors.instagram ? styles.inputError : ""}`}
-                  placeholder="@username"
-                  value={formData.instagram || ""}
-                  onChange={(e) => handleInputChange("instagram", e.target.value)}
-                />
-                {errors.instagram && <span className={styles.errorText}>{errors.instagram}</span>}
-              </div>
+                  {/* Field Tanggal */}
+                  {field.type === "tanggal" && (
+                    <>
+                      <label className={styles.label}>
+                        {field.label} {field.required && <span className={styles.required}>*</span>}
+                      </label>
+                      <div className={styles.dateInputWrapper}>
+                        <input
+                          type="date"
+                          className={`${styles.input} ${styles.dateInput} ${errors[field.id] ? styles.inputError : ""}`}
+                          value={formData[field.id] || ""}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                        />
+                        <CalendarIcon />
+                      </div>
+                      {errors[field.id] && <span className={styles.errorText}>{errors[field.id]}</span>}
+                    </>
+                  )}
 
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Tanggal Lahir <span className={styles.required}>*</span>
-                </label>
-                <div className={styles.dateInputWrapper}>
-                  <input
-                    type="date"
-                    className={`${styles.input} ${styles.dateInput} ${errors.birthDate ? styles.inputError : ""}`}
-                    value={formData.birthDate || ""}
-                    onChange={(e) => handleInputChange("birthDate", e.target.value)}
-                  />
-                  <svg className={styles.calendarIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
+                  {/* Field Upload File */}
+                  {field.type === "upload" && (
+                    <FileUpload
+                      label={field.label}
+                      fieldId={field.id}
+                      instruction={field.placeholder}
+                    />
+                  )}
                 </div>
-                {errors.birthDate && <span className={styles.errorText}>{errors.birthDate}</span>}
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Asal Daerah <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className={`${styles.input} ${errors.region ? styles.inputError : ""}`}
-                  placeholder="Kota/Kabupaten"
-                  value={formData.region || ""}
-                  onChange={(e) => handleInputChange("region", e.target.value)}
-                />
-                {errors.region && <span className={styles.errorText}>{errors.region}</span>}
-              </div>
-
-              <div className={`${styles.formField} ${styles.fullWidth}`}>
-                <label className={styles.label}>
-                  Nama Instansi <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className={`${styles.input} ${errors.institution ? styles.inputError : ""}`}
-                  placeholder="Nama universitas/sekolah/instansi"
-                  value={formData.institution || ""}
-                  onChange={(e) => handleInputChange("institution", e.target.value)}
-                />
-                {errors.institution && <span className={styles.errorText}>{errors.institution}</span>}
-              </div>
-
-              {type === "semesta-camp" && (
-                <div className={`${styles.formField} ${styles.fullWidth}`}>
-                  <label className={styles.label}>
-                    Alasan Mengikuti Kegiatan Semesta Camp <span className={styles.required}>*</span>
-                  </label>
-                  <textarea
-                    className={`${styles.textarea} ${errors.reason ? styles.inputError : ""}`}
-                    placeholder="Jelaskan alasan Anda ingin mengikuti kegiatan ini"
-                    rows={4}
-                    value={formData.reason || ""}
-                    onChange={(e) => handleInputChange("reason", e.target.value)}
-                  />
-                  {errors.reason && <span className={styles.errorText}>{errors.reason}</span>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 2 && type !== "semesta-camp" && (
-            <div className={styles.formSection}>
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Jelaskan mengapa anda ingin bergabung dalam kegiatan {program.title}? <span className={styles.required}>*</span>
-                </label>
-                <textarea
-                  className={`${styles.textarea} ${errors.whyJoin ? styles.inputError : ""}`}
-                  placeholder="Ceritakan motivasi dan alasan anda bergabung..."
-                  rows={4}
-                  value={formData.whyJoin || ""}
-                  onChange={(e) => handleInputChange("whyJoin", e.target.value)}
-                />
-                {errors.whyJoin && <span className={styles.errorText}>{errors.whyJoin}</span>}
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih? <span className={styles.required}>*</span>
-                </label>
-                <select
-                  className={`${styles.select} ${errors.divisionChoice ? styles.inputError : ""}`}
-                  value={formData.divisionChoice || ""}
-                  onChange={(e) => handleInputChange("divisionChoice", e.target.value)}
-                >
-                  <option value="">Pilih bidang</option>
-                  <option value="pendidikan-literasi">Pendidikan & Literasi</option>
-                  <option value="konservasi-lingkungan">Konservasi & Lingkungan</option>
-                  <option value="pemberdayaan-masyarakat">Pemberdayaan Masyarakat</option>
-                  <option value="dokumentasi-komunikasi">Dokumentasi & Komunikasi</option>
-                </select>
-                {errors.divisionChoice && <span className={styles.errorText}>{errors.divisionChoice}</span>}
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Apa alasan anda memilih divisi tersebut? <span className={styles.required}>*</span>
-                </label>
-                <textarea
-                  className={`${styles.textarea} ${errors.divisionReason ? styles.inputError : ""}`}
-                  placeholder="Jelaskan alasan anda memilih bidang tersebut..."
-                  rows={3}
-                  value={formData.divisionReason || ""}
-                  onChange={(e) => handleInputChange("divisionReason", e.target.value)}
-                />
-                {errors.divisionReason && <span className={styles.errorText}>{errors.divisionReason}</span>}
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Apa program kerja yang akan anda ajukan untuk kegiatan {program.title}? (Jelaskan secara singkat dan detail) <span className={styles.required}>*</span>
-                </label>
-                <textarea
-                  className={`${styles.textarea} ${errors.programProposal ? styles.inputError : ""}`}
-                  placeholder="Deskripsikan program kerja yang akan anda ajukan secara singkat dan detail..."
-                  rows={5}
-                  value={formData.programProposal || ""}
-                  onChange={(e) => handleInputChange("programProposal", e.target.value)}
-                />
-                {errors.programProposal && <span className={styles.errorText}>{errors.programProposal}</span>}
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>
-                  Apa harapan dan rencana anda jika terpilih menjadi delegasi {program.title}? <span className={styles.required}>*</span>
-                </label>
-                <textarea
-                  className={`${styles.textarea} ${errors.hopes ? styles.inputError : ""}`}
-                  placeholder="Tuliskan harapan dan rencana anda jika terpilih sebagai delegasi..."
-                  rows={4}
-                  value={formData.hopes || ""}
-                  onChange={(e) => handleInputChange("hopes", e.target.value)}
-                />
-                {errors.hopes && <span className={styles.errorText}>{errors.hopes}</span>}
-              </div>
-            </div>
-          )}
-
-          {(currentStep === 3 || (currentStep === 2 && type === "semesta-camp")) && (
-            <div className={styles.formSection}>
-              <FileUpload
-                label="Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)"
-                field="instagramProof"
-              />
-              <FileUpload
-                label="Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)"
-                field="tiktokProof"
-              />
-              {type !== "semesta-camp" && (
-                <FileUpload
-                  label="Bukti upload Invitation Story ke Story Instagram Anda"
-                  field="storyProof"
-                  instruction={
-                    <span>
-                      Link download dan ketentuan:{" "}
-                      <a href="https://bit.ly/kelengkapanSJN4" target="_blank" rel="noopener noreferrer" className={styles.link}>
-                        https://bit.ly/kelengkapanSJN4
-                      </a>
-                      <br />
-                      <strong className={styles.note}>NOTE: WAJIB TAG AKUN SEMESTA (Bakal di cek satu persatu)</strong>
-                    </span>
-                  }
-                />
-              )}
-
-              <div className={styles.paymentSection}>
-                <h3 className={styles.paymentTitle}>Bukti pembayaran biaya pendaftaran</h3>
-                <div className={styles.paymentInfo}>
-                  <p><strong>Biaya Pendaftaran {getFeeInfo().label} Sebesar {getFeeInfo().amount}</strong></p>
-                  <p>NAIL AMMASHUN ALYAHYA</p>
-                  <p>Bank Mandiri 1120022119304</p>
-                  <p>E-Wallet an Na'il Ammashun Alyahya Putra</p>
-                  <p>082179435759 (Dana)</p>
-                  <p>082179435759 (ShopeePay)</p>
-                  <p>082179435759 (GoPay)</p>
-                </div>
-              </div>
-
-              <FileUpload
-                label="Upload Bukti Pembayaran"
-                field="paymentProof"
-              />
-            </div>
-          )}
+              );
+            })}
+            
+          </div>
 
           <div className={styles.navigation}>
             {currentStep > 1 && (

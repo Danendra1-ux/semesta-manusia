@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
 import { createClient } from '@supabase/supabase-js';
+import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 
 // Inisialisasi Supabase untuk Upload Gambar Baru
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -58,6 +59,9 @@ export default function EditProgramPage({ params }) {
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
+  // Custom registration form state
+  const [customRegistrationForm, setCustomRegistrationForm] = useState(DEFAULT_FORM_TEMPLATE);
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
@@ -100,6 +104,12 @@ export default function EditProgramPage({ params }) {
         // --- TAMBAHAN BARU: Set state dynamic fields dari database ---
         setDetailFields(data.detail_program || []);
         setPekerjaanFields(data.pekerjaan || []);
+
+        // Load custom registration form (use saved form or fallback to default template)
+        const formToLoad = data.custom_registration_form && data.custom_registration_form.length > 0
+          ? data.custom_registration_form
+          : DEFAULT_FORM_TEMPLATE;
+        setCustomRegistrationForm(formToLoad);
         // -------------------------------------------------------------
         
         if (data.image_url) {
@@ -235,15 +245,16 @@ export default function EditProgramPage({ params }) {
       // Payload untuk update tabel 'programs' dan 'program_funding_types'
       const payload = {
         title: nama,
-        event_start_date: jadwalMulai,     
-        event_end_date: jadwalSelesai,     
+        event_start_date: jadwalMulai,
+        event_end_date: jadwalSelesai,
         location: lokasi,
         description: deskripsi,
         image_url: imageUrl,
         funding_deadline: batasRegistrasi,
         // --- TAMBAHAN BARU ---
         detail_program: detailFields,
-        pekerjaan: pekerjaanFields
+        pekerjaan: pekerjaanFields,
+        custom_registration_form: customRegistrationForm,
         // ---------------------
       };
 

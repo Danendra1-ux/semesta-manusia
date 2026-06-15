@@ -53,10 +53,28 @@ export async function POST(request) {
     // 3. Insert Registration Files (Jika ada)
     let fileRecords = [];
     if (uploaded_files && uploaded_files.length > 0) {
-      const filesToInsert = uploaded_files.map(f => ({
-        registration_id: registration.id,
-        ...f
-      }));
+      // Kita perlu mencari label asli dari field_key (ID komponen)
+      const { data: programData } = await supabase
+        .from('programs')
+        .select('custom_registration_form')
+        .eq('id', program_id)
+        .single();
+
+      const filesToInsert = uploaded_files.map(f => {
+        let labelText = f.field_key; // Default ke ID jika tidak ketemu
+        if (programData && programData.custom_registration_form) {
+          programData.custom_registration_form.forEach(sec => {
+            const foundField = sec.fields.find(field => field.id === f.field_key);
+            if (foundField) labelText = foundField.label;
+          });
+        }
+
+        return {
+          registration_id: registration.id,
+          field_label: labelText, // <--- Menyimpan Label File di sini
+          ...f
+        };
+      });
       
       const { data: insertedFiles, error: fileError } = await supabase
         .from('registration_files')
@@ -74,6 +92,7 @@ export async function POST(request) {
         return {
           registration_id: registration.id,
           field_id: ans.field_id,
+          field_label: ans.field_label, // <--- Tambahkan baris ini
           value_text: ans.value_text,
           value_date: ans.value_date,
           value_number: ans.value_number,
