@@ -355,7 +355,7 @@ export default function RegisterPage({ params }) {
           ) : (
             <div className={styles.uploadPlaceholder}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path d="M12 19V5M5 12l7-7 7 7" />
               </svg>
               <span>Unggah 1 file. Maks 100 MB.</span>
               <small>Drag & drop atau klik untuk upload</small>
@@ -454,7 +454,7 @@ export default function RegisterPage({ params }) {
                       <input
                         type={field.label.toLowerCase().includes("email") ? "email" : field.label.toLowerCase().includes("whatsapp") ? "tel" : field.type === "angka" ? "number" : "text"}
                         className={`${styles.input} ${errors[field.id] ? styles.inputError : ""}`}
-                        placeholder={field.placeholder || ""}
+                        placeholder={field.placeholder || ("Masukkan " + field.label.toLowerCase())}
                         value={formData[field.id] || ""}
                         onChange={(e) => handleInputChange(field.id, e.target.value)}
                       />
@@ -470,7 +470,7 @@ export default function RegisterPage({ params }) {
                       </label>
                       <textarea
                         className={`${styles.textarea} ${errors[field.id] ? styles.inputError : ""}`}
-                        placeholder={field.placeholder || ""}
+                        placeholder={field.placeholder || ("Masukkan " + field.label.toLowerCase())}
                         rows={4}
                         value={formData[field.id] || ""}
                         onChange={(e) => handleInputChange(field.id, e.target.value)}

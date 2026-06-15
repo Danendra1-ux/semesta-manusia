@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
+import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];
 
@@ -81,35 +82,8 @@ export default function FormulirTambahSemestaCampPage() {
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state — initialized with 3 default sections
-  const [sections, setSections] = useState([
-    {
-      id: "data-diri-fixed",
-      title: "Data Diri",
-      isFixed: true,
-      fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
-      ],
-    },
-    {
-      id: "deskripsi-diri",
-      title: "Deskripsi Diri",
-      isFixed: false,
-      fields: [],
-    },
-    {
-      id: "persyaratan-pendaftaran",
-      title: "Persyaratan Pendaftaran",
-      isFixed: false,
-      fields: [],
-    },
-  ]);
+  // Section state — initialized with default template
+  const [sections, setSections] = useState(DEFAULT_FORM_TEMPLATE);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -129,6 +103,17 @@ export default function FormulirTambahSemestaCampPage() {
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3500);
   };
+
+  // Auto-save sections to sessionStorage on every change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("sc_custom_registration_form", JSON.stringify(sections));
+      } catch (err) {
+        console.warn("Form data too large for sessionStorage.");
+      }
+    }
+  }, [sections]);
 
   const openEditPlaceholder = (field, sectionId) => {
     setEditPlaceholderField({ ...field, sectionId });
@@ -179,8 +164,7 @@ export default function FormulirTambahSemestaCampPage() {
 
   // Helper: render single field
   const renderField = (field, sectionId) => {
-    const isNamaInstansi = field.label === "Nama Instansi";
-    const isFullWidth = isNamaInstansi;
+    const isFullWidth = field.label === "Nama Instansi" || field.label === "Alasan Mengikuti Kegiatan Semesta Camp";
 
     return (
       <div
@@ -329,6 +313,10 @@ export default function FormulirTambahSemestaCampPage() {
 
   const handleSave = () => {
     showToast("Formulir berhasil disimpan!");
+    // Mark that formulir was created
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("sc_formulir_created", "true");
+    }
     setTimeout(() => {
       router.push(`/admin/semesta-camp/tambah?created=true`);
     }, 1000);
@@ -403,9 +391,9 @@ export default function FormulirTambahSemestaCampPage() {
                 {/* Fields Card */}
                 <div className={styles.sectionCard}>
                   <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi) */}
+                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi dan Alasan) */}
                     {section.fields
-                      .filter(f => f.isFixed && f.label !== "Nama Instansi")
+                      .filter(f => f.isFixed && f.label !== "Nama Instansi" && f.label !== "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
                     {/* Bagian 2: Nama Instansi (full width, fixed) */}
@@ -413,7 +401,12 @@ export default function FormulirTambahSemestaCampPage() {
                       .filter(f => f.label === "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 3: Field tambahan (tidak fixed, ditambah user) */}
+                    {/* Bagian 3: Alasan Mengikuti Kegiatan Semesta Camp (full width, fixed) */}
+                    {section.fields
+                      .filter(f => f.label === "Alasan Mengikuti Kegiatan Semesta Camp")
+                      .map(field => renderField(field, section.id))}
+
+                    {/* Bagian 4: Field tambahan (tidak fixed, ditambah user) */}
                     {section.fields
                       .filter(f => !f.isFixed)
                       .map(field => renderField(field, section.id))}

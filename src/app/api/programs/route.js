@@ -22,9 +22,16 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    
-    // 1. Ekstrak data: kita pisahkan funding_deadline karena kolom ini ada di tabel lain
-    const { funding_types, funding_deadline, ...programData } = body;
+
+    // 1. Ekstrak semua field — termasuk JSON columns
+    const {
+      funding_types,
+      funding_deadline,
+      detail_program,
+      pekerjaan,
+      custom_registration_form,
+      ...programData
+    } = body;
 
     // 2. Generate slug otomatis (Jika title ada)
     if (programData.title && !programData.slug) {
@@ -37,7 +44,12 @@ export async function POST(request) {
     // 3. Insert Program
     const { data: program, error: progError } = await supabase
       .from('programs')
-      .insert(programData)
+      .insert({
+        ...programData,
+        detail_program: detail_program || null,
+        pekerjaan: pekerjaan || null,
+        custom_registration_form: custom_registration_form || null,
+      })
       .select()
       .single();
 

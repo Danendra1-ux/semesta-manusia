@@ -110,7 +110,8 @@ export const DEFAULT_FORM_TEMPLATE = [
         id: "f11",
         label: "Upload Bukti Pembayaran",
         type: "upload",
-        placeholder: "Unggah 1 file. Maks 100 MB.",
+        placeholder:
+          "Biaya Pendaftaran Semesta Camp Sebesar Rp. 25.000 NAIL AMMASHUN ALYAHYA Bank Mandiri 1120022119304 E-Wallet an Na'il Ammashun Alyahya Putra 082179435759 (Dana / ShopeePay / GoPay)",
         required: true,
         isFixed: false,
         value: null,

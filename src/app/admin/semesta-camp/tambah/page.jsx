@@ -285,16 +285,32 @@ export default function TambahSemestaCampProgramPage() {
       }
 
       // TAHAP 2: Siapkan data untuk API
+      // Load custom_registration_form dari sessionStorage (disimpan saat user buat formulir)
+      let customForm = [];
+      if (typeof window !== "undefined") {
+        const savedForm = sessionStorage.getItem("sc_custom_registration_form");
+        if (savedForm) {
+          try {
+            customForm = JSON.parse(savedForm);
+          } catch (e) {
+            console.error("Failed to parse custom_registration_form:", e);
+          }
+        }
+      }
+
       const payload = {
         title: nama,
-        category: "Semesta Camp", 
+        category: "Semesta Camp",
         description: deskripsi,
-        event_start_date: jadwalMulai,     // Mapping data tanggal mulai
-        event_end_date: jadwalSelesai,     // Mapping data tanggal selesai
+        event_start_date: jadwalMulai,
+        event_end_date: jadwalSelesai,
         location: lokasi,
-        image_url: imageUrl, 
+        image_url: imageUrl,
         is_active: true,
-        funding_deadline: batasRegistrasi  // Mengirim batas registrasi
+        funding_deadline: batasRegistrasi,
+        detail_program: detailFields,       // JSON column
+        pekerjaan: pekerjaanFields,          // JSON column
+        custom_registration_form: customForm // JSON column
       };
 
       // TAHAP 3: Simpan Data ke Database
@@ -319,10 +335,16 @@ export default function TambahSemestaCampProgramPage() {
       sessionStorage.removeItem("sc_poster_name");
       sessionStorage.removeItem("sc_poster_type");
       sessionStorage.removeItem("sc_formulir_created");
+      sessionStorage.removeItem("sc_custom_registration_form");
 
       // Redirect setelah sukses
+      // Jika formulir sudah dibuat, redirect ke detail program; jika belum, redirect ke formulir page
       setTimeout(() => {
-        router.push("/admin/semesta-camp");
+        if (formulirCreated) {
+          router.push("/admin/semesta-camp");
+        } else {
+          router.push("/admin/semesta-camp/tambah/formulir");
+        }
       }, 1500);
 
     } catch (error) {
