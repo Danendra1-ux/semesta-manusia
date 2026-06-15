@@ -51,6 +51,23 @@ export default function ProgramDetailPage({ params }) {
     fetchData();
   }, [programId]);
 
+  // Clamp: if selected fundingOption is inactive, switch to the active one
+  useEffect(() => {
+    if (!program) return;
+    const isSJN = program.category === "SJN";
+    if (!isSJN) return;
+    const fundingTypes = program.program_funding_types || [];
+    const fullyActive = fundingTypes.find(f => f.code === 'fully')?.is_active !== false;
+    const selfActive = fundingTypes.find(f => f.code === 'self')?.is_active !== false;
+    if (fundingOption === "fully" && !fullyActive && selfActive) {
+      setFundingOption("self");
+    } else if (fundingOption === "self" && !selfActive && fullyActive) {
+      setFundingOption("fully");
+    } else if (!fullyActive && !selfActive) {
+      setFundingOption("fully");
+    }
+  }, [program, fundingOption]);
+
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -157,10 +174,12 @@ export default function ProgramDetailPage({ params }) {
 
   const isSJN = program.category === "SJN";
 
-  // Resolve funding deadlines from program_funding_types
+  // Resolve funding deadlines & active status from program_funding_types
   const fundingTypes = program.program_funding_types || [];
   const fullyDeadline = fundingTypes.find(f => f.code === 'fully')?.deadline;
   const selfDeadline = fundingTypes.find(f => f.code === 'self')?.deadline;
+  const fullyActive = fundingTypes.find(f => f.code === 'fully')?.is_active !== false;
+  const selfActive = fundingTypes.find(f => f.code === 'self')?.is_active !== false;
 
   return (
     <div className={styles.page}>
@@ -283,11 +302,11 @@ export default function ProgramDetailPage({ params }) {
                 <div
                   className={`${styles.fundingOption} ${
                     fundingOption === "fully" ? `${styles.active} ${styles.sjn}` : ""
-                  }`}
-                  onClick={() => setFundingOption("fully")}
+                  } ${!fullyActive ? styles.disabled : ""}`}
+                  onClick={() => fullyActive && setFundingOption("fully")}
                   role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && setFundingOption("fully")}
+                  tabIndex={fullyActive ? 0 : -1}
+                  onKeyDown={(e) => fullyActive && e.key === "Enter" && setFundingOption("fully")}
                 >
                   <div className={styles.radioCircle}>
                     <div className={styles.radioDot} />
@@ -306,11 +325,11 @@ export default function ProgramDetailPage({ params }) {
                 <div
                   className={`${styles.fundingOption} ${
                     fundingOption === "self" ? `${styles.active} ${styles.sjn}` : ""
-                  }`}
-                  onClick={() => setFundingOption("self")}
+                  } ${!selfActive ? styles.disabled : ""}`}
+                  onClick={() => selfActive && setFundingOption("self")}
                   role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && setFundingOption("self")}
+                  tabIndex={selfActive ? 0 : -1}
+                  onKeyDown={(e) => selfActive && e.key === "Enter" && setFundingOption("self")}
                 >
                   <div className={styles.radioCircle}>
                     <div className={styles.radioDot} />
@@ -349,21 +368,35 @@ export default function ProgramDetailPage({ params }) {
 
           {/* Action Buttons */}
           <div className={styles.actionButtons}>
-            <button
-              className={`${styles.primaryAction} ${styles.gradient} ${getCategoryClass()}`}
-              onClick={() => {
-                if (isSJN) {
-                  router.push(`/user/program/${programId}/register?type=${fundingOption === "fully" ? "fully-funded" : "self-funded"}`);
-                } else {
-                  router.push(`/user/program/${programId}/register?type=semesta-camp`);
-                }
-              }}
-            >
+            {isSJN && (!fullyActive && !selfActive) ? (
+              <button
+                className={`${styles.primaryAction} ${styles.gradient} ${getCategoryClass()}`}
+                disabled
+                style={{ opacity: 0.5, cursor: 'not-allowed', boxShadow: 'none' }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 01-3.46 0" />
+                </svg>
+                Pendaftaran Ditutup
+              </button>
+            ) : (
+              <button
+                className={`${styles.primaryAction} ${styles.gradient} ${getCategoryClass()}`}
+                onClick={() => {
+                  if (isSJN) {
+                    router.push(`/user/program/${programId}/register?type=${fundingOption === "fully" ? "fully-funded" : "self-funded"}`);
+                  } else {
+                    router.push(`/user/program/${programId}/register?type=semesta-camp`);
+                  }
+                }}
+              >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
               {registerLabel()}
             </button>
+            )}
 
             <button className={`${styles.primaryAction} ${styles.outlined} ${getCategoryClass()}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -499,40 +532,48 @@ export default function ProgramDetailPage({ params }) {
             {isSJN && activeTab === "divisi" && (
               <div ref={(el) => (tabRefs.divisi = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Divisi</h2>
-                {formConfig && formConfig.length > 0 ? (
-                  formConfig
-                    .filter(section => section.section_key === "divisi")
-                    .map(section => (
-                      <div key={section.id} className={styles.divisiSectionCard}>
-                        {section.title && <h3 className={styles.detailSectionTitle}>{section.title}</h3>}
-                        {section.description && (
-                          <p className={styles.contentText}>{section.description}</p>
-                        )}
-                        {section.form_fields && section.form_fields.length > 0 && (
-                          <div className={styles.divisiSection}>
-                            {section.form_fields.map(field => (
-                              <div key={field.id} className={styles.divisiItem}>
-                                <div className={styles.divisiInfo}>
-                                  <h4>{field.label} <span className={styles.divider}></span></h4>
-                                  {field.placeholder && (
-                                    <p>{field.placeholder}</p>
-                                  )}
-                                  {field.field_type === "select" && field.form_field_options && field.form_field_options.length > 0 && (
-                                    <div className={styles.divisiOptions}>
-                                      {field.form_field_options.map(opt => (
-                                        <span key={opt.id} className={styles.divisiOption}>
-                                          <span className={styles.divisiBullet}>-</span> {opt.label}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                {program.pekerjaan && program.pekerjaan.length > 0 ? (
+                  <div className={`${styles.detailFields} ${styles.horizontal}`}>
+                    {program.pekerjaan.map((field) => (
+                      <div key={field.id} className={styles.detailField}>
+                        <span className={styles.detailFieldLabel}>{field.label}</span>
+                        {field.type === "dropdown" ? (
+                          <div className={styles.divisiOptions}>
+                            {field.options && field.options.map((opt, i) => (
+                              <span key={i} className={styles.divisiOption}>
+                                <span className={styles.divisiBullet}>-</span> {opt}
+                              </span>
                             ))}
                           </div>
+                        ) : field.type === "upload-file" ? (
+                          <div className={styles.detailFieldUpload}>
+                            {field.value ? (
+                              <a
+                                href={field.value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${styles.downloadButton} ${getCategoryClass()}`}
+                                style={{ marginBottom: 0, padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="16" y1="13" x2="8" y2="13" />
+                                  <line x1="16" y1="17" x2="8" y2="17" />
+                                  <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                                Download {field.label}
+                              </a>
+                            ) : (
+                              <span className={`${styles.detailFieldValue} ${styles.placeholder}`}>-</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className={`${styles.detailFieldValue} ${field.value ? '' : styles.placeholder}`}>{field.value || "-"}</span>
                         )}
                       </div>
-                    ))
+                    ))}
+                  </div>
                 ) : (
                   <div className={styles.emptyState}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

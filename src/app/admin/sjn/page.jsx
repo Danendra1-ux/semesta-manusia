@@ -5,14 +5,6 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
-const initialPrograms = [
-  { id: 1, tanggal: "3 Jun 2026", nama: "SJN #4 Raja Ampat", programId: "sjn-4-raja-ampat", lokasi: "Desa Saleo, Raja Ampat, Papua Barat Daya", status: "Dibuka", pendaftar: 72 },
-  { id: 2, tanggal: "13 Jul 2025", nama: "SJN #3 Sumba", programId: "sjn-3-sumba", lokasi: "Desa Londalima, Sumba Timur, NTT", status: "Ditutup", pendaftar: 88 },
-  { id: 3, tanggal: "20 Feb 2025", nama: "SJN #2 Flores", programId: "sjn-2-flores", lokasi: "Desa Wae Rebo, Manggarai, NTT", status: "Ditutup", pendaftar: 64 },
-  { id: 4, tanggal: "5 Agu 2024", nama: "SJN #1 Toraja", programId: "sjn-1-toraja", lokasi: "Desa Ke'te Kesu, Toraja Utara, Sulawesi Selatan", status: "Ditutup", pendaftar: 56 },
-  { id: 5, tanggal: "12 Mar 2024", nama: "SJN Pilot - Kalimantan", programId: "sjn-pilot-kalimantan", lokasi: "Desa Pampang, Samarinda, Kalimantan Timur", status: "Ditutup", pendaftar: 40 },
-];
-
 const getStatusBadgeClass = (status) => {
   return status === "Dibuka" ? styles.badgeDibuka : styles.badgeDitutup;
 };
@@ -30,6 +22,35 @@ export default function SJNPage() {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const filterDropdownRef = useRef(null);
 
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await fetch('/api/programs?category=SJN');
+        if (response.ok) {
+          const data = await response.json();
+          const formatted = data.map(p => ({
+            id: p.id,
+            tanggal: p.event_start_date ? new Date(p.event_start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-',
+            nama: p.title,
+            programId: p.id, 
+            lokasi: p.location || '-',
+            status: p.status || 'Dibuka',
+            pendaftar: p.registration_count || 0
+          }));
+          setPrograms(formatted);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data program:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrograms();
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
@@ -39,6 +60,7 @@ export default function SJNPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const itemsPerPage = 10;
 
   const toggleDropdown = (id) => {
@@ -46,9 +68,8 @@ export default function SJNPage() {
   };
 
   const filteredPrograms = useMemo(() => {
-    let result = [...initialPrograms];
+    let result = [...programs];
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((p) =>
@@ -57,19 +78,16 @@ export default function SJNPage() {
       );
     }
 
-    // Status filter
     if (statusFilter !== "Semua") {
       result = result.filter((p) => p.status === statusFilter);
     }
 
-    // Date sort
     if (sortDate === "asc") {
       result.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
     } else if (sortDate === "desc") {
       result.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
     }
 
-    // Status sort
     if (sortStatus === "asc") {
       result.sort((a, b) => a.status.localeCompare(b.status));
     } else if (sortStatus === "desc") {
@@ -77,7 +95,7 @@ export default function SJNPage() {
     }
 
     return result;
-  }, [searchQuery, statusFilter, sortDate, sortStatus]);
+  }, [searchQuery, statusFilter, sortDate, sortStatus, programs]);
 
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const paginatedPrograms = filteredPrograms.slice(
@@ -121,7 +139,7 @@ export default function SJNPage() {
     } else {
       setSortStatus(null);
     }
-    setDate(null);
+    setSortDate(null);
     setCurrentPage(1);
   };
 
@@ -157,9 +175,7 @@ export default function SJNPage() {
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
-      {/* Main Content */}
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-        {/* Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerText}>
             <h1 className={styles.pageTitle}>Semesta Jelajah Nusantara</h1>
@@ -169,9 +185,7 @@ export default function SJNPage() {
           </div>
         </div>
 
-        {/* Card Table */}
         <div className={styles.tableCard}>
-          {/* Card Header */}
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>Daftar Program</h2>
             <button className={styles.addButton} onClick={() => router.push("/admin/sjn/tambah")}>
@@ -183,7 +197,6 @@ export default function SJNPage() {
             </button>
           </div>
 
-          {/* Search & Filter Bar */}
           <div className={styles.searchFilterBar}>
             <div className={styles.searchWrapper}>
               <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -242,8 +255,10 @@ export default function SJNPage() {
             </div>
           </div>
 
-          {/* Table */}
           <div className={styles.tableWrapper}>
+            {loading ? (
+               <div style={{ padding: '2rem', textAlign: 'center' }}>Memuat data...</div>
+            ) : (
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -349,9 +364,9 @@ export default function SJNPage() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
 
-          {/* Pagination */}
           <div className={styles.pagination}>
             <span className={styles.paginationInfo}>
               {filteredPrograms.length > 0

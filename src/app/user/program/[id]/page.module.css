@@ -300,6 +300,17 @@
   background: #7C3AED;
 }
 
+.fundingOption.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+.fundingOption.disabled:hover {
+  border-color: #e5e7eb;
+  background: transparent;
+}
+
 .fundingLabel {
   display: flex;
   flex-direction: column;

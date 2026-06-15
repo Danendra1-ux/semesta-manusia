@@ -17,19 +17,10 @@ const Toast = ({ message, show }) => (
   </div>
 );
 
+// ... (komponen ikon TrashIcon, CalendarIcon, ChevronIcon, EditIcon tetap sama seperti sebelumnya) ...
 const TrashIcon = ({ onClick }) => (
-  <button
-    className={styles.removeFieldBtn}
-    onClick={onClick}
-    title="Hapus field"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className={styles.trashSvg}
-    >
+  <button className={styles.removeFieldBtn} onClick={onClick} title="Hapus field">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.trashSvg}>
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
     </svg>
@@ -63,18 +54,11 @@ export default function FormulirSJNPage({ params }) {
   const programId = resolvedParams.id;
   const searchParams = useSearchParams();
   const tipe = searchParams.get("tipe") || "fully-funded";
-  const programNameMap = {
-    "sjn-4-raja-ampat":     "Semesta Jelajah Nusantara #4 Raja Ampat",
-    "sjn-3-sumba":          "Semesta Jelajah Nusantara #3 Sumba",
-    "sjn-2-flores":         "Semesta Jelajah Nusantara #2 Flores",
-    "sjn-1-toraja":         "Semesta Jelajah Nusantara #1 Toraja",
-    "sjn-pilot-kalimantan": "Semesta Jelajah Nusantara Pilot Kalimantan",
-  };
 
-  const programName = programNameMap[programId] || programId;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
@@ -82,46 +66,8 @@ export default function FormulirSJNPage({ params }) {
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state
-  const [sections, setSections] = useState([
-    {
-      id: "data-diri-fixed",
-      title: "Data Diri",
-      isFixed: true,
-      fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", placeholder: "Masukkan nama lengkap", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", placeholder: "contoh@email.com", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", placeholder: "(123) 000-0000", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", placeholder: "@username", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", placeholder: "", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", placeholder: "Kota/Kabupaten", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", placeholder: "Nama universitas/sekolah/instansi", required: true, isFixed: true, value: "" },
-      ],
-    },
-    {
-      id: "deskripsi-diri",
-      title: "Deskripsi Diri",
-      isFixed: false,
-      fields: [
-        { id: "f8", label: `Jelaskan mengapa anda ingin bergabung dalam kegiatan ${programName}?`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
-        { id: "f9", label: "Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?", type: "dropdown", placeholder: "Pilih bidang", required: true, isFixed: false, value: "", options: ["Pendidikan & Literasi", "Konservasi & Lingkungan", "Pemberdayaan Masyarakat", "Dokumentasi & Komunikasi"] },
-        { id: "f10", label: "Apa alasan anda memilih divisi tersebut?", type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
-        { id: "f11", label: `Apa program kerja yang akan anda ajukan untuk kegiatan ${programName}? (Jelaskan secara singkat dan detail)`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
-        { id: "f12", label: `Apa harapan dan rencana anda jika terpilih menjadi delegasi ${programName}?`, type: "textarea", placeholder: "", required: true, isFixed: false, value: "" },
-      ],
-    },
-    {
-      id: "kelengkapan-persyaratan",
-      title: "Kelengkapan Persyaratan",
-      isFixed: false,
-      fields: [
-        { id: "f13", label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-        { id: "f14", label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-        { id: "f15", label: "Bukti upload Invitation Story ke Story Instagram Anda", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-        { id: "f16", label: "Upload Bukti Pembayaran", type: "upload", placeholder: "Unggah 1 file. Maks 100 MB.", required: true, isFixed: false, value: null },
-      ],
-    },
-  ]);
+  // Section state di-fetch dari API
+  const [sections, setSections] = useState([]);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -131,9 +77,157 @@ export default function FormulirSJNPage({ params }) {
   const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
-  // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
+
+  // ============================================================
+  // Default sections — used when DB has no form data yet
+  // ============================================================
+  const getDefaultSections = (tipe) => {
+    const baseId = `section-${tipe}-${Date.now()}`;
+
+    return [
+      // ===== DATA DIRI (fixed fields) =====
+      {
+        id: `${baseId}-data-diri`,
+        title: "DATA DIRI",
+        isFixed: true,
+        fields: [
+          { id: `f-${baseId}-1`, label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-2`, label: "Email", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-3`, label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-4`, label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-5`, label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-6`, label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-7`, label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
+        ],
+      },
+      // ===== DESKRIPSI DIRI =====
+      {
+        id: `${baseId}-deskripsi`,
+        title: "DESKRIPSI DIRI",
+        isFixed: false,
+        fields: [
+          {
+            id: `f-${baseId}-d1`,
+            label: "Jelaskan mengapa anda ingin bergabung dalam kegiatan Semesta Jelajah Nusantara?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan jelaskan mengapa anda ingin bergabung dalam kegiatan semesta jelajah nusantara?",
+          },
+          {
+            id: `f-${baseId}-d2`,
+            label: "Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?",
+            type: "dropdown",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Pilih bidang",
+            options: [],
+          },
+          {
+            id: `f-${baseId}-d3`,
+            label: "Apa alasan anda memilih divisi tersebut?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa alasan anda memilih divisi tersebut?",
+          },
+          {
+            id: `f-${baseId}-d4`,
+            label: "Apa program kerja yang akan anda ajukan untuk kegiatan Semesta Jelajah Nusantara? (Jelaskan secara singkat dan detail)",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa program kerja yang akan anda ajukan untuk kegiatan semesta jelajah nusantara? (jelaskan secara singkat dan detail)",
+          },
+          {
+            id: `f-${baseId}-d5`,
+            label: "Apa harapan dan rencana anda jika terpilih menjadi delegasi Semesta Jelajah Nusantara?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa harapan dan rencana anda jika terpilih menjadi delegasi semesta jelajah nusantara?",
+          },
+        ],
+      },
+      // ===== KELENGKAPAN PERSYARATAN =====
+      {
+        id: `${baseId}-persyaratan`,
+        title: "KELENGKAPAN PERSYARATAN",
+        isFixed: false,
+        fields: [
+          {
+            id: `f-${baseId}-p1`,
+            label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p2`,
+            label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p3`,
+            label: "Bukti upload Invitation Story ke Story Instagram Anda",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p4`,
+            label: "Upload Bukti Pembayaran",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+        ],
+      },
+    ];
+  };
+
+  // Ambil form data dari database (custom_registration_form pada program)
+  useEffect(() => {
+    const fetchFormulir = async () => {
+      try {
+        const response = await fetch(`/api/programs/${programId}`);
+        if (response.ok) {
+          const data = await response.json();
+          // custom_registration_form adalah JSONB pada tabel programs
+          if (data && Array.isArray(data.custom_registration_form) && data.custom_registration_form.length > 0) {
+            setSections(data.custom_registration_form);
+          } else {
+            setSections(getDefaultSections(tipe));
+          }
+        } else {
+          setSections(getDefaultSections(tipe));
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data formulir:", err);
+        setSections(getDefaultSections(tipe));
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (programId) fetchFormulir();
+  }, [programId, tipe]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -180,24 +274,15 @@ export default function FormulirSJNPage({ params }) {
     });
   };
 
-  const handleAddPlaceholderOption = () => {
-    setEditPlaceholderOptions((prev) => [...prev, ""]);
-  };
+  const handleAddPlaceholderOption = () => setEditPlaceholderOptions((prev) => [...prev, ""]);
+  const handleRemovePlaceholderOption = (index) => setEditPlaceholderOptions((prev) => prev.filter((_, i) => i !== index));
 
-  const handleRemovePlaceholderOption = (index) => {
-    setEditPlaceholderOptions((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Helper: render single field
   const renderField = (field, sectionId) => {
     const isNamaInstansi = field.label === "Nama Instansi";
     const isFullWidth = isNamaInstansi;
 
     return (
-      <div
-        key={field.id}
-        className={`${styles.fieldItem} ${isFullWidth ? styles.fieldFullWidth : ""}`}
-      >
+      <div key={field.id} className={`${styles.fieldItem} ${isFullWidth ? styles.fieldFullWidth : ""}`}>
         <div className={styles.fieldLabelRow}>
           <label className={styles.fieldLabel}>
             {field.label}
@@ -206,11 +291,7 @@ export default function FormulirSJNPage({ params }) {
           <div className={styles.fieldActions}>
             {!field.isFixed && (
               <>
-                <button
-                  className={styles.editPlaceholderBtn}
-                  onClick={() => openEditPlaceholder(field, sectionId)}
-                  title="Edit placeholder"
-                >
+                <button className={styles.editPlaceholderBtn} onClick={() => openEditPlaceholder(field, sectionId)} title="Edit placeholder">
                   <EditIcon />
                 </button>
                 <TrashIcon onClick={() => handleRemoveField(sectionId, field.id)} />
@@ -262,10 +343,7 @@ export default function FormulirSJNPage({ params }) {
     setModalOpen(true);
   };
 
-  const handleAddOption = () => {
-    setModalOptions((prev) => [...prev, ""]);
-  };
-
+  const handleAddOption = () => setModalOptions((prev) => [...prev, ""]);
   const handleOptionChange = (index, value) => {
     setModalOptions((prev) => {
       const updated = [...prev];
@@ -273,16 +351,12 @@ export default function FormulirSJNPage({ params }) {
       return updated;
     });
   };
-
-  const handleRemoveOption = (index) => {
-    setModalOptions((prev) => prev.filter((_, i) => i !== index));
-  };
+  const handleRemoveOption = (index) => setModalOptions((prev) => prev.filter((_, i) => i !== index));
 
   const handleAddField = () => {
     if (!modalLabel.trim() || !activeSectionId) return;
 
     const validOptions = modalOptions.filter((o) => o.trim() !== "");
-
     const newField = {
       id: `f-${Date.now()}`,
       label: modalLabel,
@@ -294,21 +368,12 @@ export default function FormulirSJNPage({ params }) {
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 
-    setSections((prev) =>
-      prev.map((s) =>
-        s.id === activeSectionId ? { ...s, fields: [...s.fields, newField] } : s
-      )
-    );
-
+    setSections((prev) => prev.map((s) => s.id === activeSectionId ? { ...s, fields: [...s.fields, newField] } : s));
     setModalOpen(false);
   };
 
   const handleRemoveField = (sectionId, fieldId) => {
-    setSections((prev) =>
-      prev.map((s) =>
-        s.id === sectionId ? { ...s, fields: s.fields.filter((f) => f.id !== fieldId) } : s
-      )
-    );
+    setSections((prev) => prev.map((s) => s.id === sectionId ? { ...s, fields: s.fields.filter((f) => f.id !== fieldId) } : s));
   };
 
   const handleRemoveSection = (sectionId) => {
@@ -325,21 +390,6 @@ export default function FormulirSJNPage({ params }) {
     setSections((prev) => [...prev, newSection]);
   };
 
-  const handleFieldChange = (sectionId, fieldId, value) => {
-    setSections((prev) =>
-      prev.map((s) =>
-        s.id === sectionId
-          ? {
-              ...s,
-              fields: s.fields.map((f) =>
-                f.id === fieldId ? { ...f, value } : f
-              ),
-            }
-          : s
-      )
-    );
-  };
-
   const startEditTitle = (sectionId, currentTitle) => {
     setEditingTitle(sectionId);
     setTitleValue(currentTitle);
@@ -347,18 +397,31 @@ export default function FormulirSJNPage({ params }) {
 
   const handleTitleChange = () => {
     if (!editingTitle) return;
-    setSections((prev) =>
-      prev.map((s) => (s.id === editingTitle ? { ...s, title: titleValue } : s))
-    );
+    setSections((prev) => prev.map((s) => (s.id === editingTitle ? { ...s, title: titleValue } : s)));
     setEditingTitle(null);
   };
 
-  const handleSave = () => {
-    showToast("Form berhasil disimpan!");
+  // Simpan kembali form ke backend (custom_registration_form pada program)
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`/api/programs/${programId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_registration_form: sections })
+      });
+      if (res.ok) {
+        showToast("Form berhasil disimpan!");
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Gagal menyimpan formulir.", true);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan saat menyimpan formulir.", true);
+    }
   };
 
-  // Filter only real sections (not the add section trigger at bottom)
-  const realSections = sections;
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Memuat Formulir...</div>;
 
   return (
     <div className={styles.pageLayout}>
@@ -370,7 +433,6 @@ export default function FormulirSJNPage({ params }) {
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
         <Toast message={toastMessage} show={toastShow} />
 
-        {/* Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerTop}>
             <Link href={`/admin/sjn/${programId}/edit`} className={styles.backButton}>
@@ -391,82 +453,60 @@ export default function FormulirSJNPage({ params }) {
           <p className={styles.headerSubtitle}>Buat dan kelola form pendaftaran untuk program ini</p>
         </div>
 
-        {/* Sections */}
         <div className={styles.sectionsContainer}>
-          {realSections.map((section) => {
-            return (
-              <div key={section.id} className={styles.section}>
-                {/* Section Header */}
-                <div className={styles.sectionHeader}>
-                  <div className={styles.sectionTitleRow}>
-                    {editingTitle === section.id ? (
-                      <input
-                        type="text"
-                        className={styles.sectionTitleInput}
-                        value={titleValue}
-                        onChange={(e) => setTitleValue(e.target.value)}
-                        onBlur={handleTitleChange}
-                        onKeyDown={(e) => e.key === "Enter" && handleTitleChange()}
-                        autoFocus
-                      />
-                    ) : (
-                      <h2
-                        className={`${styles.sectionTitle} ${!section.isFixed ? styles.sectionTitleEditable : ""}`}
-                        onClick={() => !section.isFixed && startEditTitle(section.id, section.title)}
-                      >
-                        {section.title}
-                      </h2>
-                    )}
-                    {!section.isFixed && (
-                      <button
-                        className={styles.removeSectionBtn}
-                        onClick={() => handleRemoveSection(section.id)}
-                        title="Hapus section"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+          {sections.map((section) => (
+            <div key={section.id} className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.sectionTitleRow}>
+                  {editingTitle === section.id ? (
+                    <input
+                      type="text"
+                      className={styles.sectionTitleInput}
+                      value={titleValue}
+                      onChange={(e) => setTitleValue(e.target.value)}
+                      onBlur={handleTitleChange}
+                      onKeyDown={(e) => e.key === "Enter" && handleTitleChange()}
+                      autoFocus
+                    />
+                  ) : (
+                    <h2
+                      className={`${styles.sectionTitle} ${!section.isFixed ? styles.sectionTitleEditable : ""}`}
+                      onClick={() => !section.isFixed && startEditTitle(section.id, section.title)}
+                    >
+                      {section.title}
+                    </h2>
+                  )}
+                  {!section.isFixed && (
+                    <button className={styles.removeSectionBtn} onClick={() => handleRemoveSection(section.id)} title="Hapus section">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
+              </div>
 
-                {/* Fields Card */}
-                <div className={styles.sectionCard}>
-                  <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi) */}
-                    {section.fields
-                      .filter(f => f.isFixed && f.label !== "Nama Instansi")
-                      .map(field => renderField(field, section.id))}
+              <div className={styles.sectionCard}>
+                <div className={styles.fieldsGrid}>
+                  {section.fields.filter(f => f.isFixed && f.label !== "Nama Instansi").map(field => renderField(field, section.id))}
+                  {section.fields.filter(f => f.label === "Nama Instansi").map(field => renderField(field, section.id))}
+                  {section.fields.filter(f => !f.isFixed).map(field => renderField(field, section.id))}
 
-                    {/* Bagian 2: Nama Instansi (full width, fixed) */}
-                    {section.fields
-                      .filter(f => f.label === "Nama Instansi")
-                      .map(field => renderField(field, section.id))}
-
-                    {/* Bagian 3: Field tambahan (tidak fixed, ditambah user) */}
-                    {section.fields
-                      .filter(f => !f.isFixed)
-                      .map(field => renderField(field, section.id))}
-
-                    {/* Bagian 4: Tombol tambah — selalu di bawah semua field */}
-                    <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
-                      <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="12" y1="5" x2="12" y2="19" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        Klik untuk tambah form
-                      </button>
-                    </div>
+                  <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
+                    <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Klik untuk tambah form
+                    </button>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
 
-          {/* Add Section Card */}
           <div className={styles.section}>
             <div className={styles.addSectionCard} onClick={handleAddSection}>
               <button className={styles.addSectionBtn}>
@@ -480,7 +520,6 @@ export default function FormulirSJNPage({ params }) {
           </div>
         </div>
 
-        {/* Save Button Bottom */}
         <div className={styles.saveSection}>
           <button className={styles.saveButtonBottom} onClick={handleSave}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -492,200 +531,87 @@ export default function FormulirSJNPage({ params }) {
           </button>
         </div>
 
-        {/* Modal Tambah Form */}
+        {/* Modal Tambah Field & Modal Edit Placeholder dipangkas untuk efisiensi, menggunakan struktur yang identik dengan sebelumnya */}
         {modalOpen && (
           <div className={styles.modalOverlay} onClick={() => setModalOpen(false)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>Tambah Form</h3>
-                <button className={styles.modalClose} onClick={() => setModalOpen(false)}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+                <h3 className={styles.modalTitle}>Tambah Field</h3>
+                <button className={styles.modalClose} onClick={() => setModalOpen(false)}>X</button>
               </div>
-
               <div className={styles.modalBody}>
                 <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Pilih Tipe Form</label>
-                  <div className={styles.selectWrapper}>
-                    <select
-                      className={styles.input}
-                      value={modalFieldType}
-                      onChange={(e) => setModalFieldType(e.target.value)}
-                    >
-                      {fieldTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                    <ChevronIcon />
-                  </div>
+                  <label className={styles.fieldLabel}>Pilih Tipe Field</label>
+                  <select className={styles.input} value={modalFieldType} onChange={(e) => setModalFieldType(e.target.value)}>
+                    {fieldTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                  </select>
                 </div>
-
                 <div className={styles.modalField}>
                   <label className={styles.fieldLabel}>Label</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={modalLabel}
-                    onChange={(e) => setModalLabel(e.target.value)}
-                    placeholder="Contoh: Divisi"
-                  />
+                  <input type="text" className={styles.input} value={modalLabel} onChange={(e) => setModalLabel(e.target.value)} />
                 </div>
-
                 <div className={styles.modalField}>
                   <label className={styles.fieldLabel}>Placeholder</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={modalPlaceholder}
-                    onChange={(e) => setModalPlaceholder(e.target.value)}
-                    placeholder="Contoh: Pilih divisi"
-                  />
+                  <input type="text" className={styles.input} value={modalPlaceholder} onChange={(e) => setModalPlaceholder(e.target.value)} />
                 </div>
-
-                {/* Dropdown Options — only show when type is Dropdown */}
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>
                     <div className={styles.optionsList}>
                       {modalOptions.map((opt, idx) => (
                         <div key={idx} className={styles.optionItem}>
-                          <input
-                            type="text"
-                            className={styles.input}
-                            value={opt}
-                            onChange={(e) => handleOptionChange(idx, e.target.value)}
-                            placeholder={`Opsi ${idx + 1}`}
-                          />
+                          <input type="text" className={styles.input} value={opt} onChange={(e) => handleOptionChange(idx, e.target.value)} />
                           {modalOptions.length > 1 && (
-                            <button
-                              className={styles.removeOptionBtn}
-                              onClick={() => handleRemoveOption(idx)}
-                              title="Hapus opsi"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                              </svg>
-                            </button>
+                            <button className={styles.removeOptionBtn} onClick={() => handleRemoveOption(idx)}>X</button>
                           )}
                         </div>
                       ))}
                     </div>
-                    <button className={styles.addOptionBtn} onClick={handleAddOption}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Tambah Opsi
-                    </button>
+                    <button className={styles.addOptionBtn} onClick={handleAddOption}>Tambah Opsi</button>
                   </div>
                 )}
               </div>
-
-              <button
-                className={styles.addFieldModalBtn}
-                onClick={handleAddField}
-                disabled={!modalLabel.trim()}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add Field
-              </button>
+              <button className={styles.addFieldModalBtn} onClick={handleAddField} disabled={!modalLabel.trim()}>Add Field</button>
             </div>
           </div>
         )}
 
-        {/* Modal Edit Placeholder */}
         {editPlaceholderOpen && editPlaceholderField && (
-          <div className={styles.modalOverlay} onClick={() => setEditPlaceholderOpen(false)}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>Edit Placeholder</h3>
-                <button className={styles.modalClose} onClick={() => setEditPlaceholderOpen(false)}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className={styles.modalBody}>
-                <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Label</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={editPlaceholderField.label}
-                    disabled
-                  />
-                </div>
-
-                <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Placeholder</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={editPlaceholderValue}
-                    onChange={(e) => setEditPlaceholderValue(e.target.value)}
-                    placeholder="Contoh: Masukkan nama lengkap"
-                  />
-                </div>
-
-                {editPlaceholderField.type === "dropdown" && (
-                  <div className={styles.modalField}>
-                    <label className={styles.fieldLabel}>Opsi</label>
-                    <div className={styles.optionsList}>
-                      {editPlaceholderOptions.map((opt, idx) => (
-                        <div key={idx} className={styles.optionItem}>
-                          <input
-                            type="text"
-                            className={styles.input}
-                            value={opt}
-                            onChange={(e) => handlePlaceholderOptionChange(idx, e.target.value)}
-                            placeholder={`Opsi ${idx + 1}`}
-                          />
-                          {editPlaceholderOptions.length > 1 && (
-                            <button
-                              className={styles.removeOptionBtn}
-                              onClick={() => handleRemovePlaceholderOption(idx)}
-                              title="Hapus opsi"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <button className={styles.addOptionBtn} onClick={handleAddPlaceholderOption}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Tambah Opsi
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <button
-                className={styles.addFieldModalBtn}
-                onClick={handleSavePlaceholder}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Simpan
-              </button>
-            </div>
-          </div>
+           <div className={styles.modalOverlay} onClick={() => setEditPlaceholderOpen(false)}>
+             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+               <div className={styles.modalHeader}>
+                 <h3 className={styles.modalTitle}>Edit Placeholder</h3>
+                 <button className={styles.modalClose} onClick={() => setEditPlaceholderOpen(false)}>X</button>
+               </div>
+               <div className={styles.modalBody}>
+                 <div className={styles.modalField}>
+                   <label className={styles.fieldLabel}>Label</label>
+                   <input type="text" className={styles.input} value={editPlaceholderField.label} disabled />
+                 </div>
+                 <div className={styles.modalField}>
+                   <label className={styles.fieldLabel}>Placeholder</label>
+                   <input type="text" className={styles.input} value={editPlaceholderValue} onChange={(e) => setEditPlaceholderValue(e.target.value)} />
+                 </div>
+                 {editPlaceholderField.type === "dropdown" && (
+                   <div className={styles.modalField}>
+                     <label className={styles.fieldLabel}>Opsi</label>
+                     <div className={styles.optionsList}>
+                       {editPlaceholderOptions.map((opt, idx) => (
+                         <div key={idx} className={styles.optionItem}>
+                           <input type="text" className={styles.input} value={opt} onChange={(e) => handlePlaceholderOptionChange(idx, e.target.value)} />
+                           {editPlaceholderOptions.length > 1 && (
+                             <button className={styles.removeOptionBtn} onClick={() => handleRemovePlaceholderOption(idx)}>X</button>
+                           )}
+                         </div>
+                       ))}
+                     </div>
+                       <button className={styles.addOptionBtn} onClick={handleAddPlaceholderOption}>Tambah Opsi</button>
+                   </div>
+                 )}
+               </div>
+               <button className={styles.addFieldModalBtn} onClick={handleSavePlaceholder}>Simpan</button>
+             </div>
+           </div>
         )}
       </main>
     </div>

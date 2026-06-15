@@ -12,113 +12,20 @@ const ChevronIcon = () => (
   </svg>
 );
 
-const programDetailData = {
-  "sjn-4-raja-ampat": {
-    id: "sjn-4-raja-ampat",
-    nama: "SJN #4 Raja Ampat",
-    jadwal: "2026-06-03",
-    lokasi: "Desa Saleo, Raja Ampat, Papua Barat Daya",
-    deskripsi: "Semesta Jelajah Nusantara #4 hadir di Raja Ampat, surga bawah laut Indonesia. Program ini mengajak para volunteer untuk berkontribusi dalam bidang pendidikan, kesehatan, dan pelestarian lingkungan laut bersama masyarakat lokal.",
-    detailFields: [
-      { id: "df1", label: "Kuota Peserta", type: "angka", value: "30", placeholder: "Masukkan jumlah kuota" },
-      { id: "df2", label: "Tipe Pendanaan", type: "teks", value: "Fully Funded & Self Funded", placeholder: "Masukkan tipe pendanaan" },
-    ],
-    pekerjaanFields: [
-      { id: "pf1", label: "Divisi", type: "textarea", value: "Pendidikan, Kesehatan, Lingkungan, Dokumentasi", placeholder: "Pisahkan dengan koma" },
-      { id: "pf2", label: "Agenda", type: "textarea", value: "Day 1: Briefing & Orientasi Lapangan\nDay 2-4: Program Pendidikan di Sekolah Dasar\nDay 5-7: Program Kesehatan Masyarakat\nDay 8-9: Konservasi Terumbu Karang\nDay 10: Evaluasi & Penutupan", placeholder: "Masukkan agenda kegiatan" },
-      { id: "pf3", label: "Biaya Fully Funded", type: "teks", value: "Rp 85.000", placeholder: "Masukkan biaya pendaftaran" },
-      { id: "pf4", label: "Biaya Self Funded", type: "teks", value: "Rp 50.000", placeholder: "Masukkan biaya pendaftaran" },
-    ],
-    fullyFunded: {
-      batasRegistrasi: "2026-05-15",
-      status: "Aktif",
-    },
-    selfFunded: {
-      batasRegistrasi: "2026-05-20",
-      status: "Non-aktif",
-    },
-  },
-  "sjn-3-sumba": {
-    id: "sjn-3-sumba",
-    nama: "SJN #3 Sumba",
-    jadwal: "2025-07-13",
-    lokasi: "Desa Londalima, Sumba Timur, NTT",
-    deskripsi: "Semesta Jelajah Nusantara #3 berlokasi di Pulau Sumba yang terkenal dengan kebudayaan megalitik dan kain tenun ikat tradisionalnya. Volunteer akan membantu masyarakat lokal dalam bidang pendidikan dan pemberdayaan ekonomi.",
-    detailFields: [
-      { id: "df1", label: "Kuota Peserta", type: "angka", value: "25", placeholder: "Masukkan jumlah kuota" },
-    ],
-    pekerjaanFields: [
-      { id: "pf1", label: "Divisi", type: "textarea", value: "Pendidikan, Pemberdayaan Ekonomi, Dokumentasi", placeholder: "Pisahkan dengan koma" },
-      { id: "pf2", label: "Agenda", type: "textarea", value: "Day 1: Registrasi & Briefing\nDay 2-5: Program Pendidikan\nDay 6-8: Pemberdayaan Ekonomi\nDay 9: Evaluasi & Penutupan", placeholder: "Masukkan agenda kegiatan" },
-    ],
-    fullyFunded: {
-      batasRegistrasi: "2025-06-15",
-      status: "Aktif",
-    },
-    selfFunded: {
-      batasRegistrasi: "2025-06-20",
-      status: "Aktif",
-    },
-  },
-  "sjn-2-flores": {
-    id: "sjn-2-flores",
-    nama: "SJN #2 Flores",
-    jadwal: "2025-02-20",
-    lokasi: "Desa Wae Rebo, Manggarai, NTT",
-    deskripsi: "Semesta Jelajah Nusantara #2 di Flores membawa volunteer ke desa adat Wae Rebo yang tersembunyi di pegunungan Manggarai. Program fokus pada pelestarian budaya dan peningkatan kualitas pendidikan anak.",
-    detailFields: [],
-    pekerjaanFields: [],
-    fullyFunded: {
-      batasRegistrasi: "2025-02-05",
-      status: "Aktif",
-    },
-    selfFunded: {
-      batasRegistrasi: "2025-02-10",
-      status: "Non-aktif",
-    },
-  },
-  "sjn-1-toraja": {
-    id: "sjn-1-toraja",
-    nama: "SJN #1 Toraja",
-    jadwal: "2024-08-05",
-    lokasi: "Desa Ke'te Kesu, Toraja Utara, Sulawesi Selatan",
-    deskripsi: "Program perdana Semesta Jelajah Nusantara hadir di Toraja, tanah yang kaya akan tradisi dan budaya unik. Volunteer turut serta dalam kegiatan pendidikan dan pelestarian warisan budaya lokal.",
-    detailFields: [],
-    pekerjaanFields: [],
-    fullyFunded: {
-      batasRegistrasi: "2024-07-20",
-      status: "Aktif",
-    },
-    selfFunded: {
-      batasRegistrasi: "2024-07-25",
-      status: "Non-aktif",
-    },
-  },
-  "sjn-pilot-kalimantan": {
-    id: "sjn-pilot-kalimantan",
-    nama: "SJN Pilot - Kalimantan",
-    jadwal: "2024-03-12",
-    lokasi: "Desa Pampang, Samarinda, Kalimantan Timur",
-    deskripsi: "Program pilot SJN pertama kali diuji coba di Desa Pampang, komunitas Dayak Kenyah di Samarinda. Program ini menjadi cikal bakal lahirnya program Semesta Jelajah Nusantara.",
-    detailFields: [],
-    pekerjaanFields: [],
-    fullyFunded: {
-      batasRegistrasi: "2024-02-28",
-      status: "Aktif",
-    },
-    selfFunded: {
-      batasRegistrasi: "2024-03-01",
-      status: "Non-aktif",
-    },
-  },
-};
-
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];
 
-const Toast = ({ message, show }) => (
-  <div className={`${styles.toast} ${show ? styles.toastShow : ""}`}>
+const Toast = ({ message, show, isError }) => (
+  <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
+      {isError ? (
+        <>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </>
+      ) : (
+        <polyline points="20 6 9 17 4 12" />
+      )}
     </svg>
     {message}
   </div>
@@ -130,6 +37,9 @@ export default function EditSJNProgramPage({ params }) {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Loading State
+  const [loading, setLoading] = useState(true);
 
   // Form state
   const [nama, setNama] = useState("");
@@ -161,29 +71,50 @@ export default function EditSJNProgramPage({ params }) {
   // Toast
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastIsError, setToastIsError] = useState(false);
 
+  // Fetch Data dari API
   useEffect(() => {
-    if (programId && programDetailData[programId]) {
-      const data = programDetailData[programId];
-      setNama(data.nama);
-      setJadwalMulai(data.jadwal);
-      setJadwalSelesai(data.jadwal);
-      setLokasi(data.lokasi);
-      setDeskripsi(data.deskripsi);
-      setDetailFields(data.detailFields);
-      setPekerjaanFields(data.pekerjaanFields);
-      if (data.fullyFunded) {
-        setFullyFundedBatasReg(data.fullyFunded.batasRegistrasi);
-        setFullyFundedStatus(data.fullyFunded.status);
+    const fetchProgram = async () => {
+      try {
+        const res = await fetch(`/api/programs/${programId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNama(data.title || "");
+          setJadwalMulai(data.event_start_date ? data.event_start_date.split('T')[0] : "");
+          setJadwalSelesai(data.event_end_date ? data.event_end_date.split('T')[0] : "");
+          setLokasi(data.location || "");
+          setDeskripsi(data.description || "");
+          setPosterPreview(data.image_url || null);
+
+          // Dynamic fields parsing
+          setDetailFields(data.detail_program || []);
+          setPekerjaanFields(data.pekerjaan || []);
+
+          // Program Funding Types
+          const fully = data.program_funding_types?.find(f => f.code === 'fully');
+          const self = data.program_funding_types?.find(f => f.code === 'self');
+
+          if (fully) {
+            setFullyFundedBatasReg(fully.deadline ? fully.deadline.split('T')[0] : "");
+            setFullyFundedStatus(fully.is_active !== false ? 'Aktif' : 'Non-aktif');
+          }
+          if (self) {
+            setSelfFundedBatasReg(self.deadline ? self.deadline.split('T')[0] : "");
+            setSelfFundedStatus(self.is_active !== false ? 'Aktif' : 'Non-aktif');
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil program detail:", err);
+      } finally {
+        setLoading(false);
       }
-      if (data.selfFunded) {
-        setSelfFundedBatasReg(data.selfFunded.batasRegistrasi);
-        setSelfFundedStatus(data.selfFunded.status);
-      }
-    }
+    };
+    if (programId) fetchProgram();
   }, [programId]);
 
-  const showToast = (msg) => {
+  const showToast = (msg, isErr = false) => {
+    setToastIsError(isErr);
     setToastMessage(msg);
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3000);
@@ -273,24 +204,54 @@ export default function EditSJNProgramPage({ params }) {
     }
   };
 
-  const handleSave = () => {
-    if (!nama.trim()) return showToast("Nama Program harus diisi!");
-    if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!");
-    if (!lokasi.trim()) return showToast("Lokasi harus diisi!");
-    if (!fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!");
-    if (!selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!");
+  const handleSave = async () => {
+    if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
+    if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
+    if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
+    if (!fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!", true);
+    if (!selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!", true);
     if (new Date(fullyFundedBatasReg) > new Date(jadwalMulai)) {
-      return showToast("Batas Registrasi Fully Funded tidak boleh setelah jadwal mulai!");
+      return showToast("Batas Registrasi Fully Funded tidak boleh setelah jadwal mulai!", true);
     }
     if (new Date(selfFundedBatasReg) > new Date(jadwalMulai)) {
-      return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!");
+      return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!", true);
     }
-    showToast("Perubahan berhasil disimpan!");
+    
+    try {
+      // Siapkan payload dengan field dinamis dimasukkan ke kolom detail_program dan pekerjaan
+      const payload = {
+        title: nama,
+        description: deskripsi,
+        event_start_date: jadwalMulai,
+        event_end_date: jadwalSelesai,
+        location: lokasi,
+        detail_program: detailFields,
+        pekerjaan: pekerjaanFields,
+        program_funding_types: [
+          { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif' },
+          { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif' }
+        ]
+      };
+      
+      const res = await fetch(`/api/programs/${programId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showToast("Perubahan berhasil disimpan!");
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Gagal menyimpan perubahan.", true);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan pada server.", true);
+    }
   };
 
-  const program = programId ? programDetailData[programId] : null;
-
-  if (!program) {
+  if (loading) {
     return (
       <div className={styles.pageLayout}>
         <AdminSidebar
@@ -298,12 +259,7 @@ export default function EditSJNProgramPage({ params }) {
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
         <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-          <div className={styles.notFound}>
-            <h2>Program tidak ditemukan</h2>
-            <Link href="/admin/sjn" className={styles.backLinkError}>
-              ← Kembali ke Daftar Program
-            </Link>
-          </div>
+          <div style={{ padding: '2rem', textAlign: 'center' }}>Memuat data program...</div>
         </main>
       </div>
     );
@@ -318,7 +274,7 @@ export default function EditSJNProgramPage({ params }) {
 
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
         {/* Toast */}
-        <Toast message={toastMessage} show={toastShow} />
+        <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         {/* Header */}
         <div className={styles.contentHeader}>
@@ -807,6 +763,17 @@ export default function EditSJNProgramPage({ params }) {
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
                     placeholder="Contoh: Divisi"
+                  />
+                </div>
+
+                <div className={styles.modalField}>
+                  <label className={styles.fieldLabel}>Placeholder</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={modalPlaceholder}
+                    onChange={(e) => setModalPlaceholder(e.target.value)}
+                    placeholder="Contoh: Pilih divisi"
                   />
                 </div>
 

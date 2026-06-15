@@ -235,21 +235,44 @@ export default function RegisterPage({ params }) {
         };
       });
 
-      // Mapping fallback untuk API yang belum diperbarui (jika API masih menggunakan kolom statis)
-      // Sebaiknya API Anda diubah untuk bergantung 100% pada dynamic_answers
+      // Build a flat map of field_id -> field info from the custom form config
+      const fieldMap = new Map();
+      program?.custom_registration_form?.forEach((sec) => {
+        sec.fields?.forEach((f) => fieldMap.set(f.id, f));
+      });
+
+      // Helper: find the field ID whose label matches a keyword
+      const findFieldId = (regex) => [...fieldMap.keys()].find((k) => regex.test(fieldMap.get(k)?.label ?? ''));
+
+      // Helper: extract the value for a given field ID
+      const val = (fieldId) => formData[fieldId] || '';
+
+      // Try to match static columns to dynamic fields by label keywords
+      const nameId = findFieldId(/nama|name/i);
+      const emailId = findFieldId(/email/i);
+      const waId = findFieldId(/whatsapp|no\.?hp|handphone/i);
+      const igId = findFieldId(/instagram|ig|sosmed/i);
+      const birthId = findFieldId(/tanggal.?lahir|birth.?date/i);
+      const regionId = findFieldId(/daerah|region|kota|kabupaten/i);
+      const instId = findFieldId(/instansi|institution|perguruan|sekolah/i);
+      const reasonId = findFieldId(/alasan|reason|mengapa/i);
+
+      // Fallback: if nothing matched, use the first field of the first section as name
+      const firstFieldId = program?.custom_registration_form?.[0]?.fields?.[0]?.id;
+
       const payload = {
         program_id: programId,
         funding_type_id: fundingTypeId,
-        
-        full_name: formData.f1 || formData.fullName, 
-        email: formData.f2 || formData.email,
-        whatsapp: formData.f3 || formData.whatsapp,
-        instagram: formData.f4 || formData.instagram,
-        birth_date: formData.f5 || formData.birthDate,
-        region: formData.f6 || formData.region,
-        institution: formData.f7 || formData.institution,
-        reason: formData.f8 || formData.reason,
-        
+
+        full_name: val(nameId) || val(firstFieldId ?? ''),
+        email: val(emailId) || '',
+        whatsapp: val(waId) || '',
+        instagram: val(igId) || '',
+        birth_date: val(birthId) || '',
+        region: val(regionId) || '',
+        institution: val(instId) || '',
+        reason: val(reasonId) || '',
+
         // Memasukkan array dinamis
         dynamic_answers: dynamic_answers,
         uploaded_files: uploaded_files

@@ -21,15 +21,15 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
-  
+
   const body = await request.json();
-  
-  // Tangkap field form pendaftaran
+
   const {
     title, event_start_date, event_end_date, location, description,
     image_url, detail_program, pekerjaan,
-    custom_registration_form, // <--- TAMBAHAN BARU
-    funding_deadline
+    custom_registration_form,
+    funding_deadline,
+    program_funding_types
   } = body;
 
   const { data, error } = await supabase
@@ -43,7 +43,7 @@ export async function PUT(request, { params }) {
       image_url,
       detail_program,
       pekerjaan,
-      custom_registration_form, // <--- TAMBAHAN BARU
+      custom_registration_form,
       updated_at: new Date().toISOString()
     })
     .eq('id', id)
@@ -51,8 +51,42 @@ export async function PUT(request, { params }) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Update funding deadline in program_funding_types (self-funded record)
-  if (funding_deadline !== undefined) {
+  // Update program_funding_types from admin payload (array of {code, label, deadline})
+  if (Array.isArray(program_funding_types) && program_funding_types.length > 0) {
+    for (const ft of program_funding_types) {
+      // Try update first; if no row matches, insert
+      const { data: existing } = await supabase
+        .from('program_funding_types')
+        .select('id')
+        .eq('program_id', id)
+        .eq('code', ft.code)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('program_funding_types')
+          .update({
+            deadline: ft.deadline || null,
+            label: ft.label,
+            is_active: ft.is_active !== false,
+            is_default: ft.code === 'self'
+          })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('program_funding_types')
+          .insert({
+            program_id: id,
+            code: ft.code,
+            label: ft.label,
+            deadline: ft.deadline || null,
+            is_active: ft.is_active !== false,
+            is_default: ft.code === 'self'
+          });
+      }
+    }
+  } else if (funding_deadline !== undefined) {
+    // Fallback legacy: update self-coded deadline if no array payload
     await supabase
       .from('program_funding_types')
       .update({ deadline: funding_deadline || null })
