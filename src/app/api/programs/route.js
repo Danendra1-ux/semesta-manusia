@@ -36,11 +36,13 @@ export async function POST(request) {
 
     // 1. Ekstrak semua field — termasuk JSON columns
     const {
-      funding_types,
-      funding_deadline,
       detail_program,
       pekerjaan,
       custom_registration_form,
+      program_funding_types,
+      custom_registration_form_fully,
+      custom_registration_form_self,
+      funding_deadline,
       ...programData
     } = body;
 
@@ -60,21 +62,27 @@ export async function POST(request) {
         detail_program: detail_program || null,
         pekerjaan: pekerjaan || null,
         custom_registration_form: custom_registration_form || null,
+        custom_registration_form_fully: custom_registration_form_fully || null,
+        custom_registration_form_self: custom_registration_form_self || null,
       })
       .select()
       .single();
 
     if (progError) throw progError;
 
-    // 4. Insert Funding Types (atau insert deadline saja jika tidak ada array funding_types)
-    if (funding_types && funding_types.length > 0) {
-      const fundingData = funding_types.map(ft => ({
-        ...ft,
-        program_id: program.id
+    // 4. Insert Funding Types (atau insert deadline saja jika tidak ada array)
+    if (Array.isArray(program_funding_types) && program_funding_types.length > 0) {
+      const fundingData = program_funding_types.map((ft) => ({
+        program_id: program.id,
+        code: ft.code,
+        label: ft.label,
+        deadline: ft.deadline || null,
+        is_active: ft.is_active !== false,
+        is_default: ft.is_default === true
       }));
       await supabase.from('program_funding_types').insert(fundingData);
     } else {
-      // Jika tidak ada array khusus, buatkan default record untuk batas registrasi (deadline)
+      // Fallback: buatkan default record Self Funded
       await supabase.from('program_funding_types').insert({
         program_id: program.id,
         code: 'self',

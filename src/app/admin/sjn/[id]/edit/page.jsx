@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 import styles from "./page.module.css";
 
 const ChevronIcon = () => (
@@ -65,7 +68,6 @@ export default function EditSJNProgramPage({ params }) {
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
-  const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
   // Toast
@@ -124,9 +126,7 @@ export default function EditSJNProgramPage({ params }) {
     const file = e.target.files[0];
     if (file) {
       setPosterFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPosterPreview(reader.result);
-      reader.readAsDataURL(file);
+      setPosterPreview(URL.createObjectURL(file));
     }
   };
 
@@ -140,7 +140,6 @@ export default function EditSJNProgramPage({ params }) {
     setTargetSection(section);
     setModalFieldType("Teks");
     setModalLabel("");
-    setModalPlaceholder("");
     setModalOptions([""]);
     setModalOpen(true);
   };
@@ -171,7 +170,6 @@ export default function EditSJNProgramPage({ params }) {
       label: modalLabel,
       type: modalFieldType.toLowerCase().replace(/\s+/g, "-"),
       value: "",
-      placeholder: modalPlaceholder,
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
     };
 
@@ -218,6 +216,27 @@ export default function EditSJNProgramPage({ params }) {
     }
     
     try {
+      let finalImageUrl = posterPreview || "";
+
+      // Upload poster ke Supabase Storage jika ada file baru
+      if (posterFile) {
+        const fileName = `program-${programId}-${Date.now()}-${posterFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('program-images')
+          .upload(fileName, posterFile, { upsert: true });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('program-images')
+            .getPublicUrl(fileName);
+          if (urlData?.publicUrl) finalImageUrl = urlData.publicUrl;
+        }
+      }
+      // Jika tidak ada file baru, gunakan URL yang sudah ada dari preview
+      else if (posterPreview && posterPreview !== 'null') {
+        finalImageUrl = posterPreview;
+      }
+
       // Siapkan payload dengan field dinamis dimasukkan ke kolom detail_program dan pekerjaan
       const payload = {
         title: nama,
@@ -230,9 +249,10 @@ export default function EditSJNProgramPage({ params }) {
         program_funding_types: [
           { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif' },
           { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif' }
-        ]
+        ],
+        image_url: finalImageUrl,
       };
-      
+
       const res = await fetch(`/api/programs/${programId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -517,7 +537,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.textarea}
                     value={field.value}
                     onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                     rows={3}
                   />
                 ) : field.type === "angka" ? (
@@ -526,7 +545,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.input}
                     value={field.value}
                     onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                   />
                 ) : field.type === "tanggal" ? (
                   <input
@@ -587,7 +605,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.input}
                     value={field.value}
                     onChange={(e) => handleFieldChange("detail", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                   />
                 )}
               </div>
@@ -626,7 +643,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.textarea}
                     value={field.value}
                     onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                     rows={3}
                   />
                 ) : field.type === "angka" ? (
@@ -635,7 +651,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.input}
                     value={field.value}
                     onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                   />
                 ) : field.type === "tanggal" ? (
                   <input
@@ -696,7 +711,6 @@ export default function EditSJNProgramPage({ params }) {
                     className={styles.input}
                     value={field.value}
                     onChange={(e) => handleFieldChange("pekerjaan", field.id, e.target.value)}
-                    placeholder={field.placeholder}
                   />
                 )}
               </div>
@@ -763,17 +777,6 @@ export default function EditSJNProgramPage({ params }) {
                     value={modalLabel}
                     onChange={(e) => setModalLabel(e.target.value)}
                     placeholder="Contoh: Divisi"
-                  />
-                </div>
-
-                <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Placeholder</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={modalPlaceholder}
-                    onChange={(e) => setModalPlaceholder(e.target.value)}
-                    placeholder="Contoh: Pilih divisi"
                   />
                 </div>
 

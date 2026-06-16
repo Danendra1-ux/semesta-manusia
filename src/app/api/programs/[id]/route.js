@@ -34,24 +34,35 @@ export async function PUT(request, { params }) {
     title, event_start_date, event_end_date, location, description,
     image_url, detail_program, pekerjaan,
     custom_registration_form,
+    custom_registration_form_fully,
+    custom_registration_form_self,
     funding_deadline,
     program_funding_types
   } = body;
 
+  const updatePayload = {
+    title,
+    event_start_date: event_start_date || null,
+    event_end_date: event_end_date || null,
+    location,
+    description,
+    image_url,
+    detail_program,
+    pekerjaan,
+    custom_registration_form,
+    updated_at: new Date().toISOString()
+  };
+
+  if (custom_registration_form_fully !== undefined) {
+    updatePayload['custom_registration_form_fully'] = custom_registration_form_fully;
+  }
+  if (custom_registration_form_self !== undefined) {
+    updatePayload['custom_registration_form_self'] = custom_registration_form_self;
+  }
+
   const { data, error } = await supabase
     .from('programs')
-    .update({
-      title,
-      event_start_date: event_start_date || null,
-      event_end_date: event_end_date || null,
-      location,
-      description,
-      image_url,
-      detail_program,
-      pekerjaan,
-      custom_registration_form,
-      updated_at: new Date().toISOString()
-    })
+    .update(updatePayload)
     .eq('id', id)
     .select();
 

@@ -6,6 +6,23 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar";
 import styles from "./page.module.css";
 
+const Toast = ({ message, show, isError }) => (
+  <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
+    {isError ? (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )}
+    {message}
+  </div>
+);
+
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 14, height: 14, flexShrink: 0 }}>
     <polyline points="20 6 9 17 4 12" />
@@ -47,7 +64,9 @@ export default function SemestaCampDetailPage({ params }) {
   // Modal konfirmasi hapus
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, fullName: "" });
   const [deleting, setDeleting] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [toastShow, setToastShow] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastIsError, setToastIsError] = useState(false);
 
   // State untuk API Data
   const [program, setProgram] = useState(null);
@@ -257,8 +276,10 @@ export default function SemestaCampDetailPage({ params }) {
   };
 
   const showToast = (message, isError = false) => {
-    setToastMessage({ message, isError });
-    setTimeout(() => setToastMessage(null), 3000);
+    setToastIsError(isError);
+    setToastMessage(message);
+    setToastShow(true);
+    setTimeout(() => setToastShow(false), 3500);
   };
 
   if (loading) {
@@ -670,23 +691,7 @@ export default function SemestaCampDetailPage({ params }) {
         </div>
       )}
 
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className={`${styles.toast} ${toastMessage.isError ? styles.toastError : styles.toastSuccess}`}>
-          {toastMessage.isError ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-          <span>{toastMessage.message}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
     </div>
   );
 }

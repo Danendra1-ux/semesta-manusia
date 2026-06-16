@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
@@ -66,7 +66,7 @@ const EditIcon = () => (
   </svg>
 );
 
-export default function FormulirTambahSJNPage() {
+export default function TambahFormulirSJNPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tipe = searchParams.get("tipe") || "fully-funded";
@@ -82,35 +82,8 @@ export default function FormulirTambahSJNPage() {
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state — initialized with 3 default sections
-  const [sections, setSections] = useState([
-    {
-      id: "data-diri-fixed",
-      title: "Data Diri",
-      isFixed: true,
-      fields: [
-        { id: "f1", label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f2", label: "Email", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f3", label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f4", label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f5", label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
-        { id: "f6", label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
-        { id: "f7", label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
-      ],
-    },
-    {
-      id: "deskripsi-diri",
-      title: "Deskripsi Diri",
-      isFixed: false,
-      fields: [],
-    },
-    {
-      id: "persyaratan-pendaftaran",
-      title: "Persyaratan Pendaftaran",
-      isFixed: false,
-      fields: [],
-    },
-  ]);
+  // Section state — di-load dari sessionStorage atau default
+  const [sections, setSections] = useState([]);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -123,6 +96,151 @@ export default function FormulirTambahSJNPage() {
   // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
+
+  // ============================================================
+  // Default sections — struktur identik dengan [id]/formulir/page.jsx
+  // baseId statis (tidak pakai Date.now()) agar konsisten antar render
+  // ============================================================
+  const getDefaultSections = (tipe) => {
+    const baseId = `section-${tipe}`;
+
+    return [
+      // ===== DATA DIRI (fixed fields) =====
+      {
+        id: `${baseId}-data-diri`,
+        title: "DATA DIRI",
+        isFixed: true,
+        fields: [
+          { id: `f-${baseId}-1`, label: "Nama Lengkap", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-2`, label: "Email", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-3`, label: "No. WhatsApp", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-4`, label: "Akun Instagram", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-5`, label: "Tanggal Lahir", type: "tanggal", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-6`, label: "Asal Daerah", type: "teks", required: true, isFixed: true, value: "" },
+          { id: `f-${baseId}-7`, label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
+        ],
+      },
+      // ===== DESKRIPSI DIRI =====
+      {
+        id: `${baseId}-deskripsi`,
+        title: "DESKRIPSI DIRI",
+        isFixed: false,
+        fields: [
+          {
+            id: `f-${baseId}-d1`,
+            label: "Jelaskan mengapa anda ingin bergabung dalam kegiatan Semesta Jelajah Nusantara?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan jelaskan mengapa anda ingin bergabung dalam kegiatan semesta jelajah nusantara?",
+          },
+          {
+            id: `f-${baseId}-d2`,
+            label: "Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?",
+            type: "dropdown",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Pilih bidang",
+            options: [],
+          },
+          {
+            id: `f-${baseId}-d3`,
+            label: "Apa alasan anda memilih divisi tersebut?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa alasan anda memilih divisi tersebut?",
+          },
+          {
+            id: `f-${baseId}-d4`,
+            label: "Apa program kerja yang akan anda ajukan untuk kegiatan Semesta Jelajah Nusantara? (Jelaskan secara singkat dan detail)",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa program kerja yang akan anda ajukan untuk kegiatan semesta jelajah nusantara? (jelaskan secara singkat dan detail)",
+          },
+          {
+            id: `f-${baseId}-d5`,
+            label: "Apa harapan dan rencana anda jika terpilih menjadi delegasi Semesta Jelajah Nusantara?",
+            type: "textarea",
+            required: true,
+            isFixed: false,
+            value: "",
+            placeholder: "Masukkan apa harapan dan rencana anda jika terpilih menjadi delegasi semesta jelajah nusantara?",
+          },
+        ],
+      },
+      // ===== KELENGKAPAN PERSYARATAN =====
+      {
+        id: `${baseId}-persyaratan`,
+        title: "KELENGKAPAN PERSYARATAN",
+        isFixed: false,
+        fields: [
+          {
+            id: `f-${baseId}-p1`,
+            label: "Bukti follow Instagram Semesta Manusia Indonesia (@semestamanusiaa)",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p2`,
+            label: "Bukti follow Tiktok Semesta Manusia Indonesia (@semestamanusia.indonesia)",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p3`,
+            label: "Bukti upload Invitation Story ke Story Instagram Anda",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+          {
+            id: `f-${baseId}-p4`,
+            label: "Upload Bukti Pembayaran",
+            type: "upload",
+            required: true,
+            isFixed: false,
+            value: null,
+            placeholder: "Unggah 1 file. Maks 100 MB.",
+          },
+        ],
+      },
+    ];
+  };
+
+  // Load sections on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storageKey = tipe === "self-funded"
+      ? "sjn_custom_registration_form_self"
+      : "sjn_custom_registration_form_fully";
+    const savedForm = sessionStorage.getItem(storageKey);
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSections(parsed);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form:", e);
+      }
+    }
+    setSections(getDefaultSections(tipe));
+  }, [tipe]);
 
   const showToast = (msg, isErr = false) => {
     setToastIsError(isErr);
@@ -328,12 +446,24 @@ export default function FormulirTambahSJNPage() {
     setEditingTitle(null);
   };
 
+  // Simpan ke sessionStorage, lalu redirect balik ke tambah page
   const handleSave = () => {
-    showToast("Formulir berhasil disimpan!");
-    // Redirect back to tambah page with created flag
-    setTimeout(() => {
-      router.push(`/admin/sjn/tambah?created=true&tipe=${tipe}`);
-    }, 1000);
+    try {
+      if (typeof window !== "undefined") {
+        const storageKey = tipe === "self-funded"
+          ? "sjn_custom_registration_form_self"
+          : "sjn_custom_registration_form_fully";
+        sessionStorage.setItem(storageKey, JSON.stringify(sections));
+      }
+      showToast("Formulir berhasil disimpan!");
+      const namaQuery = searchParams.get("nama") || namaProgram;
+      setTimeout(() => {
+        router.push(`/admin/sjn/tambah?created=true&nama=${encodeURIComponent(namaQuery)}&tipe=${tipe}`);
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan saat menyimpan formulir.", true);
+    }
   };
 
   return (

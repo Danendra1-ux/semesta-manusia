@@ -91,15 +91,27 @@ export default function RegisterPage({ params }) {
     setTimeout(() => setToastShow(false), 4000); 
   };
 
+  // Pilih form schema yang sesuai dengan tipe pendaftaran (SJN fully/self, atau Camp)
+  const getFormSchema = () => {
+    if (!program) return null;
+    if (program.category === "SJN") {
+      if (type === "fully-funded") return program.custom_registration_form_fully || null;
+      if (type === "self-funded") return program.custom_registration_form_self || null;
+    }
+    return program.custom_registration_form || null;
+  };
+
   // Mengambil total step berdasarkan array dari custom_registration_form (default ke fungsi lama jika blm ada)
   const getTotalSteps = () => {
-    if (program?.custom_registration_form) return program.custom_registration_form.length;
+    const schema = getFormSchema();
+    if (schema && Array.isArray(schema) && schema.length > 0) return schema.length;
     return type === "semesta-camp" ? 2 : 3;
   };
 
   const getStepTitles = () => {
-    if (program?.custom_registration_form) {
-      return program.custom_registration_form.map(section => section.title);
+    const schema = getFormSchema();
+    if (schema && Array.isArray(schema) && schema.length > 0) {
+      return schema.map(section => section.title);
     }
     // Fallback lama
     const baseSteps = ["Data Diri"];
@@ -140,11 +152,11 @@ export default function RegisterPage({ params }) {
 
   const validateStep = (step) => {
     const newErrors = {};
-    const customSections = program?.custom_registration_form;
+    const customSections = getFormSchema();
 
     if (customSections && customSections[step - 1]) {
       const currentSection = customSections[step - 1];
-      
+
       currentSection.fields.forEach((field) => {
         if (field.required) {
           if (field.type === "upload") {
@@ -219,17 +231,18 @@ export default function RegisterPage({ params }) {
       }
 
       // Menyiapkan payload dynamic answers dan mencari labelnya
+      const formSchema = getFormSchema() || [];
       const dynamic_answers = Object.entries(formData).map(([key, value]) => {
         let labelText = key;
         // Cari label asli dari konfigurasi form
-        program?.custom_registration_form?.forEach((sec) => {
+        formSchema.forEach((sec) => {
           const foundField = sec.fields.find((f) => f.id === key);
           if (foundField) labelText = foundField.label;
         });
 
         return {
-          field_id: key, 
-          field_key: key, 
+          field_id: key,
+          field_key: key,
           field_label: labelText, // <--- Menyimpan teks pertanyaan
           value_text: value
         };
@@ -237,7 +250,7 @@ export default function RegisterPage({ params }) {
 
       // Build a flat map of field_id -> field info from the custom form config
       const fieldMap = new Map();
-      program?.custom_registration_form?.forEach((sec) => {
+      formSchema.forEach((sec) => {
         sec.fields?.forEach((f) => fieldMap.set(f.id, f));
       });
 
@@ -258,7 +271,7 @@ export default function RegisterPage({ params }) {
       const reasonId = findFieldId(/alasan|reason|mengapa/i);
 
       // Fallback: if nothing matched, use the first field of the first section as name
-      const firstFieldId = program?.custom_registration_form?.[0]?.fields?.[0]?.id;
+      const firstFieldId = formSchema?.[0]?.fields?.[0]?.id;
 
       const payload = {
         program_id: programId,
@@ -408,7 +421,8 @@ export default function RegisterPage({ params }) {
 
   const stepTitles = getStepTitles();
   const totalSteps = getTotalSteps();
-  const currentSectionData = program?.custom_registration_form?.[currentStep - 1];
+  const formSchema = getFormSchema();
+  const currentSectionData = formSchema?.[currentStep - 1];
 
   return (
     <div className={styles.page}>

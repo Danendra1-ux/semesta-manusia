@@ -371,6 +371,14 @@ export default function TambahSemestaCampProgramPage() {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Tambah Program Semesta Camp</h1>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              Simpan Program
+            </button>
           </div>
           <p className={styles.headerSubtitle}>Buat program Semesta Camp baru</p>
         </div>
@@ -430,7 +438,7 @@ export default function TambahSemestaCampProgramPage() {
                       className={styles.input}
                       value={nama}
                       onChange={(e) => setNama(e.target.value)}
-                      placeholder="Placeholder"
+                      placeholder="Masukkan Nama Program"
                     />
                   </div>
                 </div>
@@ -468,7 +476,7 @@ export default function TambahSemestaCampProgramPage() {
                     className={styles.input}
                     value={lokasi}
                     onChange={(e) => setLokasi(e.target.value)}
-                    placeholder="Placeholder"
+                    placeholder="Lokasi Program"
                   />
                 </div>
               </div>
@@ -541,7 +549,7 @@ export default function TambahSemestaCampProgramPage() {
               className={styles.textarea}
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
-              placeholder="Placeholder"
+              placeholder="Tuliskan deskripsi..."
               rows={5}
             />
           </div>

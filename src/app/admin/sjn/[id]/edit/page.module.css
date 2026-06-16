@@ -105,6 +105,15 @@
   filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
 }
 
+.toast.toastError {
+  border-left-color: var(--danger);
+}
+
+.toast.toastError svg {
+  color: #f87171;
+  filter: drop-shadow(0 0 6px rgba(248, 113, 113, 0.5));
+}
+
 /* =================== CONTENT HEADER =================== */
 .contentHeader {
   padding: 1.75rem 2rem 0;
@@ -799,8 +808,9 @@
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
   width: 400px;
   animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideIn {
@@ -875,6 +885,7 @@
   flex-direction: column;
   gap: 1.25rem;
   overflow-y: auto;
+  flex: 1;
 }
 
 .modalField {
@@ -1057,7 +1068,11 @@
     width: 100%;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     max-height: 90vh;
-    overflow-y: auto;
+  }
+
+  .modalBody {
+    flex: 0 0 auto;
+    overflow-y: visible;
   }
 
   .sectionCard {

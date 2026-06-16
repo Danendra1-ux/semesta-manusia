@@ -517,6 +517,14 @@
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* =================== TOOLTIP WRAPPER =================== */
+.tooltipWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: max-content;
+}
+
 /* Toast Error variant */
 .toast.toastError {
   border-left-color: var(--danger);
@@ -534,6 +542,13 @@
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   margin-top: 0.5rem;
+}
+
+/* Override .fieldRow default 2-kolom saat di dalam tipeSubSection:
+   3 anak (Batas Reg, Status, tombol Buat Formulir) butuh 3 kolom. */
+.tipeSubSection .fieldRow {
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
 }
 
 .tipeSubTitle {
@@ -593,6 +608,7 @@
   background: var(--brand-light);
   opacity: 0;
   transition: opacity 0.25s;
+  pointer-events: none;
 }
 
 .viewFormBtn:hover {

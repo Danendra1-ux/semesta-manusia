@@ -8,10 +8,18 @@ import styles from "./page.module.css";
 
 const fieldTypes = ["Teks", "Textarea", "Angka", "Tanggal", "Dropdown", "Upload File"];
 
-const Toast = ({ message, show }) => (
-  <div className={`${styles.toast} ${show ? styles.toastShow : ""}`}>
+const Toast = ({ message, show, isError }) => (
+  <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
+      {isError ? (
+        <>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </>
+      ) : (
+        <polyline points="20 6 9 17 4 12" />
+      )}
     </svg>
     {message}
   </div>
@@ -58,7 +66,9 @@ export default function FormulirSJNPage({ params }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastIsError, setToastIsError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [programName, setProgramName] = useState("");
 
   // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
@@ -210,6 +220,7 @@ export default function FormulirSJNPage({ params }) {
         const response = await fetch(`/api/programs/${programId}`);
         if (response.ok) {
           const data = await response.json();
+          if (data && data.title) setProgramName(data.title);
           // custom_registration_form adalah JSONB pada tabel programs
           if (data && Array.isArray(data.custom_registration_form) && data.custom_registration_form.length > 0) {
             setSections(data.custom_registration_form);
@@ -229,8 +240,9 @@ export default function FormulirSJNPage({ params }) {
     if (programId) fetchFormulir();
   }, [programId, tipe]);
 
-  const showToast = (msg) => {
+  const showToast = (msg, isError = false) => {
     setToastMessage(msg);
+    setToastIsError(isError);
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3000);
   };
@@ -431,7 +443,7 @@ export default function FormulirSJNPage({ params }) {
       />
 
       <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-        <Toast message={toastMessage} show={toastShow} />
+        <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         <div className={styles.contentHeader}>
           <div className={styles.headerTop}>
@@ -450,7 +462,9 @@ export default function FormulirSJNPage({ params }) {
               Simpan Perubahan
             </button>
           </div>
-          <p className={styles.headerSubtitle}>Buat dan kelola form pendaftaran untuk program ini</p>
+          <p className={styles.headerSubtitle}>
+            Buat dan kelola form pendaftaran — {programName || "Memuat..."}
+          </p>
         </div>
 
         <div className={styles.sectionsContainer}>
@@ -531,87 +545,199 @@ export default function FormulirSJNPage({ params }) {
           </button>
         </div>
 
-        {/* Modal Tambah Field & Modal Edit Placeholder dipangkas untuk efisiensi, menggunakan struktur yang identik dengan sebelumnya */}
+        {/* Modal Tambah Form */}
         {modalOpen && (
           <div className={styles.modalOverlay} onClick={() => setModalOpen(false)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>Tambah Field</h3>
-                <button className={styles.modalClose} onClick={() => setModalOpen(false)}>X</button>
+                <h3 className={styles.modalTitle}>Tambah Form</h3>
+                <button className={styles.modalClose} onClick={() => setModalOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
               </div>
+
               <div className={styles.modalBody}>
                 <div className={styles.modalField}>
-                  <label className={styles.fieldLabel}>Pilih Tipe Field</label>
-                  <select className={styles.input} value={modalFieldType} onChange={(e) => setModalFieldType(e.target.value)}>
-                    {fieldTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </select>
+                  <label className={styles.fieldLabel}>Pilih Tipe Form</label>
+                  <div className={styles.selectWrapper}>
+                    <select
+                      className={styles.input}
+                      value={modalFieldType}
+                      onChange={(e) => setModalFieldType(e.target.value)}
+                    >
+                      {fieldTypes.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
                 </div>
+
                 <div className={styles.modalField}>
                   <label className={styles.fieldLabel}>Label</label>
-                  <input type="text" className={styles.input} value={modalLabel} onChange={(e) => setModalLabel(e.target.value)} />
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={modalLabel}
+                    onChange={(e) => setModalLabel(e.target.value)}
+                    placeholder="Contoh: Divisi"
+                  />
                 </div>
+
                 <div className={styles.modalField}>
                   <label className={styles.fieldLabel}>Placeholder</label>
-                  <input type="text" className={styles.input} value={modalPlaceholder} onChange={(e) => setModalPlaceholder(e.target.value)} />
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={modalPlaceholder}
+                    onChange={(e) => setModalPlaceholder(e.target.value)}
+                    placeholder="Contoh: Pilih divisi"
+                  />
                 </div>
+
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>
                     <div className={styles.optionsList}>
                       {modalOptions.map((opt, idx) => (
                         <div key={idx} className={styles.optionItem}>
-                          <input type="text" className={styles.input} value={opt} onChange={(e) => handleOptionChange(idx, e.target.value)} />
+                          <input
+                            type="text"
+                            className={styles.input}
+                            value={opt}
+                            onChange={(e) => handleOptionChange(idx, e.target.value)}
+                            placeholder={`Opsi ${idx + 1}`}
+                          />
                           {modalOptions.length > 1 && (
-                            <button className={styles.removeOptionBtn} onClick={() => handleRemoveOption(idx)}>X</button>
+                            <button
+                              className={styles.removeOptionBtn}
+                              onClick={() => handleRemoveOption(idx)}
+                              title="Hapus opsi"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
                           )}
                         </div>
                       ))}
                     </div>
-                    <button className={styles.addOptionBtn} onClick={handleAddOption}>Tambah Opsi</button>
+                    <button className={styles.addOptionBtn} onClick={handleAddOption}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Tambah Opsi
+                    </button>
                   </div>
                 )}
               </div>
-              <button className={styles.addFieldModalBtn} onClick={handleAddField} disabled={!modalLabel.trim()}>Add Field</button>
+
+              <button
+                className={styles.addFieldModalBtn}
+                onClick={handleAddField}
+                disabled={!modalLabel.trim()}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add Field
+              </button>
             </div>
           </div>
         )}
 
+        {/* Modal Edit Placeholder */}
         {editPlaceholderOpen && editPlaceholderField && (
-           <div className={styles.modalOverlay} onClick={() => setEditPlaceholderOpen(false)}>
-             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-               <div className={styles.modalHeader}>
-                 <h3 className={styles.modalTitle}>Edit Placeholder</h3>
-                 <button className={styles.modalClose} onClick={() => setEditPlaceholderOpen(false)}>X</button>
-               </div>
-               <div className={styles.modalBody}>
-                 <div className={styles.modalField}>
-                   <label className={styles.fieldLabel}>Label</label>
-                   <input type="text" className={styles.input} value={editPlaceholderField.label} disabled />
-                 </div>
-                 <div className={styles.modalField}>
-                   <label className={styles.fieldLabel}>Placeholder</label>
-                   <input type="text" className={styles.input} value={editPlaceholderValue} onChange={(e) => setEditPlaceholderValue(e.target.value)} />
-                 </div>
-                 {editPlaceholderField.type === "dropdown" && (
-                   <div className={styles.modalField}>
-                     <label className={styles.fieldLabel}>Opsi</label>
-                     <div className={styles.optionsList}>
-                       {editPlaceholderOptions.map((opt, idx) => (
-                         <div key={idx} className={styles.optionItem}>
-                           <input type="text" className={styles.input} value={opt} onChange={(e) => handlePlaceholderOptionChange(idx, e.target.value)} />
-                           {editPlaceholderOptions.length > 1 && (
-                             <button className={styles.removeOptionBtn} onClick={() => handleRemovePlaceholderOption(idx)}>X</button>
-                           )}
-                         </div>
-                       ))}
-                     </div>
-                       <button className={styles.addOptionBtn} onClick={handleAddPlaceholderOption}>Tambah Opsi</button>
-                   </div>
-                 )}
-               </div>
-               <button className={styles.addFieldModalBtn} onClick={handleSavePlaceholder}>Simpan</button>
-             </div>
-           </div>
+          <div className={styles.modalOverlay} onClick={() => setEditPlaceholderOpen(false)}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>Edit Placeholder</h3>
+                <button className={styles.modalClose} onClick={() => setEditPlaceholderOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className={styles.modalBody}>
+                <div className={styles.modalField}>
+                  <label className={styles.fieldLabel}>Label</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={editPlaceholderField.label}
+                    disabled
+                  />
+                </div>
+
+                <div className={styles.modalField}>
+                  <label className={styles.fieldLabel}>Placeholder</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={editPlaceholderValue}
+                    onChange={(e) => setEditPlaceholderValue(e.target.value)}
+                    placeholder="Contoh: Masukkan nama lengkap"
+                  />
+                </div>
+
+                {editPlaceholderField.type === "dropdown" && (
+                  <div className={styles.modalField}>
+                    <label className={styles.fieldLabel}>Opsi</label>
+                    <div className={styles.optionsList}>
+                      {editPlaceholderOptions.map((opt, idx) => (
+                        <div key={idx} className={styles.optionItem}>
+                          <input
+                            type="text"
+                            className={styles.input}
+                            value={opt}
+                            onChange={(e) => handlePlaceholderOptionChange(idx, e.target.value)}
+                            placeholder={`Opsi ${idx + 1}`}
+                          />
+                          {editPlaceholderOptions.length > 1 && (
+                            <button
+                              className={styles.removeOptionBtn}
+                              onClick={() => handleRemovePlaceholderOption(idx)}
+                              title="Hapus opsi"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <button className={styles.addOptionBtn} onClick={handleAddPlaceholderOption}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Tambah Opsi
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                className={styles.addFieldModalBtn}
+                onClick={handleSavePlaceholder}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Simpan
+              </button>
+            </div>
+          </div>
         )}
       </main>
     </div>

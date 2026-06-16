@@ -15,21 +15,31 @@ export async function POST(request) {
     } = body;
 
     // =====================================================================
-    // 1. CEK DUPLIKAT EMAIL ATAU WHATSAPP DI PROGRAM YANG SAMA
+    // 1. CEK DUPLIKAT EMAIL ATAU WHATSAPP DI PROGRAM & TIPE PENDAFTARAN YANG SAMA
     // =====================================================================
-    const { data: existingReg, error: checkError } = await supabase
+    let duplicateQuery = supabase
       .from('registrations')
       .select('id')
       .eq('program_id', program_id)
-      .or(`email.eq.${email},whatsapp.eq.${whatsapp}`)
-      .maybeSingle();
+      .or(`email.eq.${email},whatsapp.eq.${whatsapp}`);
+
+    // Sertakan funding_type_id dalam pengecekan jika tersedia,
+    // agar user bisa mendaftar di tipe funding yang berbeda (Fully Funded vs Self Funded)
+    // dengan email/whatsapp yang sama, khusus untuk program SJN.
+    if (funding_type_id) {
+      duplicateQuery = duplicateQuery.eq('funding_type_id', funding_type_id);
+    } else {
+      duplicateQuery = duplicateQuery.is('funding_type_id', null);
+    }
+
+    const { data: existingReg, error: checkError } = await duplicateQuery.maybeSingle();
 
     if (checkError) throw checkError;
-    
+
     // Jika data ditemukan, tolak proses pendaftaran
     if (existingReg) {
       return NextResponse.json(
-        { error: 'Email atau Nomor WhatsApp ini sudah terdaftar untuk program tersebut!' }, 
+        { error: 'Email atau Nomor WhatsApp ini sudah terdaftar untuk tipe pendaftaran tersebut!' },
         { status: 400 }
       );
     }
@@ -56,14 +66,24 @@ export async function POST(request) {
       // Kita perlu mencari label asli dari field_key (ID komponen)
       const { data: programData } = await supabase
         .from('programs')
-        .select('custom_registration_form')
+        .select('custom_registration_form, custom_registration_form_fully, custom_registration_form_self, program_funding_types(code, id)')
         .eq('id', program_id)
         .single();
 
+      // Pilih form schema berdasarkan funding_type (SJN) atau fallback ke single
+      let activeFormSchema = programData?.custom_registration_form || null;
+      if (programData && funding_type_id && Array.isArray(programData.program_funding_types)) {
+        const matchedFt = programData.program_funding_types.find((ft) => ft.id === funding_type_id);
+        if (matchedFt) {
+          if (matchedFt.code === 'fully') activeFormSchema = programData.custom_registration_form_fully || activeFormSchema;
+          else if (matchedFt.code === 'self') activeFormSchema = programData.custom_registration_form_self || activeFormSchema;
+        }
+      }
+
       const filesToInsert = uploaded_files.map(f => {
         let labelText = f.field_key; // Default ke ID jika tidak ketemu
-        if (programData && programData.custom_registration_form) {
-          programData.custom_registration_form.forEach(sec => {
+        if (activeFormSchema) {
+          activeFormSchema.forEach(sec => {
             const foundField = sec.fields.find(field => field.id === f.field_key);
             if (foundField) labelText = foundField.label;
           });
@@ -75,7 +95,7 @@ export async function POST(request) {
           ...f
         };
       });
-      
+
       const { data: insertedFiles, error: fileError } = await supabase
         .from('registration_files')
         .insert(filesToInsert)
