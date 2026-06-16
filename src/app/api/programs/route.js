@@ -8,12 +8,23 @@ export async function GET(request) {
   const category = searchParams.get('category');
   const isActive = searchParams.get('is_active');
 
-  let query = supabase.from('programs').select('*, program_funding_types(*)');
+  let query = supabase
+    .from('programs')
+    .select('*, program_funding_types(*), registrations(count)');
 
   if (category) query = query.eq('category', category);
   if (isActive) query = query.eq('is_active', isActive === 'true');
 
   const { data, error } = await query.order('created_at', { ascending: false });
+
+  if (!error && Array.isArray(data)) {
+    data.forEach((p) => {
+      p.registration_count = Array.isArray(p.registrations) && p.registrations[0]
+        ? p.registrations[0].count
+        : 0;
+      delete p.registrations;
+    });
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

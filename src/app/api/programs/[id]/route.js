@@ -10,11 +10,17 @@ export async function GET(request, { params }) {
 
   const { data, error } = await supabase
     .from('programs')
-    .select('*, program_funding_types(*)')
+    .select('*, program_funding_types(*), registrations(count)')
     .eq('id', id)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+
+  data.registration_count = Array.isArray(data.registrations) && data.registrations[0]
+    ? data.registrations[0].count
+    : 0;
+  delete data.registrations;
+
   return NextResponse.json(data);
 }
 
@@ -100,6 +106,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
+
+  // Hapus semua registrasi yang terhubung dengan program ini dulu
+  await supabase
+    .from('registrations')
+    .delete()
+    .eq('program_id', id);
+
   const { error } = await supabase.from('programs').delete().eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

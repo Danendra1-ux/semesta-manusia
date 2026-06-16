@@ -35,14 +35,21 @@ export default function SJNDetailPage({ params }) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [program, setProgram] = useState(null);
   const [pendaftar, setPendaftar] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Modal konfirmasi hapus
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, fullName: "" });
+  const [deleting, setDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
   const filterDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
+  const optionsButtonRefs = useRef({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,10 +95,34 @@ export default function SJNDetailPage({ params }) {
     const handleClickOutside = (e) => {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) setFilterDropdownOpen(false);
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) setSortDropdownOpen(false);
+      if (activeDropdown && !e.target.closest(`.${styles.optionsCell}`) && !e.target.closest(`.${styles.optionsDropdown}`)) {
+        setActiveDropdown(null);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [activeDropdown]);
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleScroll = () => setActiveDropdown(null);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [activeDropdown]);
+
+  useEffect(() => {
+    if (activeDropdown && optionsButtonRefs.current[activeDropdown]) {
+      const rect = optionsButtonRefs.current[activeDropdown].getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.right - 160,
+      });
+    }
+  }, [activeDropdown]);
 
   const filteredPendaftar = useMemo(() => {
     let result = [...pendaftar];
@@ -149,7 +180,18 @@ export default function SJNDetailPage({ params }) {
   };
 
   const toggleDropdown = (id) => {
-    setActiveDropdown(activeDropdown === id ? null : id);
+    if (activeDropdown === id) {
+      setActiveDropdown(null);
+    } else {
+      if (optionsButtonRefs.current[id]) {
+        const rect = optionsButtonRefs.current[id].getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4,
+          left: rect.right - 160,
+        });
+      }
+      setActiveDropdown(id);
+    }
   };
 
   const updateRegistrationStatus = async (id, status) => {
@@ -170,6 +212,44 @@ export default function SJNDetailPage({ params }) {
 
   const handleTerima = (id) => updateRegistrationStatus(id, "Diterima");
   const handleTolak = (id) => updateRegistrationStatus(id, "Ditolak");
+
+  const openDeleteModal = (id) => {
+    const target = pendaftar.find((p) => p.id === id);
+    setDeleteModal({ open: true, id, fullName: target?.full_name || "Pendaftar ini" });
+    setActiveDropdown(null);
+  };
+
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteModal({ open: false, id: null, fullName: "" });
+  };
+
+  const handleHapus = async () => {
+    const id = deleteModal.id;
+    if (!id) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/registrations/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setPendaftar((prev) => prev.filter((p) => p.id !== id));
+        setDeleteModal({ open: false, id: null, fullName: "" });
+        showToast("Pendaftar berhasil dihapus");
+      } else {
+        showToast("Gagal menghapus pendaftar", true);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Gagal menghapus: ${err.message}`, true);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const showToast = (message, isError = false) => {
+    setToastMessage({ message, isError });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   if (loading) {
      return <div style={{ padding: '2rem', textAlign: 'center' }}>Memuat data pendaftar...</div>;
@@ -423,30 +503,17 @@ export default function SJNDetailPage({ params }) {
                       </button>
                     </td>
                     <td className={styles.optionsCell}>
-                      <button className={styles.optionsButton} onClick={() => toggleDropdown(p.id)}>
+                      <button
+                        ref={(el) => (optionsButtonRefs.current[p.id] = el)}
+                        className={styles.optionsButton}
+                        onClick={() => toggleDropdown(p.id)}
+                      >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="5" r="1" />
                           <circle cx="12" cy="12" r="1" />
                           <circle cx="12" cy="19" r="1" />
                         </svg>
                       </button>
-                      {activeDropdown === p.id && (
-                        <div className={styles.optionsDropdown}>
-                          <button className={styles.dropdownItem} onClick={() => handleTerima(p.id)}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Terima
-                          </button>
-                          <button className={styles.dropdownItem} onClick={() => handleTolak(p.id)}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                            Tolak
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -483,6 +550,125 @@ export default function SJNDetailPage({ params }) {
           </div>
         </div>
       </main>
+
+      {activeDropdown !== null && paginatedPendaftar.find((p) => p.id === activeDropdown) && (
+        <div
+          className={styles.optionsDropdown}
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className={styles.dropdownItem}
+            onClick={() => handleTerima(activeDropdown)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Terima
+          </button>
+          <button
+            className={styles.dropdownItem}
+            onClick={() => handleTolak(activeDropdown)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Tolak
+          </button>
+          <button
+            className={`${styles.dropdownItem} ${styles.deleteItem}`}
+            onClick={() => openDeleteModal(activeDropdown)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+            </svg>
+            Hapus
+          </button>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus */}
+      {deleteModal.open && (
+        <div className={styles.modalBackdrop} onClick={closeDeleteModal}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+          >
+            <div className={styles.modalIconWrap}>
+              <svg className={styles.modalIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+            </div>
+
+            <h3 id="delete-modal-title" className={styles.modalTitle}>
+              Hapus Pendaftar?
+            </h3>
+            <p className={styles.modalDescription}>
+              Anda akan menghapus pendaftar <strong>"{deleteModal.fullName}"</strong> dari program SJN ini.
+              Seluruh data formulir dan file yang terhubung akan ikut terhapus dan tidak dapat dikembalikan.
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={closeDeleteModal}
+                disabled={deleting}
+              >
+                Batal
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleHapus}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className={styles.modalSpinner} />
+                    <span>Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}>
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    </svg>
+                    <span>Ya, Hapus</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`${styles.toast} ${toastMessage.isError ? styles.toastError : styles.toastSuccess}`}>
+          {toastMessage.isError ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+          <span>{toastMessage.message}</span>
+        </div>
+      )}
     </div>
   );
 }

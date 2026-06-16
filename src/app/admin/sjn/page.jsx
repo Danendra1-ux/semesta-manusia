@@ -19,36 +19,50 @@ export default function SJNPage() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const filterDropdownRef = useRef(null);
+  const optionsButtonRefs = useRef({});
 
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const response = await fetch('/api/programs?category=SJN');
-        if (response.ok) {
-          const data = await response.json();
-          const formatted = data.map(p => ({
-            id: p.id,
-            tanggal: p.event_start_date ? new Date(p.event_start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-',
-            nama: p.title,
-            programId: p.id, 
-            lokasi: p.location || '-',
-            status: p.status || 'Dibuka',
-            pendaftar: p.registration_count || 0
-          }));
-          setPrograms(formatted);
-        }
-      } catch (err) {
-        console.error("Gagal mengambil data program:", err);
-      } finally {
-        setLoading(false);
+  // Modal konfirmasi hapus program
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: "", pendaftar: 0 });
+  const [deleting, setDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch('/api/programs?category=SJN', { cache: 'no-store' });
+      if (response.ok) {
+        const data = await response.json();
+        const formatted = data.map(p => ({
+          ...p,
+          tanggal: p.event_start_date ? new Date(p.event_start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-',
+          nama: p.title,
+          programId: p.id,
+          lokasi: p.location || '-',
+          status: p.status || 'Dibuka',
+          pendaftar: p.registration_count || 0
+        }));
+        setPrograms(formatted);
       }
-    };
+    } catch (err) {
+      console.error("Gagal mengambil data program:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPrograms();
+  }, []);
+
+  useEffect(() => {
+    const handleFocus = () => fetchPrograms();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   useEffect(() => {
@@ -56,15 +70,95 @@ export default function SJNPage() {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
         setStatusDropdownOpen(false);
       }
+      if (activeDropdown && !e.target.closest(`.${styles.optionsCell}`) && !e.target.closest(`.${styles.optionsDropdown}`)) {
+        setActiveDropdown(null);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [activeDropdown]);
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleScroll = () => setActiveDropdown(null);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [activeDropdown]);
+
+  useEffect(() => {
+    if (activeDropdown && optionsButtonRefs.current[activeDropdown]) {
+      const rect = optionsButtonRefs.current[activeDropdown].getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.right - 160,
+      });
+    }
+  }, [activeDropdown]);
 
   const itemsPerPage = 10;
 
   const toggleDropdown = (id) => {
-    setActiveDropdown(activeDropdown === id ? null : id);
+    if (activeDropdown === id) {
+      setActiveDropdown(null);
+    } else {
+      if (optionsButtonRefs.current[id]) {
+        const rect = optionsButtonRefs.current[id].getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4,
+          left: rect.right - 160,
+        });
+      }
+      setActiveDropdown(id);
+    }
+  };
+
+  // --- FUNGSI HAPUS PROGRAM ---
+  const openDeleteModal = (id) => {
+    const target = programs.find((p) => p.programId === id);
+    setDeleteModal({
+      open: true,
+      id,
+      title: target?.nama || target?.title || "Program ini",
+      pendaftar: target?.pendaftar ?? target?.registration_count ?? 0,
+    });
+    setActiveDropdown(null);
+  };
+
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteModal({ open: false, id: null, title: "", pendaftar: 0 });
+  };
+
+  const handleDelete = async () => {
+    const id = deleteModal.id;
+    if (!id) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/programs/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Gagal menghapus program");
+
+      setPrograms((prev) => prev.filter((p) => p.programId !== id));
+      setSelectedRows((prev) => prev.filter((rowId) => rowId !== id));
+      setDeleteModal({ open: false, id: null, title: "", pendaftar: 0 });
+      showToast("Program berhasil dihapus");
+    } catch (err) {
+      showToast(`Gagal menghapus: ${err.message}`, true);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const showToast = (message, isError = false) => {
+    setToastMessage({ message, isError });
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const filteredPrograms = useMemo(() => {
@@ -83,9 +177,9 @@ export default function SJNPage() {
     }
 
     if (sortDate === "asc") {
-      result.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+      result.sort((a, b) => new Date(a.event_start_date || a.created_at) - new Date(b.event_start_date || b.created_at));
     } else if (sortDate === "desc") {
-      result.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      result.sort((a, b) => new Date(b.event_start_date || b.created_at) - new Date(a.event_start_date || a.created_at));
     }
 
     if (sortStatus === "asc") {
@@ -322,6 +416,7 @@ export default function SJNPage() {
                     </td>
                     <td className={styles.optionsCell}>
                       <button
+                        ref={(el) => (optionsButtonRefs.current[program.id] = el)}
                         className={styles.optionsButton}
                         onClick={() => toggleDropdown(program.id)}
                       >
@@ -331,34 +426,6 @@ export default function SJNPage() {
                           <circle cx="12" cy="19" r="1" />
                         </svg>
                       </button>
-                      {activeDropdown === program.id && (
-                        <div className={styles.optionsDropdown}>
-                          <button
-                            className={styles.dropdownItem}
-                            onClick={() => router.push(`/admin/sjn/${program.programId}/edit`)}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                            <span>Edit</span>
-                          </button>
-                          <button className={styles.dropdownItem}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                              <path d="M7 11V7a5 5 0 0110 0v4" />
-                            </svg>
-                            <span>{program.status === "Dibuka" ? "Tutup Program" : "Buka Program"}</span>
-                          </button>
-                          <button className={`${styles.dropdownItem} ${styles.deleteItem}`}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                            </svg>
-                            <span>Hapus</span>
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -395,7 +462,139 @@ export default function SJNPage() {
             </div>
           </div>
         </div>
+
       </main>
+
+      {activeDropdown !== null && paginatedPrograms.find((p) => p.id === activeDropdown) && (
+        <div
+          className={styles.optionsDropdown}
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className={styles.dropdownItem}
+            onClick={() => {
+              const program = paginatedPrograms.find((p) => p.id === activeDropdown);
+              setActiveDropdown(null);
+              router.push(`/admin/sjn/${program.programId}/edit`);
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            <span>Edit</span>
+          </button>
+          <button
+            className={styles.dropdownItem}
+            onClick={() => setActiveDropdown(null)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            <span>{paginatedPrograms.find((p) => p.id === activeDropdown)?.status === "Dibuka" ? "Tutup Program" : "Buka Program"}</span>
+          </button>
+          <button
+            className={`${styles.dropdownItem} ${styles.deleteItem}`}
+            onClick={() => {
+              const program = paginatedPrograms.find((p) => p.programId === activeDropdown);
+              openDeleteModal(program.programId);
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+            </svg>
+            <span>Hapus</span>
+          </button>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Program */}
+      {deleteModal.open && (
+        <div className={styles.modalBackdrop} onClick={closeDeleteModal}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-program-modal-title"
+          >
+            <div className={styles.modalIconWrap}>
+              <svg className={styles.modalIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+            </div>
+
+            <h3 id="delete-program-modal-title" className={styles.modalTitle}>
+              Hapus Program?
+            </h3>
+            <p className={styles.modalDescription}>
+              Anda akan menghapus program <strong>"{deleteModal.title}"</strong>.
+              {deleteModal.pendaftar > 0 && (
+                <> Program ini memiliki <strong>{deleteModal.pendaftar} pendaftar</strong> yang akan ikut terhapus.</>
+              )}
+              {" "}
+              Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={closeDeleteModal}
+                disabled={deleting}
+              >
+                Batal
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className={styles.modalSpinner} />
+                    <span>Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}>
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    </svg>
+                    <span>Ya, Hapus</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`${styles.toast} ${toastMessage.isError ? styles.toastError : styles.toastSuccess}`}>
+          {toastMessage.isError ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.toastIcon}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+          <span>{toastMessage.message}</span>
+        </div>
+      )}
     </div>
   );
 }
