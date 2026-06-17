@@ -27,6 +27,9 @@ export async function GET(request, { params }) {
     .single();
 
   if (error) {
+    if (error.code === 'PGRST116' || error.message?.includes('single')) {
+      return NextResponse.json({ error: 'Pendaftar tidak ditemukan' }, { status: 404 });
+    }
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 

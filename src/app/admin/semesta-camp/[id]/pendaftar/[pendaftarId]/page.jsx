@@ -212,11 +212,11 @@ export default function PendaftarDetailPage({ params }) {
                                   {fileObj.file_name} • {formatFileSize(fileObj.file_size)}
                                 </span>
                               </div>
-                              <a 
-                                href={fileObj.file_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className={styles.berkasDownload} 
+                              <a
+                                href={`/api/files/${fileObj.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.berkasDownload}
                               >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -252,12 +252,6 @@ export default function PendaftarDetailPage({ params }) {
             <div className={styles.registrationItem}>
               <span className={styles.registrationLabel}>Tanggal Pendaftaran</span>
               <span className={styles.registrationValue}>{formatDate(pendaftar.registered_at)}</span>
-            </div>
-            <div className={styles.registrationItem}>
-              <span className={styles.registrationLabel}>Kode Pendaftaran</span>
-              <span className={styles.registrationValue}>
-                {pendaftar.registration_code || "-"}
-              </span>
             </div>
           </div>
         </div>
