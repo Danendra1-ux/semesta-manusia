@@ -123,11 +123,15 @@ export default function RegisterPage({ params }) {
   const getSidebarTitle = () => {
     if (!program) return "";
     if (program.category === "SJN") {
+      const baseName = program.title.split("#")[0].trim();
       const programNum = program.title.match(/#\d+/)?.[0] || "";
-      const baseName = program.title.split(programNum)[0].trim();
-      if (type === "fully-funded") return `Fully Funded - ${baseName} ${programNum}`;
-      if (type === "self-funded") return `Self Funded - ${baseName} ${programNum}`;
-      return `${baseName} ${programNum}`;
+      const restAfterNum = programNum
+        ? program.title.split(programNum)[1]?.trim() || ""
+        : "";
+      const baseTitle = `${baseName} ${programNum}${restAfterNum ? " " + restAfterNum : ""}`.trim();
+      if (type === "fully-funded") return `${baseTitle} - Fully Funded`;
+      if (type === "self-funded") return `${baseTitle} - Self Funded`;
+      return baseTitle;
     }
     return program.title;
   };
