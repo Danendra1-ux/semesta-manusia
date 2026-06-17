@@ -82,8 +82,8 @@ export default function FormulirTambahSemestaCampPage() {
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state — initialized with default template
-  const [sections, setSections] = useState(DEFAULT_FORM_TEMPLATE);
+  // Section state — initialized empty, populated from sessionStorage or default template on mount
+  const [sections, setSections] = useState([]);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -106,7 +106,7 @@ export default function FormulirTambahSemestaCampPage() {
 
   // Auto-save sections to sessionStorage on every change
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && sections.length > 0) {
       try {
         sessionStorage.setItem("sc_custom_registration_form", JSON.stringify(sections));
       } catch (err) {
@@ -114,6 +114,24 @@ export default function FormulirTambahSemestaCampPage() {
       }
     }
   }, [sections]);
+
+  // Load sections on mount — restore from sessionStorage if present, otherwise use default template
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedForm = sessionStorage.getItem("sc_custom_registration_form");
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSections(parsed);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form:", e);
+      }
+    }
+    setSections(DEFAULT_FORM_TEMPLATE);
+  }, []);
 
   const openEditPlaceholder = (field, sectionId) => {
     setEditPlaceholderField({ ...field, sectionId });
@@ -341,6 +359,14 @@ export default function FormulirTambahSemestaCampPage() {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Form Pendaftaran — Semesta Camp</h1>
+            <button className={styles.saveButtonTop} onClick={handleSave}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              Simpan Perubahan
+            </button>
           </div>
           <p className={styles.headerSubtitle}>
             Buat dan kelola form pendaftaran — {decodeURIComponent(namaProgram)}

@@ -50,6 +50,13 @@ export default function EditSJNProgramPage({ params }) {
   const [hasFullyForm, setHasFullyForm] = useState(false);
   const [hasSelfForm, setHasSelfForm] = useState(false);
 
+  // Refs untuk nilai paling up-to-date — dipakai di dalam async fetch
+  // supaya tidak membaca closure stale saat race condition dengan effect pertama.
+  const fullyFormSectionsRef = useRef(fullyFormSections);
+  const selfFormSectionsRef = useRef(selfFormSections);
+  useEffect(() => { fullyFormSectionsRef.current = fullyFormSections; }, [fullyFormSections]);
+  useEffect(() => { selfFormSectionsRef.current = selfFormSections; }, [selfFormSections]);
+
   // Form state
   const [nama, setNama] = useState("");
   const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
@@ -144,12 +151,14 @@ export default function EditSJNProgramPage({ params }) {
             setSelfFundedStatus(self.is_active !== false ? 'Aktif' : 'Non-aktif');
           }
 
-          // Read form data from DB if sessionStorage is empty
-          if (data.custom_registration_form_fully && Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
+          // Read form data from DB only if sessionStorage is empty for that tipe.
+          // Gunakan ref (bukan closure state) agar terpengaruh update dari effect pertama,
+          // karena dua useEffect bisa saling override saat closure masih menampung nilai awal.
+          if (fullyFormSectionsRef.current.length === 0 && data.custom_registration_form_fully && Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
             setFullyFormSections(data.custom_registration_form_fully);
             setHasFullyForm(true);
           }
-          if (data.custom_registration_form_self && Array.isArray(data.custom_registration_form_self) && data.custom_registration_form_self.length > 0) {
+          if (selfFormSectionsRef.current.length === 0 && data.custom_registration_form_self && Array.isArray(data.custom_registration_form_self) && data.custom_registration_form_self.length > 0) {
             setSelfFormSections(data.custom_registration_form_self);
             setHasSelfForm(true);
           }
@@ -322,6 +331,40 @@ export default function EditSJNProgramPage({ params }) {
     }
     
     try {
+      // Baca sessionStorage fresh — sama seperti alur tambah
+      // supaya draft dari halaman formulir selalu menang atas state yang mungkin stale
+      let resolvedFully = fullyFormSections;
+      let resolvedSelf = selfFormSections;
+      let includeFully = hasFullyForm;
+      let includeSelf = hasSelfForm;
+
+      if (typeof window !== "undefined") {
+        const savedFully = sessionStorage.getItem("sjn_custom_registration_form_fully");
+        const savedSelf = sessionStorage.getItem("sjn_custom_registration_form_self");
+        if (savedFully) {
+          try {
+            const parsed = JSON.parse(savedFully);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              resolvedFully = parsed;
+              includeFully = true;
+            }
+          } catch (e) {
+            console.error("Failed to parse fully form on save:", e);
+          }
+        }
+        if (savedSelf) {
+          try {
+            const parsed = JSON.parse(savedSelf);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              resolvedSelf = parsed;
+              includeSelf = true;
+            }
+          } catch (e) {
+            console.error("Failed to parse self form on save:", e);
+          }
+        }
+      }
+
       let finalImageUrl = posterPreview || "";
 
       // Upload poster ke Supabase Storage jika ada file baru
@@ -348,7 +391,9 @@ export default function EditSJNProgramPage({ params }) {
       const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
 
       // Siapkan payload dengan field dinamis dimasukkan ke kolom detail_program dan pekerjaan
-      // Sertakan custom form data jika sudah ada (dari sessionStorage atau API)
+      // Sertakan custom form data — pakai nilai lokal (resolvedFully/resolvedSelf)
+      // yang sudah memprioritaskan sessionStorage draft, supaya perubahan dari halaman
+      // formulir tidak hilang akibat race condition.
       const payload = {
         title: nama,
         description: deskripsi,
@@ -362,8 +407,8 @@ export default function EditSJNProgramPage({ params }) {
           { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif' }
         ],
         image_url: finalImageUrl,
-        ...(hasFullyForm && fullyFormSections.length > 0 ? { custom_registration_form_fully: fullyFormSections } : {}),
-        ...(hasSelfForm && selfFormSections.length > 0 ? { custom_registration_form_self: selfFormSections } : {}),
+        ...(includeFully && resolvedFully.length > 0 ? { custom_registration_form_fully: resolvedFully } : {}),
+        ...(includeSelf && resolvedSelf.length > 0 ? { custom_registration_form_self: resolvedSelf } : {}),
       };
 
       const res = await fetch(`/api/programs/${programId}`, {
@@ -374,6 +419,9 @@ export default function EditSJNProgramPage({ params }) {
 
       if (res.ok) {
         showToast("Perubahan berhasil disimpan!");
+        sessionStorage.removeItem("sjn_custom_registration_form_fully");
+        sessionStorage.removeItem("sjn_custom_registration_form_self");
+        setTimeout(() => router.push("/admin/sjn"), 1500);
       } else {
         const data = await res.json();
         showToast(data.error || "Gagal menyimpan perubahan.", true);

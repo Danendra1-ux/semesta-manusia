@@ -79,8 +79,38 @@ export default function EditProgramPage({ params }) {
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // 1. Fetch Data Lama dari Database
-  // 1. Fetch Data Lama dari Database
+  // 1. Load draft from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const draftKey = `sc_edit_draft_${programId}`;
+    const draft = sessionStorage.getItem(draftKey);
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.nama) setNama(parsed.nama);
+        if (parsed.jadwalMulai) setJadwalMulai(parsed.jadwalMulai);
+        if (parsed.jadwalSelesai) setJadwalSelesai(parsed.jadwalSelesai);
+        if (parsed.lokasi) setLokasi(parsed.lokasi);
+        if (parsed.deskripsi) setDeskripsi(parsed.deskripsi);
+        if (parsed.batasRegistrasi) setBatasRegistrasi(parsed.batasRegistrasi);
+        if (parsed.detailFields) setDetailFields(parsed.detailFields);
+        if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
+      } catch (e) {
+        console.error("Failed to parse edit draft:", e);
+      }
+    }
+  }, [programId]);
+
+  // 2. Auto-save form state to sessionStorage on every change
+  useEffect(() => {
+    if (typeof window === "undefined" || !programId) return;
+    const draftKey = `sc_edit_draft_${programId}`;
+    sessionStorage.setItem(draftKey, JSON.stringify({
+      nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields
+    }));
+  }, [programId, nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields]);
+
+  // 3. Fetch Data Lama dari Database (only fills fields not yet in sessionStorage draft)
   useEffect(() => {
     if (!programId) return;
 
@@ -88,34 +118,42 @@ export default function EditProgramPage({ params }) {
       try {
         const response = await fetch(`/api/programs/${programId}`, { cache: 'no-store' });
         if (!response.ok) throw new Error("Gagal mengambil data program");
-        
+
         const data = await response.json();
-        
-        setNama(data.title || "");
-        setJadwalMulai(data.event_start_date ? data.event_start_date.split('T')[0] : "");
-        setJadwalSelesai(data.event_end_date ? data.event_end_date.split('T')[0] : "");
-        
+
+        // Hanya set dari DB jika sessionStorage draft belum mengisinya.
+        // Logic sama dengan tambah — supaya Jadwal Pelaksanaan dll.
+        // tidak ter-reset saat admin bolak-balik ke halaman Formulir.
+        setNama((prev) => prev || data.title || "");
+        setJadwalMulai((prev) => prev || (data.event_start_date ? data.event_start_date.split('T')[0] : ""));
+        setJadwalSelesai((prev) => prev || (data.event_end_date ? data.event_end_date.split('T')[0] : ""));
+        setLokasi((prev) => prev || data.location || "");
+        setDeskripsi((prev) => prev || data.description || "");
+
         if (data.program_funding_types && data.program_funding_types.length > 0) {
           const deadline = data.program_funding_types[0].deadline;
-          setBatasRegistrasi(deadline ? deadline.split('T')[0] : "");
+          setBatasRegistrasi((prev) => prev || (deadline ? deadline.split('T')[0] : ""));
         }
-        
-        setLokasi(data.location || "");
-        setDeskripsi(data.description || "");
 
-        // --- TAMBAHAN BARU: Set state dynamic fields dari database ---
-        setDetailFields(data.detail_program || []);
-        setPekerjaanFields(data.pekerjaan || []);
+        // Dynamic fields — hanya replace jika state masih kosong
+        if (data.detail_program && data.detail_program.length > 0) {
+          setDetailFields((prev) => (prev && prev.length > 0) ? prev : data.detail_program);
+        }
+        if (data.pekerjaan && data.pekerjaan.length > 0) {
+          setPekerjaanFields((prev) => (prev && prev.length > 0) ? prev : data.pekerjaan);
+        }
 
-        // Load custom registration form (use saved form or fallback to default template)
-        const formToLoad = data.custom_registration_form && data.custom_registration_form.length > 0
-          ? data.custom_registration_form
-          : DEFAULT_FORM_TEMPLATE;
-        setCustomRegistrationForm(formToLoad);
-        // -------------------------------------------------------------
-        
+        // Custom registration form (use saved form or fallback to default template)
+        if (data.custom_registration_form && data.custom_registration_form.length > 0) {
+          setCustomRegistrationForm((prev) =>
+            prev && prev.length > 0 && JSON.stringify(prev) !== JSON.stringify(DEFAULT_FORM_TEMPLATE)
+              ? prev
+              : data.custom_registration_form
+          );
+        }
+
         if (data.image_url) {
-          setPosterPreview(data.image_url);
+          setPosterPreview((prev) => prev || data.image_url);
         }
       } catch (err) {
         showToast(err.message, true);
@@ -316,7 +354,12 @@ export default function EditProgramPage({ params }) {
       // atau logika tambahan di route PUT /api/programs.
 
       showToast("Perubahan berhasil disimpan!", false);
-      
+
+      // Clean up draft sessionStorage on successful save
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(`sc_edit_draft_${programId}`);
+      }
+
       setTimeout(() => {
         router.push("/admin/semesta-camp");
       }, 1500);

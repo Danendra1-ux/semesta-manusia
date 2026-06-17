@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
 
@@ -60,6 +60,7 @@ const EditIcon = () => (
 export default function FormulirSJNPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tipe = searchParams.get("tipe") || "fully-funded";
 
@@ -213,15 +214,40 @@ export default function FormulirSJNPage({ params }) {
     ];
   };
 
-  // Ambil form data dari database — custom_registration_form_fully atau custom_registration_form_self sesuai tipe
+  // Ambil form data — priority: sessionStorage (draft edit) > database
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storageKey = tipe === "self-funded"
+      ? "sjn_custom_registration_form_self"
+      : "sjn_custom_registration_form_fully";
+
+    // Cek draft edit di sessionStorage dulu (logic sama dengan tambah/formulir)
+    const savedForm = sessionStorage.getItem(storageKey);
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSections(parsed);
+          setLoading(false);
+          // Tetap fetch nama program
+          fetch(`/api/programs/${programId}`)
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => { if (data && data.title) setProgramName(data.title); })
+            .catch(() => {});
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form:", e);
+      }
+    }
+
+    // Fallback ke database
     const fetchFormulir = async () => {
       try {
         const response = await fetch(`/api/programs/${programId}`);
         if (response.ok) {
           const data = await response.json();
           if (data && data.title) setProgramName(data.title);
-          // Baca kolom yang sesuai dengan tipe
           if (tipe === "fully-funded") {
             if (Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
               setSections(data.custom_registration_form_fully);
@@ -421,24 +447,23 @@ export default function FormulirSJNPage({ params }) {
     setEditingTitle(null);
   };
 
-  // Simpan kembali form ke backend — kirim ke kolom yang sesuai dengan tipe
-  const handleSave = async () => {
+  // Simpan ke sessionStorage, lalu redirect balik ke edit page
+  // — TIDAK langsung PUT ke API karena akan me-reset field lain
+  //   (event_start_date, event_end_date, dll) di program. Commit akhir
+  //   terjadi di halaman edit lewat tombol "Simpan Perubahan".
+  //   Logic ini sama dengan /admin/sjn/tambah/formulir.
+  const handleSave = () => {
     try {
-      const payload = tipe === "fully-funded"
-        ? { custom_registration_form_fully: sections }
-        : { custom_registration_form_self: sections };
-
-      const res = await fetch(`/api/programs/${programId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        showToast("Form berhasil disimpan!");
-      } else {
-        const data = await res.json();
-        showToast(data.error || "Gagal menyimpan formulir.", true);
+      if (typeof window !== "undefined") {
+        const storageKey = tipe === "self-funded"
+          ? "sjn_custom_registration_form_self"
+          : "sjn_custom_registration_form_fully";
+        sessionStorage.setItem(storageKey, JSON.stringify(sections));
       }
+      showToast("Formulir berhasil disimpan!");
+      setTimeout(() => {
+        router.push(`/admin/sjn/${programId}/edit`);
+      }, 800);
     } catch (err) {
       console.error(err);
       showToast("Terjadi kesalahan saat menyimpan formulir.", true);
