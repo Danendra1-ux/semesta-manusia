@@ -4,6 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -46,18 +49,31 @@ export default function AdminLoginPage() {
     setErrors({});
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    // Dummy credentials check
-    if (email === "admin@semestamanusia.id" && password === "admin123") {
-      // Redirect to dashboard on success
-      router.push("/admin/dashboard");
-    } else {
+    if (error) {
       setIsLoading(false);
       setErrors({ general: "Email atau password yang anda masukkan salah" });
       triggerShake("general");
+      return;
     }
+
+    // Role check: ensure the user has the admin role in app_metadata or user_metadata
+    const role =
+      data?.user?.app_metadata?.role || data?.user?.user_metadata?.role;
+    if (role !== "admin") {
+      await supabase.auth.signOut();
+      setIsLoading(false);
+      setErrors({ general: "Akun ini tidak memiliki akses admin" });
+      triggerShake("general");
+      return;
+    }
+
+    router.push("/admin/dashboard");
+    router.refresh();
   };
 
   return (

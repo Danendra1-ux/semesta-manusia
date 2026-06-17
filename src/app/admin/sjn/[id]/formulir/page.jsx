@@ -213,7 +213,7 @@ export default function FormulirSJNPage({ params }) {
     ];
   };
 
-  // Ambil form data dari database (custom_registration_form pada program)
+  // Ambil form data dari database — custom_registration_form_fully atau custom_registration_form_self sesuai tipe
   useEffect(() => {
     const fetchFormulir = async () => {
       try {
@@ -221,11 +221,19 @@ export default function FormulirSJNPage({ params }) {
         if (response.ok) {
           const data = await response.json();
           if (data && data.title) setProgramName(data.title);
-          // custom_registration_form adalah JSONB pada tabel programs
-          if (data && Array.isArray(data.custom_registration_form) && data.custom_registration_form.length > 0) {
-            setSections(data.custom_registration_form);
+          // Baca kolom yang sesuai dengan tipe
+          if (tipe === "fully-funded") {
+            if (Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
+              setSections(data.custom_registration_form_fully);
+            } else {
+              setSections(getDefaultSections(tipe));
+            }
           } else {
-            setSections(getDefaultSections(tipe));
+            if (Array.isArray(data.custom_registration_form_self) && data.custom_registration_form_self.length > 0) {
+              setSections(data.custom_registration_form_self);
+            } else {
+              setSections(getDefaultSections(tipe));
+            }
           }
         } else {
           setSections(getDefaultSections(tipe));
@@ -413,13 +421,17 @@ export default function FormulirSJNPage({ params }) {
     setEditingTitle(null);
   };
 
-  // Simpan kembali form ke backend (custom_registration_form pada program)
+  // Simpan kembali form ke backend — kirim ke kolom yang sesuai dengan tipe
   const handleSave = async () => {
     try {
+      const payload = tipe === "fully-funded"
+        ? { custom_registration_form_fully: sections }
+        : { custom_registration_form_self: sections };
+
       const res = await fetch(`/api/programs/${programId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_registration_form: sections })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         showToast("Form berhasil disimpan!");

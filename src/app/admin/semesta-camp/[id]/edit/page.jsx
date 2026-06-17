@@ -59,6 +59,9 @@ export default function EditProgramPage({ params }) {
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
+  // File objects staged for upload (key: `${section}-${fieldId}`)
+  const [uploadFiles, setUploadFiles] = useState({});
+
   // Custom registration form state
   const [customRegistrationForm, setCustomRegistrationForm] = useState(DEFAULT_FORM_TEMPLATE);
 
@@ -195,6 +198,11 @@ export default function EditProgramPage({ params }) {
     } else {
       setPekerjaanFields((prev) => prev.filter((f) => f.id !== fieldId));
     }
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
   };
 
   const handleFieldChange = (section, fieldId, value) => {
@@ -239,6 +247,44 @@ export default function EditProgramPage({ params }) {
         imageUrl = publicUrlData.publicUrl;
       }
 
+      // Upload pending files before saving
+      const processUploads = async (fields, section) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const newFields = [...fields];
+        for (let i = 0; i < newFields.length; i++) {
+          const field = newFields[i];
+          if (field.type === "upload-file") {
+            const fileObj = uploadFiles[`${section}-${field.id}`];
+            if (fileObj && typeof fileObj === "object" && !(fileObj instanceof URL || typeof fileObj === "string")) {
+              const formData = new FormData();
+              formData.append("file", fileObj);
+              formData.append("bucket", "program-files");
+              const res = await fetch("/api/upload-file", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData,
+              });
+              if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(`Gagal upload "${field.label}": ${errData.error || res.statusText}`);
+              }
+              const data = await res.json();
+              newFields[i] = { ...field, value: data.url };
+            } else if (typeof field.value === 'string' && field.value && !field.value.startsWith('http')) {
+              // Was just a filename string — discard as invalid
+              newFields[i] = { ...field, value: "" };
+            }
+          }
+        }
+        return newFields;
+      };
+
+      const processedDetail = await processUploads(detailFields, "detail");
+      const processedPekerjaan = await processUploads(pekerjaanFields, "pekerjaan");
+      setDetailFields(processedDetail);
+      setPekerjaanFields(processedPekerjaan);
+
       // Payload untuk update tabel 'programs' dan 'program_funding_types'
       const payload = {
         title: nama,
@@ -249,8 +295,8 @@ export default function EditProgramPage({ params }) {
         image_url: imageUrl,
         funding_deadline: batasRegistrasi,
         // --- TAMBAHAN BARU ---
-        detail_program: detailFields,
-        pekerjaan: pekerjaanFields,
+        detail_program: processedDetail,
+        pekerjaan: processedPekerjaan,
         custom_registration_form: customRegistrationForm,
         // ---------------------
       };
@@ -521,10 +567,14 @@ export default function EditProgramPage({ params }) {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={decodeURIComponent(field.value.split('/').pop().split('?')[0])}>{decodeURIComponent(field.value.split('/').pop().split('?')[0])}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("detail", field.id, "")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFieldChange("detail", field.id, "");
+                              setUploadFiles(prev => { const n = { ...prev }; delete n[`detail-${field.id}`]; return n; });
+                            }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -533,7 +583,7 @@ export default function EditProgramPage({ params }) {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -550,7 +600,10 @@ export default function EditProgramPage({ params }) {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("detail", field.id, file.name);
+                        if (file) {
+                          setUploadFiles(prev => ({ ...prev, [`detail-${field.id}`]: file }));
+                          handleFieldChange("detail", field.id, file.name);
+                        }
                       }}
                     />
                   </div>
@@ -630,10 +683,14 @@ export default function EditProgramPage({ params }) {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={decodeURIComponent(field.value.split('/').pop().split('?')[0])}>{decodeURIComponent(field.value.split('/').pop().split('?')[0])}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFieldChange("pekerjaan", field.id, "");
+                              setUploadFiles(prev => { const n = { ...prev }; delete n[`pekerjaan-${field.id}`]; return n; });
+                            }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -642,7 +699,7 @@ export default function EditProgramPage({ params }) {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -659,7 +716,10 @@ export default function EditProgramPage({ params }) {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                        if (file) {
+                          setUploadFiles(prev => ({ ...prev, [`pekerjaan-${field.id}`]: file }));
+                          handleFieldChange("pekerjaan", field.id, file.name);
+                        }
                       }}
                     />
                   </div>

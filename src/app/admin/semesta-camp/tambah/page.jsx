@@ -61,6 +61,9 @@ export default function TambahSemestaCampProgramPage() {
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
+  // File objects staged for upload (key: `${section}-${fieldId}`)
+  const [uploadFiles, setUploadFiles] = useState({});
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
@@ -224,6 +227,11 @@ export default function TambahSemestaCampProgramPage() {
     } else {
       setPekerjaanFields((prev) => prev.filter((f) => f.id !== fieldId));
     }
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
   };
 
   const handleFieldChange = (section, fieldId, value) => {
@@ -236,6 +244,43 @@ export default function TambahSemestaCampProgramPage() {
         prev.map((f) => (f.id === fieldId ? { ...f, value } : f))
       );
     }
+  };
+
+  const clearUploadFile = (section, fieldId) => {
+    handleFieldChange(section, fieldId, "");
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
+  };
+
+  const processUploadFiles = async (fields, section) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    const updated = [...fields];
+    for (let i = 0; i < updated.length; i++) {
+      const field = updated[i];
+      if (field.type !== "upload-file") continue;
+      const key = `${section}-${field.id}`;
+      const file = uploadFiles[key];
+      if (!file) continue;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", "program-files");
+      const res = await fetch("/api/upload-file", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(`Gagal upload file ${field.label}: ${errData.error || res.statusText}`);
+      }
+      const data = await res.json();
+      updated[i] = { ...field, value: data.url };
+    }
+    return updated;
   };
 
   const handleBuatFormulir = () => {
@@ -260,26 +305,37 @@ export default function TambahSemestaCampProgramPage() {
     let imageUrl = null;
 
     try {
-      // TAHAP 1: Upload Poster ke Supabase Storage
+      // TAHAP 1: Upload Poster ke Supabase Storage (via server route)
       if (posterFile) {
         const fileExt = posterFile.name.split('.').pop();
         const fileName = `poster-${Date.now()}.${fileExt}`;
-        const filePath = fileName; 
+        const filePath = fileName;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('program-images')
-          .upload(filePath, posterFile);
+        const formData = new FormData();
+        formData.append('file', posterFile);
+        formData.append('bucket', 'program-images');
+        formData.append('filePath', filePath);
 
-        if (uploadError) {
-          throw new Error(`Gagal upload poster: ${uploadError.message}`);
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const uploadResponse = await fetch('/api/upload-file', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errData = await uploadResponse.json().catch(() => ({}));
+          throw new Error(`Gagal upload poster: ${errData.error || uploadResponse.statusText}`);
         }
 
-        const { data: publicUrlData } = supabase.storage
-          .from('program-images')
-          .getPublicUrl(filePath);
-
-        imageUrl = publicUrlData.publicUrl;
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.url;
       }
+
+      // TAHAP 1b: Upload file dari field dinamis Upload File ke Supabase Storage
+      const processedDetail = await processUploadFiles(detailFields, "detail");
+      const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
 
       // TAHAP 2: Siapkan data untuk API
       // Load custom_registration_form dari sessionStorage (disimpan saat user buat formulir)
@@ -305,8 +361,8 @@ export default function TambahSemestaCampProgramPage() {
         image_url: imageUrl,
         is_active: true,
         funding_deadline: batasRegistrasi,
-        detail_program: detailFields,       // JSON column
-        pekerjaan: pekerjaanFields,          // JSON column
+        detail_program: processedDetail,       // JSON column
+        pekerjaan: processedPekerjaan,          // JSON column
         custom_registration_form: customForm // JSON column
       };
 
@@ -609,10 +665,10 @@ export default function TambahSemestaCampProgramPage() {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={field.value}>{field.value}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("detail", field.id, "")}
+                            onClick={(e) => { e.stopPropagation(); handleFieldChange("detail", field.id, ""); setUploadFiles(prev => { const n = { ...prev }; delete n[`detail-${field.id}`]; return n; }); }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -621,7 +677,7 @@ export default function TambahSemestaCampProgramPage() {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -638,7 +694,10 @@ export default function TambahSemestaCampProgramPage() {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("detail", field.id, file.name);
+                        if (file) {
+                          setUploadFiles((prev) => ({ ...prev, [`detail-${field.id}`]: file }));
+                          handleFieldChange("detail", field.id, file.name);
+                        }
                       }}
                     />
                   </div>
@@ -718,10 +777,10 @@ export default function TambahSemestaCampProgramPage() {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={field.value}>{field.value}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
+                            onClick={(e) => { e.stopPropagation(); handleFieldChange("pekerjaan", field.id, ""); setUploadFiles(prev => { const n = { ...prev }; delete n[`pekerjaan-${field.id}`]; return n; }); }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -730,7 +789,7 @@ export default function TambahSemestaCampProgramPage() {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -747,7 +806,10 @@ export default function TambahSemestaCampProgramPage() {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                        if (file) {
+                          setUploadFiles((prev) => ({ ...prev, [`pekerjaan-${field.id}`]: file }));
+                          handleFieldChange("pekerjaan", field.id, file.name);
+                        }
                       }}
                     />
                   </div>

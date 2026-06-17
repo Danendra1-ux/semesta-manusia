@@ -44,6 +44,12 @@ export default function EditSJNProgramPage({ params }) {
   // Loading State
   const [loading, setLoading] = useState(true);
 
+  // Read form data (sections) from sessionStorage on mount
+  const [fullyFormSections, setFullyFormSections] = useState([]);
+  const [selfFormSections, setSelfFormSections] = useState([]);
+  const [hasFullyForm, setHasFullyForm] = useState(false);
+  const [hasSelfForm, setHasSelfForm] = useState(false);
+
   // Form state
   const [nama, setNama] = useState("");
   const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
@@ -63,6 +69,9 @@ export default function EditSJNProgramPage({ params }) {
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
+  // File objects staged for upload (key: `${section}-${fieldId}`)
+  const [uploadFiles, setUploadFiles] = useState({});
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
@@ -74,6 +83,35 @@ export default function EditSJNProgramPage({ params }) {
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
+
+  // Read form data from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fullySaved = sessionStorage.getItem("sjn_custom_registration_form_fully");
+    if (fullySaved) {
+      try {
+        const parsed = JSON.parse(fullySaved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setFullyFormSections(parsed);
+          setHasFullyForm(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse fully form:", e);
+      }
+    }
+    const selfSaved = sessionStorage.getItem("sjn_custom_registration_form_self");
+    if (selfSaved) {
+      try {
+        const parsed = JSON.parse(selfSaved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSelfFormSections(parsed);
+          setHasSelfForm(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse self form:", e);
+      }
+    }
+  }, []);
 
   // Fetch Data dari API
   useEffect(() => {
@@ -104,6 +142,16 @@ export default function EditSJNProgramPage({ params }) {
           if (self) {
             setSelfFundedBatasReg(self.deadline ? self.deadline.split('T')[0] : "");
             setSelfFundedStatus(self.is_active !== false ? 'Aktif' : 'Non-aktif');
+          }
+
+          // Read form data from DB if sessionStorage is empty
+          if (data.custom_registration_form_fully && Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
+            setFullyFormSections(data.custom_registration_form_fully);
+            setHasFullyForm(true);
+          }
+          if (data.custom_registration_form_self && Array.isArray(data.custom_registration_form_self) && data.custom_registration_form_self.length > 0) {
+            setSelfFormSections(data.custom_registration_form_self);
+            setHasSelfForm(true);
           }
         }
       } catch (err) {
@@ -188,6 +236,11 @@ export default function EditSJNProgramPage({ params }) {
     } else {
       setPekerjaanFields((prev) => prev.filter((f) => f.id !== fieldId));
     }
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
   };
 
   const handleFieldChange = (section, fieldId, value) => {
@@ -200,6 +253,59 @@ export default function EditSJNProgramPage({ params }) {
         prev.map((f) => (f.id === fieldId ? { ...f, value } : f))
       );
     }
+  };
+
+  const clearUploadFile = (section, fieldId) => {
+    handleFieldChange(section, fieldId, "");
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[section === "detail" ? `detail-${fieldId}` : `pekerjaan-${fieldId}`];
+      return next;
+    });
+  };
+
+  const getFileNameFromUrl = (url) => {
+    if (!url) return "";
+    try {
+      const last = url.split('?')[0].split('/').pop() || "";
+      return decodeURIComponent(last);
+    } catch {
+      return url;
+    }
+  };
+
+  const processUploadFiles = async (fields, section) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    const updated = [...fields];
+    for (let i = 0; i < updated.length; i++) {
+      const field = updated[i];
+      if (field.type !== "upload-file") continue;
+      const key = `${section}-${field.id}`;
+      const file = uploadFiles[key];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', 'program-files');
+
+        const res = await fetch('/api/upload-file', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(`Gagal upload file "${field.label}": ${errData.error || res.statusText}`);
+        }
+
+        const data = await res.json();
+        if (data.url) {
+          updated[i] = { ...field, value: data.url };
+        }
+      }
+    }
+    return updated;
   };
 
   const handleSave = async () => {
@@ -237,20 +343,27 @@ export default function EditSJNProgramPage({ params }) {
         finalImageUrl = posterPreview;
       }
 
+      // Upload file Upload File dari detail/pekerjaan ke Supabase Storage
+      const processedDetail = await processUploadFiles(detailFields, "detail");
+      const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
+
       // Siapkan payload dengan field dinamis dimasukkan ke kolom detail_program dan pekerjaan
+      // Sertakan custom form data jika sudah ada (dari sessionStorage atau API)
       const payload = {
         title: nama,
         description: deskripsi,
         event_start_date: jadwalMulai,
         event_end_date: jadwalSelesai,
         location: lokasi,
-        detail_program: detailFields,
-        pekerjaan: pekerjaanFields,
+        detail_program: processedDetail,
+        pekerjaan: processedPekerjaan,
         program_funding_types: [
           { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif' },
           { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif' }
         ],
         image_url: finalImageUrl,
+        ...(hasFullyForm && fullyFormSections.length > 0 ? { custom_registration_form_fully: fullyFormSections } : {}),
+        ...(hasSelfForm && selfFormSections.length > 0 ? { custom_registration_form_self: selfFormSections } : {}),
       };
 
       const res = await fetch(`/api/programs/${programId}`, {
@@ -449,7 +562,20 @@ export default function EditSJNProgramPage({ params }) {
                       <ChevronIcon />
                     </div>
                   </div>
-                  <Link href={`/admin/sjn/${programId}/formulir?tipe=fully-funded`} className={styles.viewFormBtn}>
+                  <Link
+                    href={`/admin/sjn/${programId}/formulir?tipe=fully-funded`}
+                    className={styles.viewFormBtn}
+                    onClick={() => {
+                      // Sync sessionStorage data to DB when viewing/editing form
+                      if (hasFullyForm && fullyFormSections.length > 0) {
+                        const storageKey = "sjn_custom_registration_form_fully";
+                        const saved = sessionStorage.getItem(storageKey);
+                        if (!saved) {
+                          sessionStorage.setItem(storageKey, JSON.stringify(fullyFormSections));
+                        }
+                      }
+                    }}
+                  >
                     Lihat Formulir
                   </Link>
                 </div>
@@ -490,7 +616,20 @@ export default function EditSJNProgramPage({ params }) {
                       <ChevronIcon />
                     </div>
                   </div>
-                  <Link href={`/admin/sjn/${programId}/formulir?tipe=self-funded`} className={styles.viewFormBtn}>
+                  <Link
+                    href={`/admin/sjn/${programId}/formulir?tipe=self-funded`}
+                    className={styles.viewFormBtn}
+                    onClick={() => {
+                      // Sync sessionStorage data to DB when viewing/editing form
+                      if (hasSelfForm && selfFormSections.length > 0) {
+                        const storageKey = "sjn_custom_registration_form_self";
+                        const saved = sessionStorage.getItem(storageKey);
+                        if (!saved) {
+                          sessionStorage.setItem(storageKey, JSON.stringify(selfFormSections));
+                        }
+                      }
+                    }}
+                  >
                     Lihat Formulir
                   </Link>
                 </div>
@@ -565,20 +704,22 @@ export default function EditSJNProgramPage({ params }) {
                   <div className={styles.uploadFileArea}>
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
-                        <span className={styles.uploadFileName}>
-                          {field.value}
-                          <button
-                            className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("detail", field.id, "")}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </span>
+                        <>
+                          <span className={styles.uploadFileName}>
+                            <span className={styles.fileNameText} title={getFileNameFromUrl(field.value)}>{getFileNameFromUrl(field.value)}</span>
+                            <button
+                              className={styles.clearUploadBtn}
+                              onClick={(e) => { e.stopPropagation(); clearUploadFile("detail", field.id); }}
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          </span>
+                        </>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -595,7 +736,10 @@ export default function EditSJNProgramPage({ params }) {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("detail", field.id, file.name);
+                        if (file) {
+                          handleFieldChange("detail", field.id, file.name);
+                          setUploadFiles((prev) => ({ ...prev, [`detail-${field.id}`]: file }));
+                        }
                       }}
                     />
                   </div>
@@ -671,20 +815,22 @@ export default function EditSJNProgramPage({ params }) {
                   <div className={styles.uploadFileArea}>
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
-                        <span className={styles.uploadFileName}>
-                          {field.value}
-                          <button
-                            className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </span>
+                        <>
+                          <span className={styles.uploadFileName}>
+                            <span className={styles.fileNameText} title={getFileNameFromUrl(field.value)}>{getFileNameFromUrl(field.value)}</span>
+                            <button
+                              className={styles.clearUploadBtn}
+                              onClick={(e) => { e.stopPropagation(); clearUploadFile("pekerjaan", field.id); }}
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          </span>
+                        </>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -701,7 +847,10 @@ export default function EditSJNProgramPage({ params }) {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                        if (file) {
+                          handleFieldChange("pekerjaan", field.id, file.name);
+                          setUploadFiles((prev) => ({ ...prev, [`pekerjaan-${field.id}`]: file }));
+                        }
                       }}
                     />
                   </div>

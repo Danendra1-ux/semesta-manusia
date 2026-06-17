@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
 import AdminSidebar from "../../components/AdminSidebar.jsx";
 import styles from "./page.module.css";
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -59,6 +62,9 @@ export default function TambahSJNProgramPage() {
   // Dynamic fields
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
+
+  // File objects staged for upload (key: `${section}-${fieldId}`)
+  const [uploadFiles, setUploadFiles] = useState({});
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -213,6 +219,11 @@ export default function TambahSJNProgramPage() {
     } else {
       setPekerjaanFields((prev) => prev.filter((f) => f.id !== fieldId));
     }
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
   };
 
   const handleFieldChange = (section, fieldId, value) => {
@@ -227,16 +238,55 @@ export default function TambahSJNProgramPage() {
     }
   };
 
+  const clearUploadFile = (section, fieldId) => {
+    handleFieldChange(section, fieldId, "");
+    setUploadFiles((prev) => {
+      const next = { ...prev };
+      delete next[`${section}-${fieldId}`];
+      return next;
+    });
+  };
+
+  const processUploadFiles = async (fields, section) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    const updated = [...fields];
+    for (let i = 0; i < updated.length; i++) {
+      const field = updated[i];
+      if (field.type !== "upload-file") continue;
+      const key = `${section}-${field.id}`;
+      const file = uploadFiles[key];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', 'program-files');
+        const res = await fetch('/api/upload-file', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+        if (res.ok) {
+          const result = await res.json();
+          updated[i] = { ...field, value: result.url };
+        } else {
+          const err = await res.json().catch(() => ({ error: 'Unknown' }));
+          throw new Error(`Gagal upload file "${field.label}": ${err.error}`);
+        }
+      }
+    }
+    return updated;
+  };
+
   const handleSave = async () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
-    if (!fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!", true);
-    if (!selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!", true);
-    if (new Date(fullyFundedBatasReg) > new Date(jadwalMulai)) {
+    if (fullyFormulirCreated && !fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!", true);
+    if (selfFormulirCreated && !selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!", true);
+    if (fullyFormulirCreated && fullyFundedBatasReg && jadwalMulai && new Date(fullyFundedBatasReg) > new Date(jadwalMulai)) {
       return showToast("Batas Registrasi Fully Funded tidak boleh setelah jadwal mulai!", true);
     }
-    if (new Date(selfFundedBatasReg) > new Date(jadwalMulai)) {
+    if (selfFormulirCreated && selfFundedBatasReg && jadwalMulai && new Date(selfFundedBatasReg) > new Date(jadwalMulai)) {
       return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!", true);
     }
 
@@ -254,6 +304,27 @@ export default function TambahSJNProgramPage() {
         }
       }
 
+      let imageUrl = "";
+
+      // Upload poster ke Supabase Storage jika ada file
+      if (posterFile) {
+        const fileName = `program-new-${Date.now()}-${posterFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('program-images')
+          .upload(fileName, posterFile);
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('program-images')
+            .getPublicUrl(fileName);
+          if (urlData?.publicUrl) imageUrl = urlData.publicUrl;
+        }
+      }
+
+      // Upload file Upload File dari detail/pekerjaan ke Supabase Storage
+      const processedDetail = await processUploadFiles(detailFields, "detail");
+      const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
+
       const payload = {
         title: nama,
         description: deskripsi,
@@ -261,10 +332,11 @@ export default function TambahSJNProgramPage() {
         event_start_date: jadwalMulai,
         event_end_date: jadwalSelesai,
         location: lokasi,
-        detail_program: detailFields,
-        pekerjaan: pekerjaanFields,
+        detail_program: processedDetail,
+        pekerjaan: processedPekerjaan,
         custom_registration_form_fully: customFormFully,
         custom_registration_form_self: customFormSelf,
+        image_url: imageUrl || null,
         program_funding_types: [
           { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif', is_default: true },
           { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif', is_default: false }
@@ -405,11 +477,12 @@ export default function TambahSJNProgramPage() {
                     <div className={styles.inputWrapper}>
                       <input
                         type="date"
-                        className={styles.input}
+                        className={`${styles.input} ${!fullyFormulirCreated ? styles.inputLocked : ""}`}
                         value={fullyFundedBatasReg}
                         onChange={(e) => setFullyFundedBatasReg(e.target.value)}
+                        disabled={!fullyFormulirCreated}
                       />
-                      <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg className={`${styles.inputIcon} ${!fullyFormulirCreated ? styles.lockIcon : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
                         <line x1="8" y1="2" x2="8" y2="6" />
@@ -475,11 +548,12 @@ export default function TambahSJNProgramPage() {
                     <div className={styles.inputWrapper}>
                       <input
                         type="date"
-                        className={styles.input}
+                        className={`${styles.input} ${!selfFormulirCreated ? styles.inputLocked : ""}`}
                         value={selfFundedBatasReg}
                         onChange={(e) => setSelfFundedBatasReg(e.target.value)}
+                        disabled={!selfFormulirCreated}
                       />
-                      <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg className={`${styles.inputIcon} ${!selfFormulirCreated ? styles.lockIcon : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
                         <line x1="8" y1="2" x2="8" y2="6" />
@@ -600,10 +674,10 @@ export default function TambahSJNProgramPage() {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={field.value}>{field.value}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("detail", field.id, "")}
+                            onClick={(e) => { e.stopPropagation(); clearUploadFile("detail", field.id); }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -612,7 +686,7 @@ export default function TambahSJNProgramPage() {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -629,7 +703,10 @@ export default function TambahSJNProgramPage() {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("detail", field.id, file.name);
+                        if (file) {
+                          handleFieldChange("detail", field.id, file.name);
+                          setUploadFiles((prev) => ({ ...prev, [`detail-${field.id}`]: file }));
+                        }
                       }}
                     />
                   </div>
@@ -706,10 +783,10 @@ export default function TambahSJNProgramPage() {
                     <div className={styles.uploadFileBox}>
                       {field.value ? (
                         <span className={styles.uploadFileName}>
-                          {field.value}
+                          <span className={styles.fileNameText} title={field.value}>{field.value}</span>
                           <button
                             className={styles.clearUploadBtn}
-                            onClick={() => handleFieldChange("pekerjaan", field.id, "")}
+                            onClick={(e) => { e.stopPropagation(); clearUploadFile("pekerjaan", field.id); }}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -718,7 +795,7 @@ export default function TambahSJNProgramPage() {
                           </button>
                         </span>
                       ) : (
-                        <div className={styles.uploadPlaceholder}>
+                        <div className={styles.uploadPlaceholderBox}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -735,7 +812,10 @@ export default function TambahSJNProgramPage() {
                       className={styles.fileInput}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFieldChange("pekerjaan", field.id, file.name);
+                        if (file) {
+                          handleFieldChange("pekerjaan", field.id, file.name);
+                          setUploadFiles((prev) => ({ ...prev, [`pekerjaan-${field.id}`]: file }));
+                        }
                       }}
                     />
                   </div>
