@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import AdminSidebar from "../components/AdminSidebar.jsx";
+import { useSidebar } from "../components/SidebarContext";
 import styles from "./page.module.css";
 
 const ITEMS_PER_PAGE = 8;
@@ -305,7 +306,7 @@ const LiputanCard = ({ item, onFieldChange, onDelete, onSave, fileInputRef }) =>
 };
 
 export default function LiputanPage() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [liputanList, setLiputanList] = useState(liputanData);
   const [currentPage, setCurrentPage] = useState(1);
   const [toastShow, setToastShow] = useState(false);
@@ -381,11 +382,11 @@ export default function LiputanPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <Toast message={toastMessage} show={toastShow} />
 
         {/* Header */}

@@ -3,14 +3,14 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import AdminSidebar from "../../../../components/AdminSidebar.jsx";
+import { useSidebar } from "../../../../components/SidebarContext";
 import styles from "./page.module.css";
 
 export default function PendaftarDetailPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   // State untuk Data
   const [pendaftar, setPendaftar] = useState(null);
   const [program, setProgram] = useState(null);
@@ -111,8 +111,8 @@ export default function PendaftarDetailPage({ params }) {
   if (loading) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <AdminSidebar isCollapsed={isCollapsed} onToggle={onToggleSidebar} />
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Memuat data pendaftar...</div>
         </main>
       </div>
@@ -122,8 +122,8 @@ export default function PendaftarDetailPage({ params }) {
   if (error || !pendaftar || !program) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <AdminSidebar isCollapsed={isCollapsed} onToggle={onToggleSidebar} />
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div className={styles.notFound}>
             <h2>Pendaftar tidak ditemukan atau terjadi kesalahan</h2>
             {error && <p style={{ color: '#ef4444' }}>{error}</p>}
@@ -145,11 +145,11 @@ export default function PendaftarDetailPage({ params }) {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         {/* Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerTop}>
@@ -252,6 +252,10 @@ export default function PendaftarDetailPage({ params }) {
             <div className={styles.registrationItem}>
               <span className={styles.registrationLabel}>Tanggal Pendaftaran</span>
               <span className={styles.registrationValue}>{formatDate(pendaftar.registered_at)}</span>
+            </div>
+            <div className={styles.registrationItem}>
+              <span className={styles.registrationLabel}>Program</span>
+              <span className={styles.registrationValue}>{program?.title || "Program Semesta Camp"}</span>
             </div>
           </div>
         </div>

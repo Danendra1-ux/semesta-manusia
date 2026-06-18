@@ -4,12 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar.jsx";
+import { useSidebar } from "../../components/SidebarContext";
 import styles from "./page.module.css";
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createSupabaseClient();
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -39,7 +38,7 @@ const Toast = ({ message, show, isError }) => (
 export default function TambahSemestaCampProgramPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -410,11 +409,11 @@ export default function TambahSemestaCampProgramPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         {/* Toast */}
         <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
@@ -445,7 +444,7 @@ export default function TambahSemestaCampProgramPage() {
           <div className={styles.infoGrid}>
             {/* Photo Upload */}
             <div className={styles.posterColumn}>
-              <label className={styles.fieldLabel}>Photo</label>
+              <label className={styles.fieldLabel}>Poster</label>
               <div
                 className={styles.posterUpload}
                 onClick={() => fileInputRef.current?.click()}

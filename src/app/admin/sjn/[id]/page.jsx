@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar.jsx";
+import { useSidebar } from "../../components/SidebarContext";
 import styles from "./page.module.css";
 
 const CheckIcon = () => (
@@ -27,8 +28,7 @@ export default function SJNDetailPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const router = useRouter();
-  
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [sortBy, setSortBy] = useState(null);
@@ -259,10 +259,10 @@ export default function SJNDetailPage({ params }) {
     return (
       <div className={styles.pageLayout}>
         <AdminSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isCollapsed={isCollapsed}
+          onToggle={onToggleSidebar}
         />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div className={styles.notFound}>
             <h2>Program tidak ditemukan</h2>
             <Link href="/admin/sjn" className={styles.backLinkError}>
@@ -277,11 +277,11 @@ export default function SJNDetailPage({ params }) {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <div className={styles.contentHeader}>
           <div className={styles.headerTop}>
             <Link href="/admin/sjn" className={styles.backButton}>

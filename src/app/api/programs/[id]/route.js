@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
 
   const {
     title, event_start_date, event_end_date, location, description,
-    image_url, detail_program, pekerjaan,
+    image_url, detail_program, pekerjaan, status, is_active,
     custom_registration_form,
     custom_registration_form_fully,
     custom_registration_form_self,
@@ -41,23 +41,30 @@ export async function PUT(request, { params }) {
   } = body;
 
   const updatePayload = {
-    title,
-    event_start_date: event_start_date || null,
-    event_end_date: event_end_date || null,
-    location,
-    description,
-    image_url,
-    detail_program,
-    pekerjaan,
-    custom_registration_form,
     updated_at: new Date().toISOString()
   };
+
+  if (title !== undefined) updatePayload['title'] = title;
+  if (event_start_date !== undefined) updatePayload['event_start_date'] = event_start_date || null;
+  if (event_end_date !== undefined) updatePayload['event_end_date'] = event_end_date || null;
+  if (location !== undefined) updatePayload['location'] = location;
+  if (description !== undefined) updatePayload['description'] = description;
+  if (image_url !== undefined) updatePayload['image_url'] = image_url;
+  if (detail_program !== undefined) updatePayload['detail_program'] = detail_program;
+  if (pekerjaan !== undefined) updatePayload['pekerjaan'] = pekerjaan;
+  if (custom_registration_form !== undefined) updatePayload['custom_registration_form'] = custom_registration_form;
 
   if (custom_registration_form_fully !== undefined) {
     updatePayload['custom_registration_form_fully'] = custom_registration_form_fully;
   }
   if (custom_registration_form_self !== undefined) {
     updatePayload['custom_registration_form_self'] = custom_registration_form_self;
+  }
+  if (status !== undefined) {
+    updatePayload['status'] = status;
+  }
+  if (is_active !== undefined) {
+    updatePayload['is_active'] = is_active;
   }
 
   const { data, error } = await supabase

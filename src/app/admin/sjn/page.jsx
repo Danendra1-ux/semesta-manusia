@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar.jsx";
+import { useSidebar } from "../components/SidebarContext";
 import styles from "./page.module.css";
 
 const getStatusBadgeClass = (status) => {
@@ -11,7 +12,7 @@ const getStatusBadgeClass = (status) => {
 
 export default function SJNPage() {
   const router = useRouter();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [sortDate, setSortDate] = useState(null);
@@ -113,6 +114,31 @@ export default function SJNPage() {
         });
       }
       setActiveDropdown(id);
+    }
+  };
+
+  // --- FUNGSI TOGGLE STATUS PROGRAM ---
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === "Dibuka" ? "Ditutup" : "Dibuka";
+    const newIsActive = newStatus === "Dibuka";
+
+    try {
+      const response = await fetch(`/api/programs/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus, is_active: newIsActive }),
+      });
+
+      if (!response.ok) throw new Error("Gagal mengubah status program");
+
+      setPrograms((prev) =>
+        prev.map((p) => (p.programId === id ? { ...p, status: newStatus } : p))
+      );
+      showToast(`Program berhasil di${newStatus === "Dibuka" ? "buka" : "tutup"}`);
+    } catch (err) {
+      showToast(`Gagal mengubah status: ${err.message}`, true);
+    } finally {
+      setActiveDropdown(null);
     }
   };
 
@@ -265,11 +291,11 @@ export default function SJNPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <div className={styles.contentHeader}>
           <div className={styles.headerText}>
             <h1 className={styles.pageTitle}>Semesta Jelajah Nusantara</h1>
@@ -490,7 +516,12 @@ export default function SJNPage() {
           </button>
           <button
             className={styles.dropdownItem}
-            onClick={() => setActiveDropdown(null)}
+            onClick={() => {
+              const program = paginatedPrograms.find((p) => p.programId === activeDropdown);
+              if (program) {
+                handleToggleStatus(program.programId, program.status);
+              }
+            }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />

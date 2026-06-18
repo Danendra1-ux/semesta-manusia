@@ -4,14 +4,13 @@ import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar";
+import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
-import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 // Inisialisasi Supabase untuk Upload Gambar Baru
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createSupabaseClient();
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -42,7 +41,7 @@ export default function EditProgramPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const router = useRouter();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
 
   // Form state utama
@@ -374,8 +373,8 @@ export default function EditProgramPage({ params }) {
   if (loading) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <AdminSidebar isCollapsed={isCollapsed} onToggle={onToggleSidebar} />
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Memuat data program...</div>
         </main>
       </div>
@@ -385,11 +384,11 @@ export default function EditProgramPage({ params }) {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         {/* Header */}

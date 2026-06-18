@@ -1,31 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSidebar } from "../components/SidebarContext";
 import AdminSidebar from "../components/AdminSidebar";
 import styles from "./page.module.css";
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
-// Chart data
-const campData = [
-  { name: "Pending", value: 45, color: "#1A1A2E" },
-  { name: "Diterima", value: 30, color: "#6B7280" },
-  { name: "Ditolak", value: 25, color: "#D1D5DB" },
-];
-
-const sjnData = [
-  { name: "Pending", value: 38, color: "#1A1A2E" },
-  { name: "Diterima", value: 42, color: "#6B7280" },
-  { name: "Ditolak", value: 20, color: "#D1D5DB" },
-];
-
-// Table data
-const recentRegistrations = [
-  { id: 1, nama: "Andi Pratama", aktivitas: "SJN#4", tipe: "Fully Funded", status: "Ditolak" },
-  { id: 2, nama: "Siti Rahma", aktivitas: "Semesta Camp #2", tipe: "-", status: "Pending" },
-  { id: 3, nama: "Budi Santoso", aktivitas: "Semesta Camp #3", tipe: "-", status: "Pending" },
-  { id: 4, nama: "Dewi Lestari", aktivitas: "SJN#4", tipe: "Self Funded", status: "Diterima" },
-  { id: 5, nama: "Reza Firmansyah", aktivitas: "Semesta Camp #3", tipe: "-", status: "Pending" },
-  { id: 6, nama: "Nadia Putri", aktivitas: "SJN#3", tipe: "Fully Funded", status: "Ditolak" },
+// Chart data (initial empty state — replaced by fetched data)
+const emptyChartData = [
+  { name: "Pending", value: 0, color: "#00bfff" },
+  { name: "Diterima", value: 0, color: "#10b981" },
+  { name: "Ditolak", value: 0, color: "#ef4444" },
 ];
 
 const getStatusBadgeClass = (status) => {
@@ -48,33 +34,79 @@ const getFormattedDate = () => {
 };
 
 export default function DashboardPage() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
+  const [stats, setStats] = useState({
+    total_registrants: 0,
+    total_programs: 0,
+    camp_data: emptyChartData,
+    sjn_data: emptyChartData,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [registrations, setRegistrations] = useState([]);
+  const [registrationsLoading, setRegistrationsLoading] = useState(true);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/dashboard/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setStats({
+            total_registrants: data.total_registrants ?? 0,
+            total_programs: data.total_programs ?? 0,
+            camp_data: data.camp_data ?? emptyChartData,
+            sjn_data: data.sjn_data ?? emptyChartData,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    const fetchRegistrations = async () => {
+      try {
+        const res = await fetch("/api/dashboard/recent-registrations?limit=6");
+        if (res.ok) {
+          const data = await res.json();
+          setRegistrations(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent registrations:", err);
+      } finally {
+        setRegistrationsLoading(false);
+      }
+    };
+
+    fetchStats();
+    fetchRegistrations();
+  }, []);
+
+  const formatNumber = (n) => (n ?? 0).toLocaleString("id-ID");
 
   return (
     <div className={styles.dashboardLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
       {/* Main Content */}
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
-        {/* Topbar */}
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
+        {/* Content Header */}
+        <div className={styles.contentHeader}>
+          <div className={styles.headerText}>
             <h1 className={styles.pageTitle}>Dashboard</h1>
+            <p className={styles.pageSubtitle}>
+              Ringkasan statistik dan pendaftar terbaru
+            </p>
           </div>
           <div className={styles.topbarRight}>
-            <button className={styles.notificationButton} aria-label="Notifikasi">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 01-3.46 0" />
-              </svg>
-              <span className={styles.notificationDot} />
-            </button>
-            <div className={styles.adminAvatar}>AM</div>
+            <span className={styles.currentDate}>{getFormattedDate()}</span>
           </div>
-        </header>
+        </div>
 
         {/* Dashboard Content */}
         <div className={styles.dashboardContent}>
@@ -91,9 +123,11 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statNumber}>1,284</span>
+                <span className={styles.statNumber}>
+                  {statsLoading ? "..." : formatNumber(stats.total_registrants)}
+                </span>
                 <span className={styles.statLabel}>Total Pendaftar</span>
-                <span className={styles.statGrowth}>+12 dari bulan lalu</span>
+                <span className={styles.statGrowth}>Semesta Camp & SJN</span>
               </div>
             </div>
 
@@ -105,9 +139,11 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statNumber}>12</span>
+                <span className={styles.statNumber}>
+                  {statsLoading ? "..." : formatNumber(stats.total_programs)}
+                </span>
                 <span className={styles.statLabel}>Total Program</span>
-                <span className={styles.statGrowth}>+3 dari bulan lalu</span>
+                <span className={styles.statGrowth}>Semesta Camp & SJN</span>
               </div>
             </div>
           </div>
@@ -116,37 +152,62 @@ export default function DashboardPage() {
           <div className={styles.chartsGrid}>
             {/* Semesta Camp Chart */}
             <div className={styles.chartCard}>
-              <h3 className={styles.chartTitle}>Semesta Camp</h3>
+              <div className={styles.chartHeader}>
+                <span className={styles.chartIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 21l9-15 9 15" />
+                    <path d="M9 21V11h6v10" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                </span>
+                <h3 className={styles.chartTitle}>Semesta Camp</h3>
+              </div>
               <div className={styles.chartContent}>
                 <div className={styles.chartWrapper}>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={campData}
+                        data={stats.camp_data}
                         cx="50%"
                         cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
+                        innerRadius={55}
+                        outerRadius={85}
+                        paddingAngle={3}
                         dataKey="value"
+                        stroke="none"
                       >
-                        {campData.map((entry, index) => (
+                        {stats.camp_data.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: 10,
+                          border: "1px solid rgba(0, 191, 255, 0.2)",
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                          fontSize: "0.8125rem",
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
+                  <div className={styles.chartCenter}>
+                    <div className={styles.chartCenterTotal}>
+                      {stats.camp_data.reduce((sum, item) => sum + (item.value || 0), 0)}
+                    </div>
+                    <div className={styles.chartCenterLabel}>Total</div>
+                  </div>
                 </div>
                 <div className={styles.chartLegend}>
-                  {campData.map((item, index) => (
+                  {stats.camp_data.map((item, index) => (
                     <div key={index} className={styles.legendItem}>
                       <span
                         className={styles.legendDot}
                         style={{ background: item.color }}
                       />
-                      <span className={styles.legendLabel}>{item.name}</span>
-                      <span className={styles.legendValue}>{item.value}</span>
+                      <span className={styles.legendText}>
+                        <span className={styles.legendLabel}>{item.name}</span>
+                        <span className={styles.legendValue}>{item.value}</span>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -155,37 +216,62 @@ export default function DashboardPage() {
 
             {/* SJN Chart */}
             <div className={styles.chartCard}>
-              <h3 className={styles.chartTitle}>Semesta Jelajah Nusantara</h3>
+              <div className={styles.chartHeader}>
+                <span className={styles.chartIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20" />
+                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                  </svg>
+                </span>
+                <h3 className={styles.chartTitle}>Semesta Jelajah Nusantara</h3>
+              </div>
               <div className={styles.chartContent}>
                 <div className={styles.chartWrapper}>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={sjnData}
+                        data={stats.sjn_data}
                         cx="50%"
                         cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
+                        innerRadius={55}
+                        outerRadius={85}
+                        paddingAngle={3}
                         dataKey="value"
+                        stroke="none"
                       >
-                        {sjnData.map((entry, index) => (
+                        {stats.sjn_data.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: 10,
+                          border: "1px solid rgba(0, 191, 255, 0.2)",
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                          fontSize: "0.8125rem",
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
+                  <div className={styles.chartCenter}>
+                    <div className={styles.chartCenterTotal}>
+                      {stats.sjn_data.reduce((sum, item) => sum + (item.value || 0), 0)}
+                    </div>
+                    <div className={styles.chartCenterLabel}>Total</div>
+                  </div>
                 </div>
                 <div className={styles.chartLegend}>
-                  {sjnData.map((item, index) => (
+                  {stats.sjn_data.map((item, index) => (
                     <div key={index} className={styles.legendItem}>
                       <span
                         className={styles.legendDot}
                         style={{ background: item.color }}
                       />
-                      <span className={styles.legendLabel}>{item.name}</span>
-                      <span className={styles.legendValue}>{item.value}</span>
+                      <span className={styles.legendText}>
+                        <span className={styles.legendLabel}>{item.name}</span>
+                        <span className={styles.legendValue}>{item.value}</span>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -197,7 +283,7 @@ export default function DashboardPage() {
           <div className={styles.tableCard}>
             <div className={styles.tableHeader}>
               <h3 className={styles.tableTitle}>Pendaftar Terbaru</h3>
-              <button className={styles.viewAllButton}>
+              <button className={styles.viewAllButton} onClick={() => setShowChoiceModal(true)}>
                 <span>Lihat Semua</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
@@ -209,14 +295,28 @@ export default function DashboardPage() {
                 <thead>
                   <tr>
                     <th>Nama</th>
-                    <th>Jenis Aktivitas</th>
+                    <th>Judul Program</th>
                     <th>Tipe</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentRegistrations.map((item) => (
+                  {registrationsLoading && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", color: "#9ca3af", padding: "1.5rem" }}>
+                        Memuat pendaftar...
+                      </td>
+                    </tr>
+                  )}
+                  {!registrationsLoading && registrations.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", color: "#9ca3af", padding: "1.5rem" }}>
+                        Belum ada pendaftar.
+                      </td>
+                    </tr>
+                  )}
+                  {!registrationsLoading && registrations.length > 0 && registrations.map((item) => (
                     <tr key={item.id}>
                       <td>
                         <span className={styles.registrantName}>{item.nama}</span>
@@ -233,7 +333,12 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td>
-                        <button className={styles.viewButton}>Lihat</button>
+                        <Link
+                          href={`/admin/${item.category === 'SJN' ? 'sjn' : 'semesta-camp'}/${item.program_id}/pendaftar/${item.id}`}
+                          className={styles.viewButton}
+                        >
+                          Lihat
+                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -243,6 +348,65 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Choice Modal: pilih halaman program */}
+      {showChoiceModal && (
+        <div className={styles.modalBackdrop} onClick={() => setShowChoiceModal(false)}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lihat-semua-modal-title"
+          >
+            <h3 id="lihat-semua-modal-title" className={styles.modalTitle}>
+              Lihat Daftar Program
+            </h3>
+            <p className={styles.modalDescription}>
+              Pilih program yang ingin Anda lihat daftar pendaftarnya.
+            </p>
+
+            <div className={styles.modalChoices}>
+              <Link
+                href="/admin/semesta-camp"
+                className={styles.modalChoiceBtn}
+                onClick={() => setShowChoiceModal(false)}
+              >
+                <span className={`${styles.modalChoiceIcon} ${styles.camp}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 21l9-15 9 15" />
+                    <path d="M9 21V11h6v10" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                </span>
+                Semesta Camp
+              </Link>
+              <Link
+                href="/admin/sjn"
+                className={styles.modalChoiceBtn}
+                onClick={() => setShowChoiceModal(false)}
+              >
+                <span className={`${styles.modalChoiceIcon} ${styles.sjn}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20" />
+                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                  </svg>
+                </span>
+                Semesta Jelajah Nusantara
+              </Link>
+            </div>
+
+            <button
+              type="button"
+              className={styles.modalCloseBtn}
+              onClick={() => setShowChoiceModal(false)}
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

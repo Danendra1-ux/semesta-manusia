@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -16,6 +14,7 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [shakeField, setShakeField] = useState(null);
+  const inFlightRef = useRef(false);
 
   const validate = () => {
     const newErrors = {};
@@ -37,6 +36,8 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (inFlightRef.current) return;
     const validationErrors = validate();
 
     if (Object.keys(validationErrors).length > 0) {
@@ -48,32 +49,60 @@ export default function AdminLoginPage() {
 
     setErrors({});
     setIsLoading(true);
+    inFlightRef.current = true;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Safety net: if anything hangs for >15s, reset the loading state.
+    const timeoutId = setTimeout(() => {
+      if (inFlightRef.current) {
+        inFlightRef.current = false;
+        setIsLoading(false);
+        setErrors({ general: "Permintaan terlalu lama. Silakan coba lagi." });
+        triggerShake("general");
+      }
+    }, 15000);
 
-    if (error) {
+    try {
+      const supabase = createSupabaseClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        clearTimeout(timeoutId);
+        inFlightRef.current = false;
+        setIsLoading(false);
+        setErrors({ general: "Email atau password yang anda masukkan salah" });
+        triggerShake("general");
+        return;
+      }
+
+      // Role check: ensure the user has the admin role in app_metadata or user_metadata
+      const role =
+        data?.user?.app_metadata?.role || data?.user?.user_metadata?.role;
+      if (role !== "admin") {
+        await supabase.auth.signOut();
+        clearTimeout(timeoutId);
+        inFlightRef.current = false;
+        setIsLoading(false);
+        setErrors({ general: "Akun ini tidak memiliki akses admin" });
+        triggerShake("general");
+        return;
+      }
+
+      clearTimeout(timeoutId);
+      // Replace history entry so the back button doesn't return to a stale form.
+      router.replace("/admin/dashboard");
+      router.refresh();
+      // isLoading stays true through navigation; the new page will mount and unmount this one.
+    } catch (err) {
+      clearTimeout(timeoutId);
+      inFlightRef.current = false;
       setIsLoading(false);
-      setErrors({ general: "Email atau password yang anda masukkan salah" });
+      console.error("Login error:", err);
+      setErrors({ general: "Terjadi kesalahan saat masuk. Silakan coba lagi." });
       triggerShake("general");
-      return;
     }
-
-    // Role check: ensure the user has the admin role in app_metadata or user_metadata
-    const role =
-      data?.user?.app_metadata?.role || data?.user?.user_metadata?.role;
-    if (role !== "admin") {
-      await supabase.auth.signOut();
-      setIsLoading(false);
-      setErrors({ general: "Akun ini tidak memiliki akses admin" });
-      triggerShake("general");
-      return;
-    }
-
-    router.push("/admin/dashboard");
-    router.refresh();
   };
 
   return (

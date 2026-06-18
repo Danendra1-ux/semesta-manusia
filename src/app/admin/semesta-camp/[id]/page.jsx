@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar";
+import { useSidebar } from "../../components/SidebarContext";
 import styles from "./page.module.css";
 
 const Toast = ({ message, show, isError }) => (
@@ -49,8 +50,7 @@ export default function SemestaCampDetailPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const router = useRouter();
-
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [sortBy, setSortBy] = useState(null); // "terbaru" | "terlama" | "nama-az" | "nama-za"
@@ -285,8 +285,8 @@ export default function SemestaCampDetailPage({ params }) {
   if (loading) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <AdminSidebar isCollapsed={isCollapsed} onToggle={onToggleSidebar} />
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Memuat data...</div>
         </main>
       </div>
@@ -296,8 +296,8 @@ export default function SemestaCampDetailPage({ params }) {
   if (error || !program) {
     return (
       <div className={styles.pageLayout}>
-        <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <AdminSidebar isCollapsed={isCollapsed} onToggle={onToggleSidebar} />
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div className={styles.notFound}>
             <h2>Program tidak ditemukan</h2>
             <Link href="/admin/semesta-camp" className={styles.backLinkError}>
@@ -312,11 +312,11 @@ export default function SemestaCampDetailPage({ params }) {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         {/* Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerTop}>

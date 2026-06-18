@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from '@supabase/supabase-js';
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
+import { createSupabaseClient } from "@/lib/supabaseClient";
+
+const supabase = createSupabaseClient();
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -38,7 +39,7 @@ export default function EditSJNProgramPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const router = useRouter();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
 
   // Loading State
@@ -436,10 +437,10 @@ export default function EditSJNProgramPage({ params }) {
     return (
       <div className={styles.pageLayout}>
         <AdminSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isCollapsed={isCollapsed}
+          onToggle={onToggleSidebar}
         />
-        <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+        <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
           <div style={{ padding: '2rem', textAlign: 'center' }}>Memuat data program...</div>
         </main>
       </div>
@@ -449,11 +450,11 @@ export default function EditSJNProgramPage({ params }) {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         {/* Toast */}
         <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 

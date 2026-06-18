@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from '@supabase/supabase-js';
 import AdminSidebar from "../../components/AdminSidebar.jsx";
+import { useSidebar } from "../../components/SidebarContext";
 import styles from "./page.module.css";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const supabase = createSupabaseClient();
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.chevronIcon}>
@@ -37,7 +38,7 @@ const Toast = ({ message, show, isError }) => (
 export default function TambahSJNProgramPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
 
   // Form state
@@ -99,6 +100,25 @@ export default function TambahSJNProgramPage() {
         if (parsed.detailFields) setDetailFields(parsed.detailFields);
         if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
       }
+
+      // Reconstruct Poster File from Base64
+      const posterDraft = sessionStorage.getItem("sjn_poster_draft");
+      const posterName = sessionStorage.getItem("sjn_poster_name");
+      const posterType = sessionStorage.getItem("sjn_poster_type");
+      if (posterDraft && posterName && posterType) {
+        setPosterPreview(posterDraft);
+        try {
+          const arr = posterDraft.split(",");
+          const bstr = atob(arr[1]);
+          const n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          let i = n;
+          while (i--) u8arr[i] = bstr.charCodeAt(i);
+          setPosterFile(new File([u8arr], posterName, { type: posterType }));
+        } catch (e) {
+          console.error("Failed to restore poster from storage:", e);
+        }
+      }
     }
   }, []);
 
@@ -147,7 +167,16 @@ export default function TambahSJNProgramPage() {
     if (file) {
       setPosterFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => setPosterPreview(reader.result);
+      reader.onloadend = () => {
+        setPosterPreview(reader.result);
+        try {
+          sessionStorage.setItem("sjn_poster_draft", reader.result);
+          sessionStorage.setItem("sjn_poster_name", file.name);
+          sessionStorage.setItem("sjn_poster_type", file.type);
+        } catch (err) {
+          console.warn("File too large for auto-save.");
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -156,6 +185,9 @@ export default function TambahSJNProgramPage() {
     setPosterPreview(null);
     setPosterFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    sessionStorage.removeItem("sjn_poster_draft");
+    sessionStorage.removeItem("sjn_poster_name");
+    sessionStorage.removeItem("sjn_poster_type");
   };
 
   const handleBuatFormulir = (tipe) => {
@@ -356,6 +388,9 @@ export default function TambahSJNProgramPage() {
         sessionStorage.removeItem("sjn_formulir_created_self");
         sessionStorage.removeItem("sjn_custom_registration_form_fully");
         sessionStorage.removeItem("sjn_custom_registration_form_self");
+        sessionStorage.removeItem("sjn_poster_draft");
+        sessionStorage.removeItem("sjn_poster_name");
+        sessionStorage.removeItem("sjn_poster_type");
         setTimeout(() => router.push("/admin/sjn"), 1500);
       } else {
         const data = await response.json().catch(() => null);
@@ -370,11 +405,11 @@ export default function TambahSJNProgramPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         <div className={styles.contentHeader}>

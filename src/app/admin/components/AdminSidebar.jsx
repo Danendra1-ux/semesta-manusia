@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 import styles from "./AdminSidebar.module.css";
 
 const menuItems = [
@@ -24,7 +25,8 @@ const menuItems = [
     href: "/admin/semesta-camp",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+        <path d="M3 21l9-15 9 15" />
+        <path d="M9 21V11h6v10" />
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
@@ -57,43 +59,93 @@ const menuItems = [
 
 export default function AdminSidebar({ isCollapsed, onToggle }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const isActive = (href) => {
     return pathname === href || pathname.startsWith(href + "/");
+  };
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
+    // Safety net: if signOut hangs (network/auth issue), reset state and still navigate.
+    const timeoutId = setTimeout(() => {
+      setIsLoggingOut(false);
+      setShowLogoutConfirm(false);
+      router.push("/admin/login");
+      router.refresh();
+    }, 5000);
+
+    try {
+      const supabase = createSupabaseClient();
+      await supabase.auth.signOut();
+      clearTimeout(timeoutId);
+      router.push("/admin/login");
+      router.refresh();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error("Logout gagal:", err);
+      setIsLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
+  };
+
+  const openLogoutConfirm = () => {
+    if (isLoggingOut) return;
+    setShowLogoutConfirm(true);
+  };
+
+  const closeLogoutConfirm = () => {
+    if (isLoggingOut) return;
+    setShowLogoutConfirm(false);
   };
 
   return (
     <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
       {/* Sidebar Header */}
       <div className={styles.sidebarHeader}>
-        <div className={styles.logoWrapper}>
-          <Image
-            src="/LOGO SEMESTA MANUSIA.png"
-            alt="Semesta Manusia Logo"
-            width={36}
-            height={36}
-            className={styles.logo}
-          />
+        <div className={styles.logoRow}>
+          <div className={styles.logoWrapper}>
+            <Image
+              src="/LOGO SEMESTA MANUSIA.png"
+              alt="Semesta Manusia Logo"
+              width={36}
+              height={36}
+              className={styles.logo}
+            />
+            {!isCollapsed && (
+              <div className={styles.logoText}>
+                <span className={styles.orgNameMain}>Semesta Manusia</span>
+                <span className={styles.orgNameSub}>Indonesia</span>
+              </div>
+            )}
+          </div>
           {!isCollapsed && (
-            <div className={styles.logoText}>
-              <span className={styles.orgName}>Semesta</span>
-              <span className={styles.orgNameBold}>Manusia</span>
-            </div>
+            <button
+              className={styles.collapseToggle}
+              onClick={onToggle}
+              title="Ciutkan sidebar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
+              </svg>
+            </button>
           )}
         </div>
-        <button
-          className={styles.collapseToggle}
-          onClick={onToggle}
-          title={isCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            {isCollapsed ? (
+        {isCollapsed && (
+          <button
+            className={styles.collapseToggle}
+            onClick={onToggle}
+            title="Perluas sidebar"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
-            ) : (
-              <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-            )}
-          </svg>
-        </button>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Menu Section */}
@@ -134,15 +186,81 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
         </div>
 
         {/* Logout Button */}
-        <button className={styles.logoutButton} title="Keluar">
+        <button
+          className={styles.logoutButton}
+          onClick={openLogoutConfirm}
+          disabled={isLoggingOut}
+          title="Keluar"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          {!isCollapsed && <span>Keluar</span>}
+          {!isCollapsed && <span>{isLoggingOut ? "Keluar..." : "Keluar"}</span>}
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className={styles.modalBackdrop} onClick={closeLogoutConfirm}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-confirm-title"
+          >
+            <div className={styles.modalIconWrap}>
+              <svg className={styles.modalIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </div>
+
+            <h3 id="logout-confirm-title" className={styles.modalTitle}>
+              Keluar dari Dashboard?
+            </h3>
+            <p className={styles.modalDescription}>
+              Anda akan keluar dari sesi admin. Anda perlu masuk kembali untuk mengakses dashboard.
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={closeLogoutConfirm}
+                disabled={isLoggingOut}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className={styles.modalConfirmBtn}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? (
+                  <>
+                    <span className={styles.modalSpinner} />
+                    <span>Keluar...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}>
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    <span>Ya, Keluar</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

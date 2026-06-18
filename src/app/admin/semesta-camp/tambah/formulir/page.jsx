@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
+import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
 import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 
@@ -71,7 +72,7 @@ export default function FormulirTambahSemestaCampPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const namaProgram = searchParams.get("nama") || "Program Baru";
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
@@ -343,11 +344,11 @@ export default function FormulirTambahSemestaCampPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <Toast message={toastMessage} show={toastShow} isError={toastIsError} />
 
         {/* Header */}

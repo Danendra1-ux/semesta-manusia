@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar.jsx";
+import { useSidebar } from "../components/SidebarContext";
 import styles from "./page.module.css";
 
 const getStatusBadgeClass = (status) => {
@@ -11,7 +12,7 @@ const getStatusBadgeClass = (status) => {
 
 export default function SemestaCampPage() {
   const router = useRouter();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   
   // State untuk API Data
   const [programs, setPrograms] = useState([]);
@@ -116,12 +117,13 @@ export default function SemestaCampPage() {
   // --- FUNGSI UBAH STATUS (BUKA/TUTUP) ---
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "Dibuka" ? "Ditutup" : "Dibuka";
-    
+    const newIsActive = newStatus === "Dibuka";
+
     try {
       const response = await fetch(`/api/programs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, is_active: newIsActive }),
       });
 
       if (!response.ok) throw new Error("Gagal mengubah status program");
@@ -296,11 +298,11 @@ export default function SemestaCampPage() {
   return (
     <div className={styles.pageLayout}>
       <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
       />
 
-      <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ""}`}>
+      <main className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}>
         <div className={styles.contentHeader}>
           <div className={styles.headerText}>
             <h1 className={styles.pageTitle}>Semesta Camp</h1>
