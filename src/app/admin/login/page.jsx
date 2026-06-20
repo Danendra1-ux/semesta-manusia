@@ -128,7 +128,7 @@ export default function AdminLoginPage() {
           </div>
           <h1 className={styles.orgName}>Semesta Manusia</h1>
           <p className={styles.tagline}>
-            Membangun Indonesia through Volunteerism
+            Membangun Indonesia melalui kegiatan relawan
           </p>
 
           <div className={styles.divider} />
@@ -138,19 +138,13 @@ export default function AdminLoginPage() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Kelola program volunteer dengan mudah</span>
+              <span>Kelola program relawan dengan mudah</span>
             </div>
             <div className={styles.featureItem}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Pantau pendaftaran & datavolunteer</span>
-            </div>
-            <div className={styles.featureItem}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Analisis dampak program secara realtime</span>
+              <span>Pantau pendaftaran & data relawan</span>
             </div>
           </div>
         </div>
@@ -189,7 +183,7 @@ export default function AdminLoginPage() {
                 id="email"
                 type="email"
                 className={`${styles.inputField} ${errors.email ? styles.inputError : ""} ${shakeField === "email" ? styles.shake : ""}`}
-                placeholder="admin@semestamanusia.id"
+                placeholder="Masukkan email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);

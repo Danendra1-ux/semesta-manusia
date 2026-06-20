@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar.jsx";
+import Footer from "@/components/Footer.jsx";
 import styles from "./landingpage.module.css";
 
 export default function LandingPage() {
@@ -91,14 +91,14 @@ export default function LandingPage() {
           <div className={styles.heroContent}>
             <div className={styles.heroBadge}>
               <span className={styles.badgePulse}></span>
-              <span>Pendaftaran Dibuka 2026</span>
+              <span>Berbagi | Bermakna | Bergerak Lebih Luas</span>
             </div>
             <h1 className={styles.heroTitle}>
               <span className={styles.heroTitleLine}>Menjangkau Nusantara,</span>
               <span className={styles.heroTitleAccent}>Menciptakan Perubahan</span>
             </h1>
             <p className={styles.heroDescription}>
-              Bergabunglah dalam komunitas volunteer terbesar Indonesia.
+              Bergabunglah dalam komunitas relawan terbesar Indonesia.
               Bersama, kita bisa menciptakan dampak nyata bagi masyarakat di seluruh penjuru Nusantara.
             </p>
             <div className={styles.heroActions}>
@@ -112,65 +112,8 @@ export default function LandingPage() {
                 <span>Pelajari Lebih Lanjut</span>
               </a>
             </div>
-
-            {/* Stats */}
-            <div className={styles.statsContainer}>
-              {loading ? (
-                <>
-                  <div className={styles.statItem}><div className={styles.statNumber}>1000+</div><div className={styles.statLabel}>Volunteer</div></div>
-                  <div className={styles.statItem}><div className={styles.statNumber}>50+</div><div className={styles.statLabel}>Program</div></div>
-                  <div className={styles.statItem}><div className={styles.statNumber}>20+</div><div className={styles.statLabel}>Provinsi</div></div>
-                </>
-              ) : (
-                <>
-                  <div className={styles.statItem}><div className={styles.statNumber}>{programs.length}+</div><div className={styles.statLabel}>Program</div></div>
-                  <div className={styles.statItem}><div className={styles.statNumber}>50+</div><div className={styles.statLabel}>Program</div></div>
-                  <div className={styles.statItem}><div className={styles.statNumber}>20+</div><div className={styles.statLabel}>Provinsi</div></div>
-                </>
-              )}
-            </div>
           </div>
 
-          {/* Hero Illustration */}
-          <div className={styles.heroVisual}>
-            <div className={styles.heroLogo}>
-              <Image
-                src="/LOGO SEMESTA MANUSIA.png"
-                alt="Semesta Manusia"
-                fill
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-            <div className={styles.floatingCard} style={{ "--delay": "0s", "--translateY": "0" }}>
-              <div className={styles.cardIcon}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <span>1000+ Volunteer</span>
-            </div>
-            <div className={styles.floatingCard} style={{ "--delay": "0.5s", "--translateY": "10px" }}>
-              <div className={styles.cardIcon} style={{ background: "#10B981" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-              </div>
-              <span>Berbadan Hukum</span>
-            </div>
-            <div className={styles.floatingCard} style={{ "--delay": "1s", "--translateY": "-5px" }}>
-              <div className={styles.cardIcon} style={{ background: "#F59E0B" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <span>20+ Provinsi</span>
-            </div>
-          </div>
         </div>
 
         {/* Scroll Indicator */}
@@ -193,10 +136,10 @@ export default function LandingPage() {
                 <span className={styles.titleAccent}>Menciptakan Dampak</span>
               </h2>
               <p className={styles.aboutDescription}>
-                <strong>Semesta Manusia Indonesia</strong> adalah organisasi volunteer yang mempertemukan individu yang peduli dengan komunitas yang membutuhkan di seluruh Indonesia.
+                <strong>Semesta Manusia Indonesia</strong> adalah organisasi relawan yang mempertemukan individu yang peduli dengan komunitas yang membutuhkan di seluruh Indonesia.
               </p>
               <p className={styles.aboutDescription}>
-                Sejak <strong>2020</strong>, kami telah menghubungkan ribuan volunteer dengan program-program sosial yang bermakna. Bersama, kita bisa menjangkau setiap sudut Nusantara dan menciptakan perubahan nyata.
+                Sejak <strong>2020</strong>, kami telah menghubungkan ribuan relawan dengan program-program sosial yang bermakna. Bersama, kita bisa menjangkau setiap sudut Nusantara dan menciptakan perubahan nyata.
               </p>
               <div className={styles.aboutStats}>
                 <div className={styles.aboutStat}>
@@ -233,7 +176,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
                 <h4>Komunitas Solid</h4>
-                <p>Ribuan volunteer siap kolaborasi dan berbagi</p>
+                <p>Ribuan relawan siap kolaborasi dan berbagi</p>
               </div>
               <div className={styles.aboutCard}>
                 <div className={styles.aboutCardIcon} style={{ background: "#10B981" }}>
@@ -260,7 +203,7 @@ export default function LandingPage() {
               <span className={styles.titleAccent}>Sesuai denganmu</span>
             </h2>
             <p className={styles.sectionDescription}>
-              Ada dua kategori program volunteer yang bisa kamu pilih sesuai dengan ketersediaan dan passionmu
+              Ada dua kategori program relawan yang bisa kamu pilih sesuai dengan ketersediaan dan passionmu
             </p>
           </div>
 
@@ -276,12 +219,12 @@ export default function LandingPage() {
                 <h3 className={styles.categoryTitle}>Semesta Camp</h3>
               </div>
               <div className={styles.categoryBody}>
-                <p className={styles.categoryDescription}>Program volunteer jangka pendek yang mempertemukan volunteer dengan komunitas lokal di lokasi yang telah ditentukan.</p>
+                <p className={styles.categoryDescription}>Program relawan jangka pendek yang mempertemukan relawan dengan komunitas lokal di lokasi yang telah ditentukan.</p>
                 <ul className={styles.categoryFeatures}>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-4 minggu</span></li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Tinggal dihomestay lokal</span></li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Project berbasis komunitas</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sertifikat volunteer</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sertifikat relawan</span></li>
                 </ul>
                 <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)" }}>Pilih Program Ini</a>
               </div>
@@ -298,11 +241,11 @@ export default function LandingPage() {
                 <h3 className={styles.categoryTitle}>Semesta Jelajah Nusantara</h3>
               </div>
               <div className={styles.categoryBody}>
-                <p className={styles.categoryDescription}>Program volunteer immersive yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 1-6 bulan.</p>
+                <p className={styles.categoryDescription}>Program relawan immersive yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 1-6 bulan.</p>
                 <ul className={styles.categoryFeatures}>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-6 bulan</span></li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Immersive living</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Skill-based volunteering</span></li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Relawan berbasis skill</span></li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sustainable impact</span></li>
                 </ul>
                 <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>Pilih Program Ini</a>
@@ -322,7 +265,7 @@ export default function LandingPage() {
               <span className={styles.titleAccent}>Sesuai Passionmu</span>
             </h2>
             <p className={styles.sectionDescription}>
-              Beragam program volunteer yang bisa kamu ikuti untuk berkontribusi di berbagai bidang dan lokasi di seluruh Indonesia.
+              Beragam program relawan yang bisa kamu ikuti untuk berkontribusi di berbagai bidang dan lokasi di seluruh Indonesia.
             </p>
           </div>
 
@@ -428,7 +371,7 @@ export default function LandingPage() {
             <span className={styles.sectionTag}>Galeri</span>
             <h2 className={styles.sectionTitle}>
               Momen Berharga dari<br/>
-              <span className={styles.titleAccent}>Para Volunteer Kami</span>
+              <span className={styles.titleAccent}>Para Relawan Kami</span>
             </h2>
           </div>
 
@@ -472,7 +415,7 @@ export default function LandingPage() {
               <span className={styles.titleAccent}>Semesta Manusia</span>
             </h2>
             <p className={styles.sectionDescription}>
-              Ikuti perkembangan terbaru tentang kegiatan dan program volunteer yang dilakukan oleh komunitas Semesta Manusia di berbagai daerah.
+              Ikuti perkembangan terbaru tentang kegiatan dan program relawan yang dilakukan oleh komunitas Semesta Manusia di berbagai daerah.
             </p>
           </div>
 
@@ -524,15 +467,15 @@ export default function LandingPage() {
               <span className={styles.titleAccent}>Mitra Terpercaya</span>
             </h2>
             <p className={styles.sectionDescription}>
-              Semesta Manusia menjalin kerja sama dengan berbagai pihak untuk memperluas dampak positif program volunteer di seluruh Indonesia.
+              Semesta Manusia menjalin kerja sama dengan berbagai pihak untuk memperluas dampak positif program relawan di seluruh Indonesia.
             </p>
           </div>
 
           <div className={styles.partnerGrid}>
             {[
-              { name: "Bank Indonesia", image: "/program-preview-1.jpg" },
-              { name: "Kementerian Sosial", image: "/program-preview-2.jpg" },
-              { name: "UNICEF Indonesia", image: "/program-preview-3.jpg" }
+              { name: "Manusa", image: "/manusa.png" },
+              { name: "GVA", image: "/gva.png" },
+              { name: "Akar", image: "/akar.png" }
             ].map((partner, index) => (
               <div key={index} className={styles.partnerCard}>
                 <Image src={partner.image} alt={partner.name} fill style={{ objectFit: 'contain' }} />
@@ -543,7 +486,9 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <section id="kontak">
+        <Footer />
+      </section>
     </div>
   );
 }

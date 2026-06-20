@@ -5,8 +5,8 @@ import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar.jsx";
+import Footer from "@/components/Footer.jsx";
 import styles from "./page.module.css";
 
 export default function ProgramDetailPage({ params }) {
@@ -399,12 +399,18 @@ export default function ProgramDetailPage({ params }) {
             </button>
             )}
 
-            <button className={`${styles.primaryAction} ${styles.outlined} ${getCategoryClass()}`}>
+            <a
+              href="https://wa.me/6285121594627"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.primaryAction} ${styles.outlined} ${getCategoryClass()}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
               Hubungi Organisasi
-            </button>
+            </a>
           </div>
         </div>
       </section>

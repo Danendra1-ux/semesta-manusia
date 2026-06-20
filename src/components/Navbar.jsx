@@ -5,9 +5,18 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import styles from "./Navbar.module.css";
 
-export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaText = "Daftar Volunteer" }) {
+const navItems = [
+  { href: "/user/landingpage#beranda", label: "Beranda", key: "beranda" },
+  { href: "/user/landingpage#tentang", label: "Tentang", key: "tentang" },
+  { href: "/user/landingpage#program", label: "Program", key: "program" },
+  { href: "/user/landingpage#galeri", label: "Galeri", key: "galeri" },
+  { href: "/user/landingpage#kontak", label: "Kontak", key: "kontak" },
+];
+
+export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaText = "Daftar Relawan" }) {
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("beranda");
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -21,11 +30,7 @@ export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaT
 
   return (
     <nav
-      className={styles.navbar}
-      style={{
-        background: scrollY > 50 ? "rgba(255, 255, 255, 0.95)" : "transparent",
-        boxShadow: scrollY > 50 ? "0 4px 20px rgba(0, 0, 0, 0.08)" : "none",
-      }}
+      className={`${styles.navbar} ${scrollY > 30 ? styles.navbarScrolled : ""}`}
     >
       <div className={styles.navContainer}>
         <Link href="/user/landingpage" className={styles.logo}>
@@ -44,40 +49,39 @@ export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaT
         </Link>
 
         <ul className={`${styles.navLinks} ${mobileMenuOpen ? styles.navLinksOpen : ""}`}>
-          <li>
-            <a href="/user/landingpage#beranda" className={styles.navLink}>
-              Beranda
-            </a>
-          </li>
-          <li>
-            <a href="/user/landingpage#tentang" className={styles.navLink}>
-              Tentang
-            </a>
-          </li>
-          <li>
-            <a href="/user/landingpage#program" className={styles.navLink}>
-              Program
-            </a>
-          </li>
-          <li>
-            <a href="/user/landingpage#galeri" className={styles.navLink}>
-              Galeri
-            </a>
-          </li>
-          <li>
-            <a href="/user/landingpage#kontak" className={styles.navLink}>
-              Kontak
-            </a>
-          </li>
+          {navItems.map((item) => (
+            <li key={item.key}>
+              <Link
+                href={item.href}
+                className={`${styles.navLink} ${activeSection === item.key ? styles.navLinkActive : ""}`}
+                onClick={() => {
+                  setActiveSection(item.key);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
         </ul>
 
-        <div className={styles.navActions}>
+        <div className={`${styles.navActions} ${mobileMenuOpen ? styles.hideOnDesktop : ""}`}>
           {showCta && (
-            <Link href={ctaLink} className={styles.ctaButton}>
-              <span>{ctaText}</span>
+            <Link
+              href={ctaLink}
+              className={styles.ctaButton}
+              onClick={() => {
+                setActiveSection("volunteer");
+                setMobileMenuOpen(false);
+              }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
               </svg>
+              {ctaText}
             </Link>
           )}
           <button

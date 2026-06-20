@@ -98,7 +98,7 @@ export default function DashboardPage() {
         {/* Content Header */}
         <div className={styles.contentHeader}>
           <div className={styles.headerText}>
-            <h1 className={styles.pageTitle}>Dashboard</h1>
+            <h1 className={styles.pageTitle}>Beranda</h1>
             <p className={styles.pageSubtitle}>
               Ringkasan statistik dan pendaftar terbaru
             </p>
