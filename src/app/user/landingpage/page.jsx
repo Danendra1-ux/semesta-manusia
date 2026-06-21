@@ -94,12 +94,11 @@ export default function LandingPage() {
               <span>Berbagi | Bermakna | Bergerak Lebih Luas</span>
             </div>
             <h1 className={styles.heroTitle}>
-              <span className={styles.heroTitleLine}>Menjangkau Nusantara,</span>
-              <span className={styles.heroTitleAccent}>Menciptakan Perubahan</span>
+              <span className={styles.heroTitleLine}>Karena Kebaikan</span>
+              <span className={styles.heroTitleAccent}>Tak Mengenal Batas.</span>
             </h1>
             <p className={styles.heroDescription}>
-              Bergabunglah dalam komunitas relawan terbesar Indonesia.
-              Bersama, kita bisa menciptakan dampak nyata bagi masyarakat di seluruh penjuru Nusantara.
+              Di setiap sudut Indonesia, selalu ada cerita yang perlu didengar, tangan yang perlu digenggam, dan harapan yang perlu dijaga. Bersama Semesta Manusia Indonesia, mari hadir melalui aksi nyata untuk berbagi, menginspirasi, dan menciptakan perubahan yang berarti bagi mereka yang membutuhkan.
             </p>
             <div className={styles.heroActions}>
               <a href="#program" className={styles.primaryButton}>
@@ -127,67 +126,27 @@ export default function LandingPage() {
 
       {/* Tentang Kami Section */}
       <section id="tentang" className={styles.aboutSection}>
-        <div className={styles.sectionContainer}>
+        <div className={styles.aboutSectionInner}>
           <div className={styles.aboutGrid}>
             <div className={styles.aboutContent}>
-              <span className={styles.sectionTag}>Tentang Kami</span>
-              <h2 className={styles.sectionTitle}>
+              <h2 className={styles.aboutTitle}>
                 Menghubungkan Hati,<br/>
-                <span className={styles.titleAccent}>Menciptakan Dampak</span>
+                Menciptakan Dampak
               </h2>
               <p className={styles.aboutDescription}>
-                <strong>Semesta Manusia Indonesia</strong> adalah organisasi relawan yang mempertemukan individu yang peduli dengan komunitas yang membutuhkan di seluruh Indonesia.
+                <span className={styles.aboutHighlight}>Semesta Manusia Indonesia</span> adalah organisasi sosial yang lahir dari keyakinan bahwa setiap orang memiliki kemampuan untuk membawa perubahan. Kami mempertemukan individu yang peduli dengan anak-anak, komunitas, dan masyarakat yang membutuhkan melalui berbagai program kemanusiaan yang bermakna.
               </p>
               <p className={styles.aboutDescription}>
-                Sejak <strong>2020</strong>, kami telah menghubungkan ribuan relawan dengan program-program sosial yang bermakna. Bersama, kita bisa menjangkau setiap sudut Nusantara dan menciptakan perubahan nyata.
+                Sejak <span className={styles.aboutHighlight}>Oktober 2024</span>, kami hadir sebagai ruang kolaborasi bagi generasi muda untuk berbagi, belajar, dan bergerak bersama. Dengan semangat kepedulian dan gotong royong, kami percaya bahwa langkah kecil yang dilakukan bersama dapat menghadirkan dampak besar bagi Indonesia.
               </p>
-              <div className={styles.aboutStats}>
-                <div className={styles.aboutStat}>
-                  <span className={styles.aboutStatNumber}>4+</span>
-                  <span className={styles.aboutStatLabel}>Tahun Pengalaman</span>
-                </div>
-                <div className={styles.aboutStat}>
-                  <span className={styles.aboutStatNumber}>{loading ? "--" : programs.length}+</span>
-                  <span className={styles.aboutStatLabel}>Program Aktif</span>
-                </div>
-                <div className={styles.aboutStat}>
-                  <span className={styles.aboutStatNumber}>10K+</span>
-                  <span className={styles.aboutStatLabel}>Penerima Manfaat</span>
-                </div>
-              </div>
             </div>
-            <div className={styles.aboutVisual}>
-              <div className={styles.aboutCard}>
-                <div className={styles.aboutCardIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                </div>
-                <h4>Terpercaya</h4>
-                <p>Berbadan hukum resmi dan transparan dalam operasional</p>
-              </div>
-              <div className={styles.aboutCard}>
-                <div className={styles.aboutCardIcon} style={{ background: "#7C3AED" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </div>
-                <h4>Komunitas Solid</h4>
-                <p>Ribuan relawan siap kolaborasi dan berbagi</p>
-              </div>
-              <div className={styles.aboutCard}>
-                <div className={styles.aboutCardIcon} style={{ background: "#10B981" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                </div>
-                <h4>Dampak Terukur</h4>
-                <p>Setiap program berdampak langsung ke masyarakat</p>
-              </div>
+            <div className={styles.aboutPhotoWrap}>
+              <Image
+                src="/about-section.png"
+                alt="Relawan Semesta Manusia bersama anak-anak"
+                fill
+                style={{ objectFit: 'contain' }}
+              />
             </div>
           </div>
         </div>
@@ -196,60 +155,46 @@ export default function LandingPage() {
       {/* Program Categories Section */}
       <section id="program" className={styles.programSection}>
         <div className={styles.sectionContainer}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionTag}>Program Kami</span>
-            <h2 className={styles.sectionTitle}>
-              Pilih Program yang<br/>
-              <span className={styles.titleAccent}>Sesuai denganmu</span>
-            </h2>
-            <p className={styles.sectionDescription}>
-              Ada dua kategori program relawan yang bisa kamu pilih sesuai dengan ketersediaan dan passionmu
-            </p>
-          </div>
-
-          <div className={styles.programCategories}>
-            <div className={styles.programCategory}>
-              <div className={styles.categoryHeader} style={{ background: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)" }}>
-                <div className={styles.categoryIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                  </svg>
+          <div className={styles.programCard}>
+            <div className={styles.programPhotos}>
+              <div className={styles.programPhotoItem} style={{ background: "linear-gradient(165deg, rgba(0,191,255,0.15) 0%, rgba(0,153,204,0.85) 100%)", boxShadow: "0 20px 60px rgba(0,191,255,0.15), 0 4px 24px rgba(0,153,204,0.1)" }}>
+                <Image
+                  src="/sc-kategori.jpeg"
+                  alt="Semesta Camp"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  className={styles.programPhotoImg}
+                />
+                <div className={styles.programPhotoOverlay} style={{ background: "linear-gradient(180deg, transparent 30%, rgba(0,153,204,0.55) 70%, rgba(0,119,182,0.92) 100%)" }} />
+                <div className={styles.programPhotoText}>
+                  <h3 className={styles.programPhotoTitle}>Semesta Camp</h3>
+                  <p className={styles.programPhotoDescription}>Program relawan berdurasi 1 hari yang mempertemukan relawan dengan komunitas lokal di lokasi tertentu.</p>
                 </div>
-                <h3 className={styles.categoryTitle}>Semesta Camp</h3>
               </div>
-              <div className={styles.categoryBody}>
-                <p className={styles.categoryDescription}>Program relawan jangka pendek yang mempertemukan relawan dengan komunitas lokal di lokasi yang telah ditentukan.</p>
-                <ul className={styles.categoryFeatures}>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-4 minggu</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Tinggal dihomestay lokal</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Project berbasis komunitas</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sertifikat relawan</span></li>
-                </ul>
-                <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)" }}>Pilih Program Ini</a>
+              <div className={styles.programPhotoItem} style={{ background: "linear-gradient(165deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.85) 100%)", boxShadow: "0 20px 60px rgba(124,58,237,0.15), 0 4px 24px rgba(168,85,247,0.1)" }}>
+                <Image
+                  src="/sjn-kategori.jpeg"
+                  alt="Semesta Jelajah Nusantara"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  className={styles.programPhotoImg}
+                />
+                <div className={styles.programPhotoOverlay} style={{ background: "linear-gradient(180deg, transparent 30%, rgba(124,58,237,0.55) 70%, rgba(91,33,182,0.92) 100%)" }} />
+                <div className={styles.programPhotoText}>
+                  <h3 className={styles.programPhotoTitle}>Semesta Jelajah Nusantara</h3>
+                  <p className={styles.programPhotoDescription}>Program relawan yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 10-14 hari.</p>
+                </div>
               </div>
             </div>
-            <div className={styles.programCategory}>
-              <div className={styles.categoryHeader} style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>
-                <div className={styles.categoryIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M2 12h20"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
-                </div>
-                <h3 className={styles.categoryTitle}>Semesta Jelajah Nusantara</h3>
-              </div>
-              <div className={styles.categoryBody}>
-                <p className={styles.categoryDescription}>Program relawan immersive yang memungkinkan peserta tinggal dan bekerja langsung dengan komunitas selama 1-6 bulan.</p>
-                <ul className={styles.categoryFeatures}>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Durasi 1-6 bulan</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Immersive living</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Relawan berbasis skill</span></li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg><span>Sustainable impact</span></li>
-                </ul>
-                <a href="#daftar" className={styles.categoryButton} style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>Pilih Program Ini</a>
-              </div>
+
+            <div className={styles.programCardText}>
+              <h2 className={styles.programCardTitle}>
+                Pilih Program yang<br/>
+                Sesuai dengan minatmu
+              </h2>
+              <p className={styles.programCardDescription}>
+                Ada dua kategori program relawan yang bisa kamu pilih sesuai dengan ketersediaan dan passionmu
+              </p>
             </div>
           </div>
         </div>
@@ -376,20 +321,21 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.galleryGrid}>
-            {[1, 2, 3, 4, 5, 6].map((item, index) => (
+            {[
+              "/galeri/galeri1.jpeg",
+              "/galeri/galeri2.jpeg",
+              "/galeri/galeri3.jpeg",
+              "/galeri/galeri4.jpeg",
+              "/galeri/galeri5.jpeg",
+              "/galeri/galeri6.JPG"
+            ].map((src, index) => (
               <div key={index} className={`${styles.galleryItem} ${index === 0 ? styles.galleryItemLarge : ""}`}>
-                <div className={styles.galleryPlaceholder}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
-                </div>
-                <div className={styles.galleryOverlay}>
-                  <span className={styles.galleryTitle}>
-                    {["Mengajar di Desa Terpencil", "Penyuluhan Kesehatan", "Penanaman Mangrove", "Pelatihan Keterampilan", "Kunjungan Panti", "Gotong Royong"][index]}
-                  </span>
-                </div>
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
               </div>
             ))}
           </div>
@@ -406,7 +352,7 @@ export default function LandingPage() {
       </section>
 
       {/* Liputan Section */}
-      <section className={styles.liputanSection}>
+      {/* <section className={styles.liputanSection}>
         <div className={styles.sectionContainer}>
           <div className={styles.sectionHeader}>
             <span className={styles.sectionTag}>Liputan</span>
@@ -455,7 +401,7 @@ export default function LandingPage() {
             </svg>
           </Link>
         </div>
-      </section>
+      </section> */}
 
       {/* Partner Section */}
       <section className={styles.partnerSection}>
@@ -481,6 +427,56 @@ export default function LandingPage() {
                 <Image src={partner.image} alt={partner.name} fill style={{ objectFit: 'contain' }} />
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className={styles.ctaSection}>
+        <div className={styles.ctaWrapper}>
+          {/* Layer 1: Photo background, full cover, rounded mengikuti container */}
+            <div className={styles.ctaPhotoLayer}>
+              <Image
+                src="/last-section2.png"
+                alt="Relawan Semesta Manusia"
+                fill
+                className={styles.ctaPhotoImg}
+              />
+            </div>
+          <div className={styles.ctaContainer}>
+            {/* Layer 2: Overlay gradient biru di atas foto */}
+            <div className={styles.ctaOverlay} />
+
+            {/* Layer 3: Konten teks & logo, paling atas */}
+            <div className={styles.ctaContent}>
+              <div className={styles.ctaLogoWrap}>
+                <Image
+                  src="/LOGO%20SEMESTA%20MANUSIA.png"
+                  width={56}
+                  height={56}
+                  alt="Semesta Manusia"
+                  className={styles.ctaLogoImg}
+                />
+              </div>
+
+              <h2 className={styles.ctaHeading}>
+                Siap Menjelajah Dan Memberi Manfaat?
+              </h2>
+              <p className={styles.ctaSubheading}>
+                Menjangkau Nusantara, Menciptakan Perubahan.<br />
+                Jadilah relawan Semesta Manusia Indonesia.
+              </p>
+              <Link href="/user/program" className={styles.ctaButton}>
+                <span>Daftar Sekarang</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Link>
+            </div>
+
+            <div className={styles.ctaSlogan}>
+              BERBAGI | BERMAKNA | BERGERAK LEBIH LUAS
+            </div>
           </div>
         </div>
       </section>
