@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
@@ -69,6 +70,14 @@ const EditIcon = () => (
 );
 
 export default function FormulirTambahSemestaCampPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "2rem" }}>Memuat formulir...</div>}>
+      <FormulirTambahSemestaCampInner />
+    </Suspense>
+  );
+}
+
+function FormulirTambahSemestaCampInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const namaProgram = searchParams.get("nama") || "Program Baru";

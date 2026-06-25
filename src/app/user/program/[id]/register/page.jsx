@@ -84,6 +84,71 @@ export default function RegisterPage({ params }) {
     fetchProgram();
   }, [programId]);
 
+  // Auto-fill "Data Diri" step 1 from the signed-in user's profile.
+  //
+  // Behavior:
+  //   - Logged out                -> nothing happens (anonymous flow).
+  //   - Logged in but no Data Diri -> nothing pre-filled (form stays blank).
+  //   - Logged in with Data Diri   -> step 1 fields are pre-filled, but only
+  //                                   when the user hasn't typed anything yet.
+  //                                   (re-running this hook won't clobber edits.)
+  useEffect(() => {
+    if (!program) return;
+
+    const fetchAndPrefill = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) return; // not logged in or errored -> leave form blank
+        const { user } = await res.json();
+        if (!user) return;
+
+        // Only pre-fill when at least one of the data-diri fields is present.
+        const hasData =
+          user.name || user.email || user.whatsapp || user.instagram ||
+          user.birth_date || user.region || user.institution;
+        if (!hasData) return;
+
+        const schema = getFormSchema();
+        const firstSection = schema?.[0];
+        if (!firstSection?.fields) return;
+
+        setFormData((prev) => {
+          // Skip if user already started filling the form.
+          if (Object.keys(prev).length > 0) return prev;
+
+          const next = { ...prev };
+
+          // Map user-profile values to form fields by matching the field label.
+          const fillByLabel = (regex, value) => {
+            if (!value) return;
+            const field = firstSection.fields.find((f) => regex.test(f.label ?? ""));
+            if (!field) return;
+            // Don't overwrite anything the user already typed.
+            if (next[field.id]) return;
+            // Don't auto-fill if the schema field itself is empty (defensive).
+            if (value === "") return;
+            next[field.id] = value;
+          };
+
+          fillByLabel(/nama\s*lengkap|^nama|name/i, user.name);
+          fillByLabel(/email/i, user.email);
+          fillByLabel(/whatsapp|no\.?hp|handphone|wa/i, user.whatsapp);
+          fillByLabel(/instagram|^ig$|\big\b|sosmed/i, user.instagram);
+          fillByLabel(/tanggal\s*lahir|birth.?date|tgl\s*lahir/i, user.birth_date);
+          fillByLabel(/asal\s*daerah|^daerah|region|kota|kabupaten/i, user.region);
+          fillByLabel(/instansi|institution|perguruan|sekolah|kampus/i, user.institution);
+
+          return next;
+        });
+      } catch (err) {
+        // Silent: prefill is best-effort and shouldn't break the form.
+        console.error("Prefill from /api/auth/me failed:", err);
+      }
+    };
+
+    fetchAndPrefill();
+  }, [program]);
+
   const showToast = (msg, isErr = true) => {
     setToastMessage(msg);
     setToastIsError(isErr);

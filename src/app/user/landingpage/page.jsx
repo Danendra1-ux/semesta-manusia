@@ -12,22 +12,30 @@ export default function LandingPage() {
 
   const [programs, setPrograms] = useState([]);
   const [liputan, setLiputan] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [programsRes, liputanRes] = await Promise.all([
+        const [programsRes, liputanRes, reviewsRes] = await Promise.all([
           fetch('/api/programs?is_active=true'),
-          fetch('/api/liputan?is_published=true')
+          fetch('/api/liputan?is_published=true'),
+          fetch('/api/reviews?limit=6'),
         ]);
 
         if (programsRes.ok) setPrograms(await programsRes.json());
         if (liputanRes.ok) setLiputan(await liputanRes.json());
+        if (reviewsRes.ok) {
+          const data = await reviewsRes.json();
+          setReviews(data.reviews || []);
+        }
       } catch (err) {
         console.error('Failed to fetch data:', err);
       } finally {
         setLoading(false);
+        setReviewsLoading(false);
       }
     };
 
@@ -189,11 +197,11 @@ export default function LandingPage() {
 
             <div className={styles.programCardText}>
               <h2 className={styles.programCardTitle}>
-                Pilih Program yang<br/>
-                Sesuai dengan minatmu
+                Berkontribusi dengan<br/>
+                Cara yang Kamu Suka
               </h2>
               <p className={styles.programCardDescription}>
-                Ada dua kategori program relawan yang bisa kamu pilih sesuai dengan ketersediaan dan passionmu
+                Ada dua kategori program relawan yang bisa kamu pilih sesuai dengan ketersediaan dan minatnmu
               </p>
             </div>
           </div>
@@ -207,7 +215,7 @@ export default function LandingPage() {
             <span className={styles.sectionTag}>Jelajah Kegiatan</span>
             <h2 className={styles.sectionTitle}>
               Temukan Program yang<br/>
-              <span className={styles.titleAccent}>Sesuai Passionmu</span>
+              <span className={styles.titleAccent}>Sesuai Minatmu</span>
             </h2>
             <p className={styles.sectionDescription}>
               Beragam program relawan yang bisa kamu ikuti untuk berkontribusi di berbagai bidang dan lokasi di seluruh Indonesia.
@@ -340,14 +348,14 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className={styles.galleryActions}>
+          {/* <div className={styles.galleryActions}>
             <a href="#" className={styles.viewAllButton}>
               <span>Lihat Semua Galeri</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </a>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -431,6 +439,77 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Reviews Section */}
+      <section id="ulasan" className={styles.reviewsSection}>
+        <div className={styles.sectionContainer}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTag}>Ulasan</span>
+            <h2 className={styles.sectionTitle}>
+              Cerita dari<br/>
+              <span className={styles.titleAccent}>Para Relawan</span>
+            </h2>
+            <p className={styles.sectionDescription}>
+              Pengalaman nyata mereka yang sudah mengikuti program Semesta. Bagikan ceritamu juga setelah mengikuti program!
+            </p>
+          </div>
+
+          {reviewsLoading ? (
+            <div className={styles.reviewsSkeleton}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={styles.reviewSkeletonCard} />
+              ))}
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className={styles.reviewsEmpty}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <p>Belum ada ulasan. Jadilah yang pertama!</p>
+            </div>
+          ) : (
+            <div className={styles.reviewsGrid}>
+              {reviews.map((review) => (
+                <article key={review.id} className={styles.reviewCard}>
+                  <div className={styles.reviewStars} aria-label={`Rating ${review.rating} dari 5`}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <svg
+                        key={s}
+                        viewBox="0 0 24 24"
+                        fill={review.rating >= s ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className={styles.reviewStar}
+                      >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className={styles.reviewContent}>&ldquo;{review.content}&rdquo;</p>
+                  <div className={styles.reviewFooter}>
+                    <div className={styles.reviewAvatar}>
+                      {review.name ? review.name.charAt(0).toUpperCase() : "?"}
+                    </div>
+                    <div className={styles.reviewMeta}>
+                      <div className={styles.reviewName}>{review.name}</div>
+                      <div className={styles.reviewProgram}>{review.program_title}</div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.reviewsCta}>
+            <Link href="/user/reviews" className={styles.reviewsCtaButton}>
+              <span>Beri Ulasanmu</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className={styles.ctaSection}>
         <div className={styles.ctaWrapper}>
@@ -460,11 +539,11 @@ export default function LandingPage() {
               </div>
 
               <h2 className={styles.ctaHeading}>
-                Siap Menjelajah Dan Memberi Manfaat?
+                Semesta Butuh Versi Terbaikmu!
               </h2>
               <p className={styles.ctaSubheading}>
-                Menjangkau Nusantara, Menciptakan Perubahan.<br />
-                Jadilah relawan Semesta Manusia Indonesia.
+                Perjalananmu bermakna dimulai dari satu langkah.<br />
+                Jadilah bagian dari gerakan yang nyata, berbagi dampak ke seluruh Nusantara.
               </p>
               <Link href="/user/program" className={styles.ctaButton}>
                 <span>Daftar Sekarang</span>

@@ -1,0 +1,320 @@
+/* ==========================================
+   PROFILE MENU — Pop-up di navbar
+   Glass-morphism matching Navbar styling
+   ========================================== */
+
+.menuWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  min-width: 260px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  box-shadow:
+    0 12px 36px rgba(0, 191, 255, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  padding: 0.5rem;
+  z-index: 1100;
+  animation: menuFadeIn 0.18s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.85rem 0.95rem;
+  border-bottom: 1px solid rgba(0, 191, 255, 0.1);
+  margin-bottom: 0.4rem;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00bfff, #0084cc);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 191, 255, 0.25);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.headerText {
+  min-width: 0;
+  flex: 1;
+}
+
+.headerName {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerEmail {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0, 191, 255, 0.1);
+  margin: 0.35rem 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #0f172a);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease;
+  text-decoration: none;
+}
+
+.menuItem:hover {
+  background: rgba(0, 191, 255, 0.08);
+  color: var(--primary, #00bfff);
+}
+
+.menuItemIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.menuItemIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.logoutButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s ease;
+}
+
+.logoutButton:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.logoutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.logoutIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoutIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* === Logout confirmation modal === */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: backdropFade 0.2s ease-out;
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalDialog {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: modalPop 0.22s ease-out;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalIconWrap {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalIcon {
+  width: 30px;
+  height: 30px;
+  color: #dc2626;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem;
+}
+
+.modalDescription {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.modalCancelBtn,
+.modalConfirmBtn {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: background 0.18s ease, transform 0.1s ease;
+}
+
+.modalCancelBtn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modalCancelBtn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.modalConfirmBtn {
+  background: #dc2626;
+  color: #fff;
+}
+
+.modalConfirmBtn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.modalConfirmBtn:disabled,
+.modalCancelBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modalSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === Mobile (≤768px) === */
+@media (max-width: 768px) {
+  .dropdown {
+    right: -0.5rem;
+    min-width: calc(100vw - 2rem);
+    max-width: 320px;
+  }
+}

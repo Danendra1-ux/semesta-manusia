@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../../../components/AdminSidebar.jsx";
@@ -68,6 +68,14 @@ const EditIcon = () => (
 );
 
 export default function TambahFormulirSJNPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "2rem" }}>Memuat...</div>}>
+      <TambahFormulirSJNPageInner />
+    </Suspense>
+  );
+}
+
+function TambahFormulirSJNPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tipe = searchParams.get("tipe") || "fully-funded";

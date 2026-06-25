@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import ProfileMenu from "./ProfileMenu.jsx";
 import styles from "./Navbar.module.css";
 
 const navItems = [
@@ -13,10 +15,59 @@ const navItems = [
   { href: "/user/landingpage#kontak", label: "Kontak", key: "kontak" },
 ];
 
-export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaText = "Daftar Relawan" }) {
+function getInitials(user) {
+  if (!user) return "U";
+  const name = (user.name || user.email || "U").trim();
+  const parts = name.split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export default function Navbar({
+  showCta = true,
+  ctaLink = "/user/login",
+  ctaText = "Daftar Relawan",
+}) {
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("beranda");
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Fetch the current user (if any) on mount and on window focus
+  // so login/logout in another tab updates this navbar.
+  const inFlightAuth = useRef(false);
+  const fetchUser = async () => {
+    if (inFlightAuth.current) return;
+    inFlightAuth.current = true;
+    try {
+      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data?.user || null);
+      } else {
+        setUser(null);
+      }
+    } catch {
+      setUser(null);
+    } finally {
+      setAuthLoading.current = false;
+      inFlightAuth.current = false;
+      setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+    const onFocus = () => fetchUser();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -24,9 +75,21 @@ export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaT
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close the profile menu on route change.
+  useEffect(() => {
+    setProfileMenuOpen(false);
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+
+  const toggleProfileMenu = () => {
+    setProfileMenuOpen((prev) => !prev);
+  };
+
+  const initials = getInitials(user);
 
   return (
     <nav
@@ -66,7 +129,35 @@ export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaT
         </ul>
 
         <div className={`${styles.navActions} ${mobileMenuOpen ? styles.hideOnDesktop : ""}`}>
-          {showCta && (
+          {!authLoading && user && (
+            <div className={styles.profileWrapper}>
+              <button
+                type="button"
+                className={`${styles.profileButton} ${profileMenuOpen ? styles.profileButtonActive : ""}`}
+                onClick={toggleProfileMenu}
+                aria-haspopup="menu"
+                aria-expanded={profileMenuOpen}
+                aria-label="Menu profil"
+              >
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className={styles.profileButtonAvatar}
+                  />
+                ) : (
+                  <span className={styles.profileButtonInitials}>{initials}</span>
+                )}
+              </button>
+              <ProfileMenu
+                user={user}
+                open={profileMenuOpen}
+                onClose={() => setProfileMenuOpen(false)}
+              />
+            </div>
+          )}
+
+          {!authLoading && !user && showCta && (
             <Link
               href={ctaLink}
               className={styles.ctaButton}
@@ -84,6 +175,7 @@ export default function Navbar({ showCta = true, ctaLink = "/user/program", ctaT
               {ctaText}
             </Link>
           )}
+
           <button
             className={styles.mobileMenuButton}
             onClick={toggleMobileMenu}

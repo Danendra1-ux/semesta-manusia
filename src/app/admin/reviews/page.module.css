@@ -1,0 +1,544 @@
+/* =================== PAGE LAYOUT =================== */
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light, #f9fafb);
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem 2.5rem;
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+}
+
+.mainContent.expanded {
+  margin-left: 70px;
+}
+
+/* =================== HEADER =================== */
+.contentHeader {
+  margin-bottom: 1.5rem;
+}
+
+.headerTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-dark, #111827);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+
+.headerSubtitle {
+  font-size: 0.9375rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+  max-width: 720px;
+}
+
+/* =================== FILTER TABS =================== */
+.filterTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filterTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  background: white;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.filterTab:hover {
+  border-color: var(--brand, #00BFFF);
+  color: var(--brand, #00BFFF);
+}
+
+.filterTabActive {
+  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 191, 255, 0.25);
+}
+
+.filterTabActive:hover {
+  color: white;
+}
+
+.filterCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.45rem;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.filterTabActive .filterCount {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+/* =================== MAIN CARD =================== */
+.mainCard {
+  background: white;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+/* =================== STATES =================== */
+.emptyState,
+.errorState {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.emptyState svg {
+  width: 48px;
+  height: 48px;
+  color: #cbd5e1;
+  margin-bottom: 0.75rem;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.errorState {
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 12px;
+}
+
+.errorState p {
+  margin: 0 0 0.75rem 0;
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+.retryBtn {
+  padding: 0.5rem 1.25rem;
+  background: var(--brand, #00BFFF);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+/* =================== SKELETON =================== */
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeletonRow {
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: shimmerReviews 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmerReviews {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* =================== TABLE =================== */
+.tableWrapper {
+  overflow-x: auto;
+  margin: 0 -0.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead {
+  background: #f9fafb;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.85rem 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.9rem;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: #f9fafb;
+}
+
+/* Column-specific styles */
+.tdName {
+  min-width: 160px;
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00BFFF 0%, #7C3AED 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.nameText {
+  font-weight: 600;
+  color: var(--text-dark, #111827);
+}
+
+.tdProgram {
+  color: var(--text-dark, #111827);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.tdRating {
+  white-space: nowrap;
+}
+
+.starDisplay {
+  display: inline-flex;
+  gap: 0.1rem;
+  color: #f59e0b;
+}
+
+.starIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.tdContent {
+  max-width: 320px;
+}
+
+.contentText {
+  margin: 0;
+  color: var(--text-dark, #111827);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-style: italic;
+}
+
+.tdDate {
+  color: var(--text-muted, #6b7280);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.tdStatus {
+  white-space: nowrap;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusPublished {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.statusPending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.tdActions {
+  white-space: nowrap;
+}
+
+.actionGroup {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.actionBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionPublish {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.actionPublish:hover:not(:disabled) {
+  background: #10b981;
+  color: white;
+}
+
+.actionUnpublish {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.actionUnpublish:hover:not(:disabled) {
+  background: #f59e0b;
+  color: white;
+}
+
+.actionDelete {
+  padding: 0.4rem;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.actionDelete:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+}
+
+.miniSpinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =================== PAGINATION =================== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.paginationBtn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.65rem;
+  background: white;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark, #111827);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  border-color: var(--brand, #00BFFF);
+  color: var(--brand, #00BFFF);
+}
+
+.paginationBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginationBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.paginationBtnActive {
+  background: var(--brand, #00BFFF);
+  border-color: var(--brand, #00BFFF);
+  color: white;
+}
+
+.paginationBtnActive:hover {
+  background: var(--brand-dark, #0099CC);
+  color: white;
+}
+
+.paginationDots {
+  padding: 0 0.25rem;
+  color: var(--text-muted, #6b7280);
+}
+
+/* =================== TOAST =================== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.25rem;
+  background: white;
+  color: #10b981;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.toast svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toastShow {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.toastError {
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 1024px) {
+  .thDate,
+  .tdDate {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .headerTitle {
+    font-size: 1.5rem;
+  }
+
+  .mainCard {
+    padding: 1rem;
+  }
+
+  .thProgram,
+  .tdProgram {
+    display: none;
+  }
+
+  .thContent,
+  .tdContent {
+    max-width: 200px;
+  }
+
+  .actionBtn span {
+    display: none;
+  }
+
+  .actionPublish,
+  .actionUnpublish {
+    padding: 0.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .filterTabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+  }
+
+  .filterTab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
