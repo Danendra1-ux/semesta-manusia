@@ -44,7 +44,7 @@ export async function GET(request) {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     let query = adminClient
       .from("reviews")
-      .select("id, name, program_title, rating, content, is_published, created_at")
+      .select("id, name, institution, program_title, rating, content, is_published, created_at, user_id")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -77,7 +77,19 @@ export async function GET(request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ reviews: data || [] });
+
+    const reviews = (data || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      program_title: row.program_title,
+      rating: row.rating,
+      content: row.content,
+      is_published: row.is_published,
+      created_at: row.created_at,
+      institution: row.institution || null,
+    }));
+
+    return NextResponse.json({ reviews });
   } catch (err) {
     return NextResponse.json(
       { error: err.message || "Terjadi kesalahan." },
@@ -125,6 +137,7 @@ export async function POST(request) {
     }
 
     const name = (body?.name || "").trim();
+    const institution = (body?.institution || "").trim() || null;
     const programTitle = (body?.program_title || "").trim();
     const content = (body?.content || "").trim();
     const ratingRaw = body?.rating;
@@ -132,6 +145,12 @@ export async function POST(request) {
     if (name.length < MIN_NAME) {
       return NextResponse.json(
         { error: `Nama minimal ${MIN_NAME} karakter.` },
+        { status: 400 }
+      );
+    }
+    if (institution && institution.length > 200) {
+      return NextResponse.json(
+        { error: "Instansi maksimal 200 karakter." },
         { status: 400 }
       );
     }
@@ -167,12 +186,13 @@ export async function POST(request) {
       .insert({
         user_id: authUser.id,
         name,
+        institution: institution,
         program_title: programTitle,
         rating,
         content,
         is_published: false,
       })
-      .select("id, name, program_title, rating, content, is_published, created_at")
+      .select("id, name, institution, program_title, rating, content, is_published, created_at")
       .single();
 
     if (error) {

@@ -1651,6 +1651,110 @@
   margin-top: 3rem;
 }
 
+/* Slider */
+.reviewsSlider {
+  position: relative;
+  margin-top: 3rem;
+  padding: 0 3.5rem;
+}
+
+.sliderTrack {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.5rem 0 1.5rem;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sliderTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.sliderTrackDragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.sliderTrack > .reviewCard {
+  flex: 0 0 calc((100% - 3rem) / 3);
+  min-width: calc((100% - 3rem) / 3);
+  scroll-snap-align: start;
+}
+
+.sliderArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  color: #00bfff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 6px 18px rgba(0, 191, 255, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.sliderArrow:hover:not(:disabled) {
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 10px 24px rgba(0, 191, 255, 0.25);
+  background: linear-gradient(135deg, #00bfff 0%, #0084cc 100%);
+  color: #fff;
+}
+
+.sliderArrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sliderArrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sliderArrowLeft {
+  left: 0;
+}
+
+.sliderArrowRight {
+  right: 0;
+}
+
+.sliderDots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.sliderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  padding: 0;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.sliderDotActive {
+  background: linear-gradient(135deg, #00bfff 0%, #7c3aed 100%);
+  width: 22px;
+  border-radius: 4px;
+}
+
 .reviewCard {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
@@ -1742,6 +1846,15 @@
   color: #0f172a;
 }
 
+.reviewInstitution {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #00bfff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .reviewProgram {
   font-size: 0.8rem;
   color: #64748b;
@@ -1827,6 +1940,32 @@
   .reviewsGrid,
   .reviewsSkeleton {
     grid-template-columns: 1fr;
+  }
+
+  .reviewsSlider {
+    padding: 0 0.5rem;
+  }
+
+  .sliderArrow {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sliderArrow svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sliderTrack > .reviewCard {
+    flex: 0 0 100%;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sliderTrack > .reviewCard {
+    flex: 0 0 calc((100% - 1.5rem) / 2);
+    min-width: calc((100% - 1.5rem) / 2);
   }
 }
 

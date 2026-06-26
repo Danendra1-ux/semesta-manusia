@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar.jsx";
@@ -467,36 +467,7 @@ export default function LandingPage() {
               <p>Belum ada ulasan. Jadilah yang pertama!</p>
             </div>
           ) : (
-            <div className={styles.reviewsGrid}>
-              {reviews.map((review) => (
-                <article key={review.id} className={styles.reviewCard}>
-                  <div className={styles.reviewStars} aria-label={`Rating ${review.rating} dari 5`}>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <svg
-                        key={s}
-                        viewBox="0 0 24 24"
-                        fill={review.rating >= s ? "currentColor" : "none"}
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className={styles.reviewStar}
-                      >
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className={styles.reviewContent}>&ldquo;{review.content}&rdquo;</p>
-                  <div className={styles.reviewFooter}>
-                    <div className={styles.reviewAvatar}>
-                      {review.name ? review.name.charAt(0).toUpperCase() : "?"}
-                    </div>
-                    <div className={styles.reviewMeta}>
-                      <div className={styles.reviewName}>{review.name}</div>
-                      <div className={styles.reviewProgram}>{review.program_title}</div>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <ReviewSlider reviews={reviews} />
           )}
 
           <div className={styles.reviewsCta}>
@@ -564,6 +535,236 @@ export default function LandingPage() {
       <section id="kontak">
         <Footer />
       </section>
+    </div>
+  );
+}
+
+function ReviewSlider({ reviews }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [slidesPerView, setSlidesPerView] = useState(3);
+  const [isDragging, setIsDragging] = useState(false);
+  const trackRef = useRef(null);
+  const slidesRef = useRef([]);
+  const dragStartX = useRef(0);
+  const dragStartScroll = useRef(0);
+  const autoplayTimerRef = useRef(null);
+  const isPausedRef = useRef(false);
+  const programmaticScrollRef = useRef(false);
+  const total = reviews.length;
+  const pageCount = Math.max(1, total - slidesPerView + 1);
+
+  const goTo = useCallback((idx) => {
+    if (total === 0) return;
+    const wrapped = ((idx % pageCount) + pageCount) % pageCount;
+    programmaticScrollRef.current = true;
+    setActiveIndex(wrapped);
+  }, [total, pageCount]);
+
+  const next = useCallback(() => {
+    if (total === 0) return;
+    programmaticScrollRef.current = true;
+    setActiveIndex((i) => (i + 1) % pageCount);
+  }, [total, pageCount]);
+
+  const prev = useCallback(() => {
+    if (total === 0) return;
+    programmaticScrollRef.current = true;
+    setActiveIndex((i) => (i - 1 + pageCount) % pageCount);
+  }, [total, pageCount]);
+
+  // Responsive slidesPerView
+  useEffect(() => {
+    const compute = () => {
+      const w = window.innerWidth;
+      if (w < 640) setSlidesPerView(1);
+      else if (w < 1024) setSlidesPerView(2);
+      else setSlidesPerView(3);
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
+  // Autoplay
+  useEffect(() => {
+    if (pageCount <= 1) return undefined;
+    autoplayTimerRef.current = setInterval(() => {
+      if (!isPausedRef.current) {
+        programmaticScrollRef.current = true;
+        setActiveIndex((i) => (i + 1) % pageCount);
+      }
+    }, 4500);
+    return () => clearInterval(autoplayTimerRef.current);
+  }, [pageCount]);
+
+  // Track scrolling position for activeIndex sync (only during drag, not programmatic)
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
+    let raf = 0;
+    const handle = () => {
+      if (programmaticScrollRef.current) {
+        programmaticScrollRef.current = false;
+        return;
+      }
+      if (!isDragging) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const slides = slidesRef.current.filter(Boolean);
+        if (slides.length === 0) return;
+        const scrollLeft = track.scrollLeft;
+        let nearest = 0;
+        let minDiff = Infinity;
+        slides.forEach((slide, i) => {
+          const diff = Math.abs(slide.offsetLeft - scrollLeft);
+          if (diff < minDiff) {
+            minDiff = diff;
+            nearest = i;
+          }
+        });
+        setActiveIndex(Math.min(nearest, pageCount - 1));
+      });
+    };
+    track.addEventListener("scroll", handle, { passive: true });
+    return () => {
+      track.removeEventListener("scroll", handle);
+      cancelAnimationFrame(raf);
+    };
+  }, [isDragging, pageCount]);
+
+  // Scroll to active page when activeIndex changes via buttons or autoplay.
+  // Each page = slidesPerView cards; we snap to the first card of the page.
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const targetSlide = slidesRef.current[activeIndex];
+    if (!targetSlide) return;
+    const targetLeft = targetSlide.offsetLeft;
+    track.scrollTo({ left: targetLeft, behavior: isDragging ? "auto" : "smooth" });
+  }, [activeIndex, isDragging]);
+
+  const onPointerDown = (e) => {
+    const track = trackRef.current;
+    if (!track) return;
+    isPausedRef.current = true;
+    setIsDragging(true);
+    dragStartX.current = e.clientX;
+    dragStartScroll.current = track.scrollLeft;
+    track.setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const dx = e.clientX - dragStartX.current;
+    track.scrollLeft = dragStartScroll.current - dx;
+  };
+
+  const endDrag = (e) => {
+    if (!isDragging) return;
+    const track = trackRef.current;
+    setIsDragging(false);
+    isPausedRef.current = false;
+    if (track && e?.pointerId != null) {
+      track.releasePointerCapture?.(e.pointerId);
+    }
+  };
+
+  const onMouseEnter = () => { isPausedRef.current = true; };
+  const onMouseLeave = () => { if (!isDragging) isPausedRef.current = false; };
+
+  if (total === 0) return null;
+
+  return (
+    <div
+      className={styles.reviewsSlider}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <button
+        type="button"
+        aria-label="Ulasan sebelumnya"
+        className={`${styles.sliderArrow} ${styles.sliderArrowLeft}`}
+        onClick={prev}
+        disabled={pageCount <= 1}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
+      <div
+        ref={trackRef}
+        className={`${styles.sliderTrack} ${isDragging ? styles.sliderTrackDragging : ""}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={(e) => { if (isDragging) endDrag(e); }}
+      >
+        {reviews.map((review, i) => (
+          <article
+            key={review.id}
+            ref={(el) => { if (el) slidesRef.current[i] = el; }}
+            className={styles.reviewCard}
+          >
+            <div className={styles.reviewStars} aria-label={`Rating ${review.rating} dari 5`}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <svg
+                  key={s}
+                  viewBox="0 0 24 24"
+                  fill={review.rating >= s ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={styles.reviewStar}
+                >
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              ))}
+            </div>
+            <p className={styles.reviewContent}>&ldquo;{review.content}&rdquo;</p>
+            <div className={styles.reviewFooter}>
+              <div className={styles.reviewAvatar}>
+                {review.name ? review.name.charAt(0).toUpperCase() : "?"}
+              </div>
+              <div className={styles.reviewMeta}>
+                <div className={styles.reviewName}>{review.name}</div>
+                {review.institution && (
+                  <div className={styles.reviewInstitution}>{review.institution}</div>
+                )}
+                <div className={styles.reviewProgram}>{review.program_title}</div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        aria-label="Ulasan berikutnya"
+        className={`${styles.sliderArrow} ${styles.sliderArrowRight}`}
+        onClick={next}
+        disabled={pageCount <= 1}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+
+      <div className={styles.sliderDots} role="tablist" aria-label="Navigasi ulasan">
+        {Array.from({ length: pageCount }).map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            aria-selected={i === activeIndex}
+            aria-label={`Ke ulasan ${i + 1}`}
+            className={`${styles.sliderDot} ${i === activeIndex ? styles.sliderDotActive : ""}`}
+            onClick={() => goTo(i)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

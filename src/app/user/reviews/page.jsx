@@ -25,6 +25,7 @@ export default function UserReviewsPage() {
   // Form state
   const [form, setForm] = useState({
     name: "",
+    institution: "",
     program_title: "",
     rating: 0,
     content: "",
@@ -77,6 +78,7 @@ export default function UserReviewsPage() {
           setForm((prev) => ({
             ...prev,
             name: meData.user?.name || "",
+            institution: meData.user?.institution || "",
           }));
         } else {
           showToast("Gagal memuat profil", true);
@@ -124,6 +126,10 @@ export default function UserReviewsPage() {
     if (!form.name || form.name.trim().length < 2) {
       next.name = "Nama minimal 2 karakter.";
     }
+    const trimmedInstitution = form.institution.trim();
+    if (trimmedInstitution.length > 200) {
+      next.institution = "Instansi maksimal 200 karakter.";
+    }
     if (!form.program_title) {
       next.program_title = "Pilih program yang ingin diulas.";
     }
@@ -157,6 +163,7 @@ export default function UserReviewsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.name.trim(),
+          institution: form.institution.trim(),
           program_title: form.program_title,
           rating: form.rating,
           content: form.content.trim(),
@@ -259,6 +266,24 @@ export default function UserReviewsPage() {
               />
               {errors.name && (
                 <p className={styles.errorText}>{errors.name}</p>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="review-institution">
+                Instansi <span className={styles.optionalHint}>(opsional)</span>
+              </label>
+              <input
+                id="review-institution"
+                type="text"
+                className={`${styles.input} ${errors.institution ? styles.inputError : ""}`}
+                placeholder="Cth. Universitas Indonesia"
+                value={form.institution}
+                onChange={(e) => handleChange("institution", e.target.value)}
+                maxLength={200}
+              />
+              {errors.institution && (
+                <p className={styles.errorText}>{errors.institution}</p>
               )}
             </div>
 
@@ -378,6 +403,10 @@ export default function UserReviewsPage() {
                 <div key={r.id} className={styles.historyCard}>
                   <div className={styles.historyCardHeader}>
                     <div>
+                      <div className={styles.historyName}>{r.name}</div>
+                      {r.institution && (
+                        <div className={styles.historyInstitution}>{r.institution}</div>
+                      )}
                       <div className={styles.historyProgram}>{r.program_title}</div>
                       <div className={styles.historyDate}>{formatDate(r.created_at)}</div>
                     </div>

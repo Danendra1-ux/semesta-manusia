@@ -5,7 +5,7 @@
 .page {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #E0F7FF 0%, #F0F9FF 50%, #ffffff 100%);
+  background: white;
   position: relative;
   overflow-x: hidden;
   padding-top: 90px;

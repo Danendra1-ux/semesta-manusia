@@ -42,14 +42,17 @@ export async function GET() {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data, error } = await adminClient
       .from("reviews")
-      .select("id, name, program_title, rating, content, is_published, created_at")
+      .select("id, name, institution, program_title, rating, content, is_published, created_at")
       .eq("user_id", authUser.id)
       .order("created_at", { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ reviews: data || [] });
+
+    const reviews = (data || []).map((r) => ({ ...r, institution: r.institution || null }));
+
+    return NextResponse.json({ reviews });
   } catch (err) {
     return NextResponse.json(
       { error: err.message || "Terjadi kesalahan." },
