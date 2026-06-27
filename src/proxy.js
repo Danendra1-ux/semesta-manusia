@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const ADMIN_LOGIN_PATH = "/admin/login";
+const ADMIN_LOGIN_PATH = "/user/login";
 const USER_LOGIN_PATH = "/user/login";
 
 function isAdminPath(pathname) {
@@ -85,18 +85,6 @@ export default async function proxy(req) {
 
   // ---- Admin routes ----
   if (isAdminPath(pathname)) {
-    // Public admin route — anyone can reach the login page.
-    if (pathname === ADMIN_LOGIN_PATH) {
-      const session = await getAdminSession(req);
-      if (session) {
-        const url = req.nextUrl.clone();
-        url.pathname = "/admin/dashboard";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-      return NextResponse.next();
-    }
-
     // Protected admin routes — require an admin session.
     const session = await getAdminSession(req);
     if (!session) {

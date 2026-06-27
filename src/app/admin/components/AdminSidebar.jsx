@@ -95,7 +95,7 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
     const timeoutId = setTimeout(() => {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
-      router.push("/admin/login");
+      router.push("/user/login");
       router.refresh();
     }, 5000);
 
@@ -103,7 +103,7 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
       const supabase = createSupabaseClient();
       await supabase.auth.signOut();
       clearTimeout(timeoutId);
-      router.push("/admin/login");
+      router.push("/user/login");
       router.refresh();
     } catch (err) {
       clearTimeout(timeoutId);

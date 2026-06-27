@@ -12,6 +12,7 @@ const navItems = [
   { href: "/user/landingpage#tentang", label: "Tentang", key: "tentang" },
   { href: "/user/landingpage#program", label: "Program", key: "program" },
   { href: "/user/landingpage#galeri", label: "Galeri", key: "galeri" },
+  { href: "/user/landingpage#faq", label: "FAQ", key: "faq" },
   { href: "/user/landingpage#kontak", label: "Kontak", key: "kontak" },
 ];
 
@@ -82,10 +83,12 @@ export default function Navbar({
   }, [pathname]);
 
   const toggleMobileMenu = () => {
+    setProfileMenuOpen(false);
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const toggleProfileMenu = () => {
+    setMobileMenuOpen(false);
     setProfileMenuOpen((prev) => !prev);
   };
 

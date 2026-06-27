@@ -4,12 +4,19 @@ import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/adminAuth";
 
+const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
+
 /**
  * GET /api/admin/users
  *
  * Returns all registered volunteer users (the only role stored in
  * public.users). Admin accounts live in Supabase auth only and are
  * intentionally excluded from this listing.
+ *
+ * The effective status of a user is computed on read: a user is treated as
+ * "Nonaktif" when their last_login_at is older than 6 months. The stored
+ * is_active flag is preserved alongside for admin context, and is what gets
+ * updated by the manual toggle endpoint.
  *
  * Uses service role to bypass RLS for the listing query.
  */
@@ -54,7 +61,20 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ users: data || [] });
+    const now = Date.now();
+    const users = (data || []).map((u) => {
+      const last = u.last_login_at ? new Date(u.last_login_at).getTime() : null;
+      const isInactiveByLogin = last !== null && now - last > SIX_MONTHS_MS;
+      return {
+        ...u,
+        // Effective status used by the UI: dormant login OR explicit flag.
+        // Treat null is_active the same as true (presumably from a legacy row).
+        effective_is_active:
+          u.is_active === true && !isInactiveByLogin,
+      };
+    });
+
+    return NextResponse.json({ users });
   } catch (err) {
     return NextResponse.json(
       { error: err.message || "Terjadi kesalahan." },

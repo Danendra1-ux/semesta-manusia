@@ -49,6 +49,7 @@ export default function Footer() {
                   <li><a href="/user/landingpage#tentang">Tentang</a></li>
                   <li><a href="/user/landingpage#program">Program</a></li>
                   <li><a href="/user/landingpage#galeri">Galeri</a></li>
+                  <li><a href="/user/landingpage#faq">FAQ</a></li>
                   <li><a href="/user/landingpage#kontak">Kontak</a></li>
                 </ul>
               </div>

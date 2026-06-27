@@ -7,6 +7,49 @@ import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import styles from "./landingpage.module.css";
 
+const faqData = [
+  {
+    question: "Apakah program ini terbuka untuk umum?",
+    answer: "Ya, program ini terbuka untuk umum. Siapa pun yang memiliki semangat belajar, berkontribusi, dan berkolaborasi dipersilakan untuk mendaftar, baik mahasiswa maupun masyarakat umum sesuai dengan persyaratan yang berlaku."
+  },
+  {
+    question: "Delegasi Fully Funded spesifiknya dicari seperti apa?",
+    answer: "Delegasi Fully Funded dipilih berdasarkan kualitas administrasi, motivasi, pengalaman organisasi/volunteer (jika ada), kemampuan komunikasi, serta potensi kontribusi dan dampak yang dapat diberikan selama program berlangsung."
+  },
+  {
+    question: "Jika belum pernah punya pengalaman volunteer sebelumnya, apakah bisa mendaftar?",
+    answer: "Tentu bisa. Program ini terbuka bagi peserta yang belum memiliki pengalaman volunteer. Yang terpenting adalah memiliki motivasi yang kuat, kemauan untuk belajar, dan semangat untuk berkontribusi."
+  },
+  {
+    question: "Apakah nanti akan mendapatkan sertifikat?",
+    answer: "Ya, seluruh peserta yang mengikuti rangkaian program sesuai ketentuan akan mendapatkan sertifikat sebagai bentuk apresiasi atas partisipasi dan kontribusinya."
+  },
+  {
+    question: "Tips and Tricks agar bisa mendapatkan Fully Funded?",
+    answer: "Pastikan seluruh berkas dan formulir diisi dengan lengkap dan jujur, buat esai atau motivation letter yang kuat dan autentik, tunjukkan pengalaman, prestasi, atau kontribusi sosial yang pernah dilakukan, serta tampilkan komitmen dan potensi diri secara maksimal."
+  },
+  {
+    question: "Sebelum turun ke masyarakat, apakah akan ada pelatihan terlebih dahulu?",
+    answer: "Ya. Seluruh delegasi akan mendapatkan pembekalan dan pelatihan sebelum terjun ke lapangan agar memiliki pemahaman yang baik terkait program, teknis pelaksanaan, dan pengabdian kepada masyarakat."
+  },
+  {
+    question: "Apa perbedaan Fully Funded dan Self Funded?",
+    answer: "Perbedaan utama terletak pada skema pembiayaan. Delegasi Fully Funded akan mendapatkan pembiayaan sesuai ketentuan program, sedangkan delegasi Self Funded membiayai partisipasinya secara mandiri. Namun, seluruh delegasi akan memperoleh pengalaman, fasilitas, dan kesempatan yang sama selama program berlangsung."
+  },
+  {
+    question: "Berapa kuota pendaftaran Fully Funded dan Self Funded?",
+    answer: "Kuota delegasi Fully Funded dan Self Funded bersifat terbatas dan akan disesuaikan dengan hasil seleksi serta kapasitas program yang tersedia."
+  },
+  {
+    question: "Apakah akan mendapatkan surat izin untuk kampus/instansi?",
+    answer: "Ya, panitia dapat menyediakan surat izin atau surat rekomendasi resmi yang dapat digunakan untuk pengajuan izin kepada kampus, sekolah, maupun instansi terkait."
+  },
+  {
+    question: "Kapan pengumuman Fully Funded?",
+    answer: "Pengumuman delegasi Fully Funded akan disampaikan sesuai timeline resmi yang telah ditetapkan oleh panitia melalui media informasi resmi program."
+  }
+];
+
 export default function LandingPage() {
   const [activeFilter, setActiveFilter] = useState("semua");
 
@@ -449,7 +492,7 @@ export default function LandingPage() {
               <span className={styles.titleAccent}>Para Relawan</span>
             </h2>
             <p className={styles.sectionDescription}>
-              Pengalaman nyata mereka yang sudah mengikuti program Semesta. Bagikan ceritamu juga setelah mengikuti program!
+              Pengalaman nyata mereka yang sudah mengikuti program Semesta Manusia Indonesia.
             </p>
           </div>
 
@@ -477,6 +520,39 @@ export default function LandingPage() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className={styles.faqSection}>
+        <div className={styles.sectionContainer}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTag}>FAQ</span>
+            <h2 className={styles.sectionTitle}>
+              Pertanyaan yang<br/>
+              <span className={styles.titleAccent}>Sering Ditanyakan</span>
+            </h2>
+            <p className={styles.sectionDescription}>
+              Temukan jawaban atas pertanyaan umum seputar program Semesta Manusia Indonesia.
+            </p>
+          </div>
+
+          <div className={styles.faqList}>
+            {faqData.map((item, index) => (
+              <details key={index} className={styles.faqItem}>
+                <summary className={styles.faqQuestion}>
+                  <span className={styles.faqNumber}>{String(index + 1).padStart(2, '0')}</span>
+                  <span>{item.question}</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.faqChevron}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </summary>
+                <div className={styles.faqAnswer}>
+                  <p>{item.answer}</p>
+                </div>
+              </details>
+            ))}
           </div>
         </div>
       </section>

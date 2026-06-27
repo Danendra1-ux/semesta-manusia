@@ -95,12 +95,21 @@ function LoginForm() {
 
       clearTimeout(timeoutId);
 
+      // Record last login timestamp (idempotent, lightweight).
+      try {
+        await fetch("/api/auth/record-login", { method: "POST" });
+      } catch (_e) {
+        // Silent fail — login succeeded, the timestamp is non-essential.
+      }
+
       // Check if the logged-in user is an admin
       const session = await supabase.auth.getSession();
       const role = session.data.session?.user?.app_metadata?.role
         || session.data.session?.user?.user_metadata?.role;
       if (role === "admin") {
-        router.replace("/admin/dashboard");
+        // Honor the original admin target if it was an internal /admin/* path.
+        const adminRedirect = redirectParam.startsWith("/admin") ? redirectParam : "/admin/dashboard";
+        router.replace(adminRedirect);
         router.refresh();
         return;
       }
@@ -351,20 +360,6 @@ function LoginForm() {
             Belum punya akun?
             <Link href={`/user/signup${redirectParam !== "/user/program" ? `?redirect=${encodeURIComponent(redirectParam)}` : ""}`}>Daftar sekarang</Link>
           </p>
-
-          <div className={styles.adminDivider}>
-            <span className={styles.adminDividerLine} />
-            <span className={styles.adminDividerText}>atau</span>
-            <span className={styles.adminDividerLine} />
-          </div>
-
-          <Link href="/admin/login" className={styles.adminLoginButton}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 11V7a4 4 0 10-8 0v4" />
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-            </svg>
-            <span>Login Admin</span>
-          </Link>
         </div>
       </div>
     </div>

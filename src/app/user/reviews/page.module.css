@@ -7,9 +7,10 @@
   min-height: 100vh;
   background: white;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
   padding-top: 90px;
-  padding-bottom: 3rem;
 }
 
 .animatedBg {
@@ -70,6 +71,7 @@
   padding: 0 1.5rem;
   position: relative;
   z-index: 1;
+  flex: 1;
 }
 
 /* Loading */
@@ -465,13 +467,37 @@
 }
 
 /* Mobile */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .pageTitle {
     font-size: 1.75rem;
   }
 
+  .pageSubtitle {
+    font-size: 0.9rem;
+  }
+
   .formCard {
-    padding: 1.5rem;
+    padding: 1.5rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .formGroup {
+    margin-bottom: 1.25rem;
+  }
+
+  .formGroup:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.9rem;
   }
 
   .ratingRow {
@@ -485,6 +511,46 @@
     height: 28px;
   }
 
+  .submitButton {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .historyTitle {
+    font-size: 1.25rem;
+  }
+
+  .historySection {
+    margin-top: 2rem;
+  }
+
+  .historyEmpty {
+    padding: 2rem 1.25rem;
+  }
+
+  .historyCard {
+    padding: 1rem;
+  }
+
+  .historyCardHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .historyContent {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 3;
+  }
+
+  .toast {
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
   .historyGrid {
     grid-template-columns: 1fr;
   }
