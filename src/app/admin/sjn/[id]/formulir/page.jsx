@@ -61,12 +61,12 @@ const EditIcon = () => (
 export default function FormulirSJNPage({ params }) {
   return (
     <Suspense fallback={<div style={{ padding: "2rem" }}>Memuat...</div>}>
-      <FormulirSJNPageInner />
+      <FormulirSJNPageInner params={params} />
     </Suspense>
   );
 }
 
-function FormulirSJNPageInner() {
+function FormulirSJNPageInner({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const router = useRouter();

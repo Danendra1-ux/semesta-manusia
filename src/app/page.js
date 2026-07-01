@@ -17,7 +17,7 @@ export default function Home() {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100vh',
-      background: '#4F46E5',
+      background: '#00BFFF',
       color: 'white',
       fontFamily: 'system-ui, sans-serif'
     }}>

@@ -378,8 +378,8 @@ function TambahSJNProgramPageInner() {
         custom_registration_form_self: customFormSelf,
         image_url: imageUrl || null,
         program_funding_types: [
-          { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif', is_default: true },
-          { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif', is_default: false }
+          { code: 'fully', label: 'Fully Funded', deadline: fullyFundedBatasReg, is_active: fullyFundedStatus === 'Aktif' },
+          { code: 'self', label: 'Self Funded', deadline: selfFundedBatasReg, is_active: selfFundedStatus === 'Aktif' }
         ]
       };
 

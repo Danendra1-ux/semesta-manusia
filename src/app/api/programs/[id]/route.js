@@ -92,8 +92,7 @@ export async function PUT(request, { params }) {
           .update({
             deadline: ft.deadline || null,
             label: ft.label,
-            is_active: ft.is_active !== false,
-            is_default: ft.code === 'self'
+            is_active: ft.is_active !== false
           })
           .eq('id', existing.id);
       } else {
@@ -104,8 +103,7 @@ export async function PUT(request, { params }) {
             code: ft.code,
             label: ft.label,
             deadline: ft.deadline || null,
-            is_active: ft.is_active !== false,
-            is_default: ft.code === 'self'
+            is_active: ft.is_active !== false
           });
       }
     }

@@ -44,6 +44,7 @@ export default function SJNDetailPage({ params }) {
 
   // Modal konfirmasi hapus
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, fullName: "" });
+  const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -222,6 +223,59 @@ export default function SJNDetailPage({ params }) {
   const closeDeleteModal = () => {
     if (deleting) return;
     setDeleteModal({ open: false, id: null, fullName: "" });
+    setBulkDeleteIds([]);
+  };
+
+  const openBulkDeleteModal = () => {
+    setBulkDeleteIds([...selectedRows]);
+    setDeleteModal({
+      open: true,
+      id: null,
+      fullName: `${selectedRows.length} pendaftar dipilih`,
+      isBulk: true,
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    setDeleting(true);
+    let successCount = 0;
+    try {
+      for (const id of selectedRows) {
+        const res = await fetch(`/api/registrations/${id}`, { method: "DELETE" });
+        if (res.ok) successCount++;
+      }
+      const regRes = await fetch(`/api/registrations?program_id=${programId}`);
+      if (regRes.ok) {
+        const regData = await regRes.json();
+        const formatted = regData.map(r => ({
+          id: r.id,
+          tanggal: new Date(r.registered_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}),
+          rawDate: new Date(r.registered_at),
+          nama: r.full_name,
+          noWhatsapp: r.whatsapp,
+          email: r.email,
+          status: r.status,
+          instansi: r.institution,
+          tipe: r.program_funding_types?.label || 'Fully Funded'
+        }));
+        setPendaftar(formatted);
+      }
+      setSelectedRows([]);
+      setDeleteModal({ open: false, id: null, fullName: "" });
+      showToast(`Berhasil menghapus ${successCount} pendaftar`);
+    } catch (err) {
+      showToast(`Gagal menghapus: ${err.message}`, true);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteModal.isBulk) {
+      handleBulkDelete();
+    } else {
+      handleHapus();
+    }
   };
 
   const handleHapus = async () => {
@@ -432,6 +486,26 @@ export default function SJNDetailPage({ params }) {
             </div>
           </div>
 
+{/* Selected rows bar */}
+          {selectedRows.length > 0 && (
+            <div className={styles.selectedBar}>
+              <span>{selectedRows.length} baris dipilih</span>
+              <button
+                className={styles.deleteSelectedBtn}
+                onClick={() => openBulkDeleteModal()}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Hapus yang dipilih
+              </button>
+              <button className={styles.cancelSelectionBtn} onClick={() => setSelectedRows([])}>
+                Batalkan
+              </button>
+            </div>
+          )}
+
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -612,11 +686,12 @@ export default function SJNDetailPage({ params }) {
             </div>
 
             <h3 id="delete-modal-title" className={styles.modalTitle}>
-              Hapus Pendaftar?
+              {deleteModal.isBulk ? "Hapus Pendaftar Terpilih?" : "Hapus Pendaftar?"}
             </h3>
             <p className={styles.modalDescription}>
-              Anda akan menghapus pendaftar <strong>"{deleteModal.fullName}"</strong> dari program SJN ini.
-              Seluruh data formulir dan file yang terhubung akan ikut terhapus dan tidak dapat dikembalikan.
+              {deleteModal.isBulk
+                ? `Anda akan menghapus ${deleteModal.fullName}. Seluruh data formulir dan file yang terhubung akan ikut terhapus dan tidak dapat dikembalikan.`
+                : `Anda akan menghapus pendaftar "${deleteModal.fullName}" dari program SJN ini. Seluruh data formulir dan file yang terhubung akan ikut terhapus dan tidak dapat dikembalikan.`}
             </p>
 
             <div className={styles.modalActions}>
@@ -629,7 +704,7 @@ export default function SJNDetailPage({ params }) {
               </button>
               <button
                 className={styles.modalConfirmBtn}
-                onClick={handleHapus}
+                onClick={confirmDelete}
                 disabled={deleting}
               >
                 {deleting ? (

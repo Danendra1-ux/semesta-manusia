@@ -1373,131 +1373,6 @@
   font-size: 1rem;
 }
 
-.galleryActions {
-  text-align: center;
-  margin-top: 2.5rem;
-}
-
-.viewAllButton {
-  font-family: var(--font-poppins), sans-serif;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-  transition: gap 0.3s ease;
-}
-
-.viewAllButton:hover {
-  gap: 1rem;
-}
-
-.viewAllButton svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Liputan Section */
-.liputanSection {
-  background: var(--background-alt);
-}
-
-.liputanGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-}
-
-.liputanCard {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.liputanCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-}
-
-.liputanCardImage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/10;
-  overflow: hidden;
-  background: #e5e7eb;
-}
-
-.liputanCardImage img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.liputanCard:hover .liputanCardImage img {
-  transform: scale(1.05);
-}
-
-.liputanCardBody {
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.liputanCardTitle {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 0.5rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.liputanCardDescription {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.liputanCardButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.875rem 1rem;
-  background: #1e3a5f;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-align: center;
-  transition: background 0.3s ease;
-  margin-top: auto;
-}
-
-.liputanCardButton:hover {
-  background: #0f2744;
-}
-
-.liputanCardButton span {
-  text-align: center;
-}
-
 /* Partner Section */
 .partnerSection {
   background: var(--background);
@@ -1568,12 +1443,8 @@
   transition: opacity 0.3s ease;
 }
 
-/* Responsive for Liputan & Partner */
+/* Responsive for Partner */
 @media (max-width: 1024px) {
-  .liputanGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .partnerGrid {
     gap: 2.5rem;
   }
@@ -1585,10 +1456,6 @@
 }
 
 @media (max-width: 768px) {
-  .liputanGrid {
-    grid-template-columns: 1fr;
-  }
-
   .partnerGrid {
     gap: 2rem;
   }
@@ -2133,6 +2000,77 @@
   transform: translateX(124px);
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
+}
+
+/* Large screens (1616px and up) */
+@media (min-width: 1616px) {
+  .ctaSection {
+    padding: 10rem 2rem 0;
+  }
+
+  .ctaPhotoImg {
+    max-width: 67%;
+    transform: translateX(316);
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
+
+  .ctaContainer {
+    min-height: 540px;
+  }
+
+  .ctaContent {
+    padding: 3.5rem 2.5rem 2.5rem;
+    gap: 1rem;
+  }
+
+  .ctaHeading {
+    font-size: 2.75rem;
+    line-height: 1.15;
+  }
+
+  .ctaSubheading {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .ctaButton {
+    padding: 1rem 2.25rem;
+    font-size: 1.05rem;
+  }
+
+  .ctaLogoImg {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1025px) {
+  .ctaPhotoImg {
+    max-width: 97%;
+    transform: translateX(16);
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
+}
+
+@media (min-width: 1315px) {
+  .ctaPhotoImg {
+    max-width: 89%;
+    transform: translateX(79);
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
+}
+
+@media (min-width: 1910px) {
+  .ctaPhotoImg {
+    max-width: 67%;
+    transform: translateX(315);
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
 }
 
 /* Layer 2: Gradient overlay */

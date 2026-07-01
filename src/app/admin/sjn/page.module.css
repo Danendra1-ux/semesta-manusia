@@ -828,3 +828,51 @@
     max-width: none;
   }
 }
+
+/* =================== SELECTED BAR =================== */
+.selectedBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: #eff6ff;
+  border-bottom: 1px solid #dbeafe;
+  font-size: 0.875rem;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.deleteSelectedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.deleteSelectedBtn:hover {
+  background: #b91c1c;
+}
+
+.cancelSelectionBtn {
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cancelSelectionBtn:hover {
+  background: #dbeafe;
+}

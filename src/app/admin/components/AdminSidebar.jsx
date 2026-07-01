@@ -200,7 +200,7 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
           {!isCollapsed && (
             <div className={styles.profileInfo}>
               <span className={styles.adminName}>Admin Semesta</span>
-              <span className={styles.adminEmail}>admin@semestamanusia.id</span>
+              <span className={styles.adminEmail}>semestamanusia.indonesia@gmail.com</span>
             </div>
           )}
         </div>

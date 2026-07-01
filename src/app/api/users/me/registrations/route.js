@@ -46,7 +46,7 @@ export async function GET() {
     const { data, error } = await adminClient
       .from("registrations")
       .select(
-        "id, registration_code, status, registered_at, email, funding_type_id, program_id, programs!inner(id, title, slug, category, image_url, event_start_date, event_end_date), program_funding_types(code, label)"
+        "id, status, registered_at, email, funding_type_id, program_id, programs!inner(id, title, slug, category, image_url, event_start_date, event_end_date), program_funding_types(code, label)"
       )
       .ilike("email", email)
       .order("registered_at", { ascending: false });
@@ -61,7 +61,6 @@ export async function GET() {
       const fundingLabel = r.program_funding_types?.label;
       return {
         id: r.id,
-        registration_code: r.registration_code,
         status: r.status,
         status_label: r.status,
         title: r.programs?.title || null,

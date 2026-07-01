@@ -77,8 +77,7 @@ export async function POST(request) {
         code: ft.code,
         label: ft.label,
         deadline: ft.deadline || null,
-        is_active: ft.is_active !== false,
-        is_default: ft.is_default === true
+        is_active: ft.is_active !== false
       }));
       await supabase.from('program_funding_types').insert(fundingData);
     } else {
@@ -87,8 +86,7 @@ export async function POST(request) {
         program_id: program.id,
         code: 'self',
         label: 'Self Funded',
-        deadline: funding_deadline || null,
-        is_default: true
+        deadline: funding_deadline || null
       });
     }
 

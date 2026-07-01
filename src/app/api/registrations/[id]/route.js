@@ -46,10 +46,7 @@ export async function PUT(request, { params }) {
 
     const updateData = {
       status: body.status,
-      rejection_note: body.rejection_note,
-      reviewed_by: body.reviewed_by,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      reviewed_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase

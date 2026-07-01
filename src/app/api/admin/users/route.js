@@ -51,7 +51,7 @@ export async function GET() {
     const { data, error } = await adminClient
       .from("users")
       .select(
-        "id, email, name, role, avatar_url, is_active, whatsapp, instagram, region, institution, created_at, last_login_at"
+        "id, email, name, role, is_active, whatsapp, instagram, region, institution, created_at, last_login_at"
       )
       // Only volunteer / Pengguna rows. Admin lives in Supabase auth only.
       .or("role.eq.user,role.is.null")

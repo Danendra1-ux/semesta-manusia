@@ -30,6 +30,7 @@ export default function SJNPage() {
 
   // Modal konfirmasi hapus program
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: "", pendaftar: 0 });
+  const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -157,6 +158,46 @@ export default function SJNPage() {
   const closeDeleteModal = () => {
     if (deleting) return;
     setDeleteModal({ open: false, id: null, title: "", pendaftar: 0 });
+    setBulkDeleteIds([]);
+  };
+
+  const openBulkDeleteModal = () => {
+    setBulkDeleteIds([...selectedRows]);
+    setDeleteModal({
+      open: true,
+      id: null,
+      title: `${selectedRows.length} program dipilih`,
+      pendaftar: 0,
+      isBulk: true,
+    });
+  };
+
+  const confirmDelete = () => {
+    if (deleteModal.isBulk) {
+      handleBulkDelete();
+    } else {
+      handleDelete();
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setDeleting(true);
+    let successCount = 0;
+    try {
+      for (const id of selectedRows) {
+        const response = await fetch(`/api/programs/${id}`, { method: "DELETE" });
+        if (response.ok) successCount++;
+      }
+      // Refresh to get accurate state
+      await fetchPrograms();
+      setSelectedRows([]);
+      setDeleteModal({ open: false, id: null, title: "", pendaftar: 0 });
+      showToast(`Berhasil menghapus ${successCount} program`);
+    } catch (err) {
+      showToast(`Gagal menghapus: ${err.message}`, true);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -227,7 +268,7 @@ export default function SJNPage() {
     if (selectedRows.length === paginatedPrograms.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(paginatedPrograms.map((p) => p.id));
+      setSelectedRows(paginatedPrograms.map((p) => p.programId));
     }
   };
 
@@ -374,6 +415,28 @@ export default function SJNPage() {
               </div>
             </div>
           </div>
+
+          {/* Selected rows bar */}
+          {selectedRows.length > 0 && (
+            <div className={styles.selectedBar}>
+              <span>{selectedRows.length} baris dipilih</span>
+              <button
+                className={styles.deleteSelectedBtn}
+                onClick={() => {
+                  openBulkDeleteModal();
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Hapus yang dipilih
+              </button>
+              <button className={styles.cancelSelectionBtn} onClick={() => setSelectedRows([])}>
+                Batalkan
+              </button>
+            </div>
+          )}
 
           <div className={styles.tableWrapper}>
             {loading ? (
@@ -565,12 +628,18 @@ export default function SJNPage() {
             </div>
 
             <h3 id="delete-program-modal-title" className={styles.modalTitle}>
-              Hapus Program?
+              {deleteModal.isBulk ? "Hapus Program Terpilih?" : "Hapus Program?"}
             </h3>
             <p className={styles.modalDescription}>
-              Anda akan menghapus program <strong>"{deleteModal.title}"</strong>.
-              {deleteModal.pendaftar > 0 && (
-                <> Program ini memiliki <strong>{deleteModal.pendaftar} pendaftar</strong> yang akan ikut terhapus.</>
+              {deleteModal.isBulk ? (
+                <>Anda akan menghapus <strong>{deleteModal.title}</strong>. Semua pendaftar dari masing-masing program juga akan ikut terhapus.</>
+              ) : (
+                <>
+                  Anda akan menghapus program <strong>"{deleteModal.title}"</strong>.
+                  {deleteModal.pendaftar > 0 && (
+                    <> Program ini memiliki <strong>{deleteModal.pendaftar} pendaftar</strong> yang akan ikut terhapus.</>
+                  )}
+                </>
               )}
               {" "}
               Tindakan ini tidak dapat dibatalkan.
@@ -586,7 +655,7 @@ export default function SJNPage() {
               </button>
               <button
                 className={styles.modalConfirmBtn}
-                onClick={handleDelete}
+                onClick={confirmDelete}
                 disabled={deleting}
               >
                 {deleting ? (

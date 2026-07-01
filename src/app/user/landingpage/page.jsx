@@ -14,11 +14,11 @@ const faqData = [
   },
   {
     question: "Delegasi Fully Funded spesifiknya dicari seperti apa?",
-    answer: "Delegasi Fully Funded dipilih berdasarkan kualitas administrasi, motivasi, pengalaman organisasi/volunteer (jika ada), kemampuan komunikasi, serta potensi kontribusi dan dampak yang dapat diberikan selama program berlangsung."
+    answer: "Delegasi Fully Funded dipilih berdasarkan kualitas administrasi, motivasi, pengalaman organisasi/relawan (jika ada), kemampuan komunikasi, serta potensi kontribusi dan dampak yang dapat diberikan selama program berlangsung."
   },
   {
-    question: "Jika belum pernah punya pengalaman volunteer sebelumnya, apakah bisa mendaftar?",
-    answer: "Tentu bisa. Program ini terbuka bagi peserta yang belum memiliki pengalaman volunteer. Yang terpenting adalah memiliki motivasi yang kuat, kemauan untuk belajar, dan semangat untuk berkontribusi."
+    question: "Jika belum pernah punya pengalaman relawan sebelumnya, apakah bisa mendaftar?",
+    answer: "Tentu bisa. Program ini terbuka bagi peserta yang belum memiliki pengalaman relawan. Yang terpenting adalah memiliki motivasi yang kuat, kemauan untuk belajar, dan semangat untuk berkontribusi."
   },
   {
     question: "Apakah nanti akan mendapatkan sertifikat?",
@@ -54,7 +54,6 @@ export default function LandingPage() {
   const [activeFilter, setActiveFilter] = useState("semua");
 
   const [programs, setPrograms] = useState([]);
-  const [liputan, setLiputan] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -62,14 +61,12 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [programsRes, liputanRes, reviewsRes] = await Promise.all([
+        const [programsRes, reviewsRes] = await Promise.all([
           fetch('/api/programs?is_active=true'),
-          fetch('/api/liputan?is_published=true'),
           fetch('/api/reviews?limit=6'),
         ]);
 
         if (programsRes.ok) setPrograms(await programsRes.json());
-        if (liputanRes.ok) setLiputan(await liputanRes.json());
         if (reviewsRes.ok) {
           const data = await reviewsRes.json();
           setReviews(data.reviews || []);
@@ -391,68 +388,8 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* <div className={styles.galleryActions}>
-            <a href="#" className={styles.viewAllButton}>
-              <span>Lihat Semua Galeri</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </div> */}
         </div>
       </section>
-
-      {/* Liputan Section */}
-      {/* <section className={styles.liputanSection}>
-        <div className={styles.sectionContainer}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionTag}>Liputan</span>
-            <h2 className={styles.sectionTitle}>
-              Berita & Cerita dari<br/>
-              <span className={styles.titleAccent}>Semesta Manusia</span>
-            </h2>
-            <p className={styles.sectionDescription}>
-              Ikuti perkembangan terbaru tentang kegiatan dan program relawan yang dilakukan oleh komunitas Semesta Manusia di berbagai daerah.
-            </p>
-          </div>
-
-          <div className={styles.liputanGrid}>
-            {loading ? (
-              <div className={styles.previewEmpty}><p>Memuat liputan...</p></div>
-            ) : liputan.slice(0, 4).map((item) => (
-              <div key={item.id} className={styles.liputanCard}>
-                <div className={styles.liputanCardImage}>
-                  <Image
-                    src={item.image_url || "/liputan-placeholder.svg"}
-                    alt={item.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <div className={styles.liputanCardBody}>
-                  <h3 className={styles.liputanCardTitle}>{item.title}</h3>
-                  <p className={styles.liputanCardDescription}>{item.description}</p>
-                </div>
-                <a
-                  href={item.source_url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.liputanCardButton}
-                >
-                  <span>Baca Selengkapnya</span>
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <Link href="/user/liputan" className={styles.previewLoadMore}>
-            <span>Lihat lebih banyak</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </Link>
-        </div>
-      </section> */}
 
       {/* Partner Section */}
       <section className={styles.partnerSection}>

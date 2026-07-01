@@ -50,7 +50,7 @@ export async function GET(_request, { params }) {
     const { data: user, error } = await adminClient
       .from("users")
       .select(
-        "id, email, name, role, avatar_url, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
+        "id, email, name, role, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
       )
       .eq("id", id)
       .maybeSingle();
@@ -66,7 +66,7 @@ export async function GET(_request, { params }) {
     const { data: registrations, error: regErr } = await adminClient
       .from("registrations")
       .select(
-        "id, registration_code, status, created_at, program_id, programs(id, title, slug, start_date, end_date, banner_url)"
+        "id, status, created_at, program_id, programs(id, title)"
       )
       .ilike("email", user.email || "")
       .order("created_at", { ascending: false });
@@ -153,7 +153,7 @@ export async function PATCH(request, { params }) {
       .update(update)
       .eq("id", id)
       .select(
-        "id, email, name, role, avatar_url, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
+        "id, email, name, role, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
       )
       .single();
 

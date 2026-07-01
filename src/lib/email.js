@@ -29,7 +29,7 @@ export const sendRegistrationNotification = async ({ to, name, subject, bodyHtml
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                   <!-- Header -->
                   <tr>
-                    <td style="background-color: #4f46e5; padding: 32px 24px 24px; text-align: center;">
+                    <td style="background-color: #00BFFF; padding: 32px 24px 24px; text-align: center;">
                       <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600;">Semesta Manusia</h1>
                       <p style="margin: 8px 0 0; color: #c7d2fe; font-size: 13px;">${subtitle || 'Pengumuman Penerimaan'}</p>
                     </td>

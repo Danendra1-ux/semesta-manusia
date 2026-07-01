@@ -44,7 +44,7 @@ export async function GET() {
     const { data: row, error } = await adminClient
       .from("users")
       .select(
-        "id, email, name, role, avatar_url, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
+        "id, email, name, role, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
       )
       .eq("id", authUser.id)
       .maybeSingle();
@@ -60,7 +60,6 @@ export async function GET() {
         email: authUser.email,
         name: meta.name || (authUser.email || "").split("@")[0],
         role: meta.role || "user",
-        avatar_url: null,
         is_active: true,
         whatsapp: meta.whatsapp || null,
         instagram: meta.instagram || null,
@@ -210,7 +209,7 @@ export async function PATCH(request) {
       .update(update)
       .eq("id", authUser.id)
       .select(
-        "id, email, name, role, avatar_url, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
+        "id, email, name, role, is_active, whatsapp, instagram, birth_date, region, institution, created_at, last_login_at"
       )
       .single();
 

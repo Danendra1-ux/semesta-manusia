@@ -9,7 +9,7 @@ export async function POST(request) {
     const {
       program_id, funding_type_id,
       full_name, email, whatsapp, instagram, birth_date, region, institution, reason,
-      why_join, division_code, division_reason, program_proposal, hopes,
+      why_join,
       dynamic_answers,
       uploaded_files
     } = body;
@@ -46,13 +46,12 @@ export async function POST(request) {
     // =====================================================================
 
     // 2. Insert Base Registration
-    const registrationCode = `REG-${program_id}-${Date.now().toString().slice(-6)}`;
     const { data: registration, error: regError } = await supabase
       .from('registrations')
       .insert({
-        program_id, funding_type_id, registration_code: registrationCode,
+        program_id, funding_type_id,
         full_name, email, whatsapp, instagram, birth_date, region, institution, reason,
-        why_join, division_code, division_reason, program_proposal, hopes,
+        why_join,
         status: 'Pending'
       })
       .select()
@@ -91,7 +90,6 @@ export async function POST(request) {
 
         return {
           registration_id: registration.id,
-          field_label: labelText, // <--- Menyimpan Label File di sini
           ...f
         };
       });
@@ -108,15 +106,12 @@ export async function POST(request) {
     // 4. Insert Dynamic Form Answers
     if (dynamic_answers && dynamic_answers.length > 0) {
       const answersToInsert = dynamic_answers.map(ans => {
-        const relatedFile = fileRecords.find(f => f.field_key === ans.field_key);
         return {
           registration_id: registration.id,
           field_id: ans.field_id,
-          field_label: ans.field_label, // <--- Tambahkan baris ini
           value_text: ans.value_text,
           value_date: ans.value_date,
-          value_number: ans.value_number,
-          file_id: relatedFile ? relatedFile.id : null
+          value_number: ans.value_number
         };
       });
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar.jsx";
 import { useSidebar } from "../components/SidebarContext";
 import styles from "./page.module.css";
@@ -9,7 +8,6 @@ import styles from "./page.module.css";
 const ITEMS_PER_PAGE = 15;
 
 export default function AdminUsersPage() {
-  const router = useRouter();
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -319,7 +317,7 @@ export default function AdminUsersPage() {
               <input
                 type="text"
                 className={styles.searchInput}
-                placeholder="Cari nama, email, asal..."
+                placeholder="Cari nama atau email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -521,20 +519,6 @@ export default function AdminUsersPage() {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            className={styles.dropdownItem}
-            onClick={() => {
-              const user = paged.find((u) => u.id === activeDropdown);
-              setActiveDropdown(null);
-              router.push(`/admin/users/${user.id}`);
-            }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>Lihat Data Pendaftar</span>
-          </button>
           <button
             className={styles.dropdownItem}
             onClick={() => {
