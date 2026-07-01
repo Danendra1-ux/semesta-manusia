@@ -92,10 +92,12 @@ export default function EditSJNProgramPage({ params }) {
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // Read form data from sessionStorage on mount
+  // Read form data from sessionStorage on mount (key include programId)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const fullySaved = sessionStorage.getItem("sjn_custom_registration_form_fully");
+    const fullyKey = `sjn_custom_form_v2_${programId}_fully`;
+    const selfKey = `sjn_custom_form_v2_${programId}_self`;
+    const fullySaved = sessionStorage.getItem(fullyKey);
     if (fullySaved) {
       try {
         const parsed = JSON.parse(fullySaved);
@@ -107,7 +109,7 @@ export default function EditSJNProgramPage({ params }) {
         console.error("Failed to parse fully form:", e);
       }
     }
-    const selfSaved = sessionStorage.getItem("sjn_custom_registration_form_self");
+    const selfSaved = sessionStorage.getItem(selfKey);
     if (selfSaved) {
       try {
         const parsed = JSON.parse(selfSaved);
@@ -119,7 +121,7 @@ export default function EditSJNProgramPage({ params }) {
         console.error("Failed to parse self form:", e);
       }
     }
-  }, []);
+  }, [programId]);
 
   // Fetch Data dari API
   useEffect(() => {
@@ -340,8 +342,8 @@ export default function EditSJNProgramPage({ params }) {
       let includeSelf = hasSelfForm;
 
       if (typeof window !== "undefined") {
-        const savedFully = sessionStorage.getItem("sjn_custom_registration_form_fully");
-        const savedSelf = sessionStorage.getItem("sjn_custom_registration_form_self");
+        const savedFully = sessionStorage.getItem(`sjn_custom_form_v2_${programId}_fully`);
+        const savedSelf = sessionStorage.getItem(`sjn_custom_form_v2_${programId}_self`);
         if (savedFully) {
           try {
             const parsed = JSON.parse(savedFully);
@@ -420,8 +422,8 @@ export default function EditSJNProgramPage({ params }) {
 
       if (res.ok) {
         showToast("Perubahan berhasil disimpan!");
-        sessionStorage.removeItem("sjn_custom_registration_form_fully");
-        sessionStorage.removeItem("sjn_custom_registration_form_self");
+        sessionStorage.removeItem(`sjn_custom_form_v2_${programId}_fully`);
+        sessionStorage.removeItem(`sjn_custom_form_v2_${programId}_self`);
         setTimeout(() => router.push("/admin/sjn"), 1500);
       } else {
         const data = await res.json();
@@ -617,7 +619,7 @@ export default function EditSJNProgramPage({ params }) {
                     onClick={() => {
                       // Sync sessionStorage data to DB when viewing/editing form
                       if (hasFullyForm && fullyFormSections.length > 0) {
-                        const storageKey = "sjn_custom_registration_form_fully";
+                        const storageKey = `sjn_custom_form_v2_${programId}_fully`;
                         const saved = sessionStorage.getItem(storageKey);
                         if (!saved) {
                           sessionStorage.setItem(storageKey, JSON.stringify(fullyFormSections));
@@ -671,7 +673,7 @@ export default function EditSJNProgramPage({ params }) {
                     onClick={() => {
                       // Sync sessionStorage data to DB when viewing/editing form
                       if (hasSelfForm && selfFormSections.length > 0) {
-                        const storageKey = "sjn_custom_registration_form_self";
+                        const storageKey = `sjn_custom_form_v2_${programId}_self`;
                         const saved = sessionStorage.getItem(storageKey);
                         if (!saved) {
                           sessionStorage.setItem(storageKey, JSON.stringify(selfFormSections));

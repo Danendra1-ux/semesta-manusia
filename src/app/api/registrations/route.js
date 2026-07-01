@@ -152,7 +152,7 @@ export async function GET(request) {
 
   let query = supabase
     .from('registrations')
-    .select('*, program_funding_types(label), divisions(name)');
+    .select('*, program_funding_types(label)');
 
   if (programId) query = query.eq('program_id', programId);
   if (status) query = query.eq('status', status);

@@ -230,12 +230,15 @@ function TambahFormulirSJNPageInner() {
     ];
   };
 
-  // Load sections on mount
+  // Load sections on mount — prefer draft from sessionStorage, fallback to default template
+  // Key generic (tanpa programId) karena ini khusus halaman "tambah program baru"
+  // — tidak ada konflik antar program karena tidak ada programId
+  const STORAGE_KEY_FULLY = "sjn_custom_registration_form_fully";
+  const STORAGE_KEY_SELF = "sjn_custom_registration_form_self";
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const storageKey = tipe === "self-funded"
-      ? "sjn_custom_registration_form_self"
-      : "sjn_custom_registration_form_fully";
+    const storageKey = tipe === "self-funded" ? STORAGE_KEY_SELF : STORAGE_KEY_FULLY;
     const savedForm = sessionStorage.getItem(storageKey);
     if (savedForm) {
       try {
@@ -459,9 +462,7 @@ function TambahFormulirSJNPageInner() {
   const handleSave = () => {
     try {
       if (typeof window !== "undefined") {
-        const storageKey = tipe === "self-funded"
-          ? "sjn_custom_registration_form_self"
-          : "sjn_custom_registration_form_fully";
+        const storageKey = tipe === "self-funded" ? STORAGE_KEY_SELF : STORAGE_KEY_FULLY;
         sessionStorage.setItem(storageKey, JSON.stringify(sections));
       }
       showToast("Formulir berhasil disimpan!");

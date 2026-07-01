@@ -16,7 +16,6 @@ export async function GET(request, { params }) {
     .select(`
       *,
       program_funding_types(code, label),
-      divisions(code, name),
       registration_answers(
         id, field_id, field_label, value_text, value_date, value_number
       ),

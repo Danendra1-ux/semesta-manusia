@@ -222,12 +222,15 @@ function FormulirSJNPageInner({ params }) {
     ];
   };
 
-  // Ambil form data — priority: sessionStorage (draft edit) > database
+  // Ambil form data — priority: sessionStorage (draft edit per-program) > database
+  // NOTE: key include programId agar draft antar program tidak saling menimpa
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const storageKey = tipe === "self-funded"
-      ? "sjn_custom_registration_form_self"
-      : "sjn_custom_registration_form_fully";
+    const storageKey = `sjn_custom_form_v2_${programId}_${tipe === "self-funded" ? "self" : "fully"}`;
+
+    // Migrasi: hapus key lama (generic) yang masih tersimpan agar tidak bocor
+    sessionStorage.removeItem("sjn_custom_registration_form_fully");
+    sessionStorage.removeItem("sjn_custom_registration_form_self");
 
     // Cek draft edit di sessionStorage dulu (logic sama dengan tambah/formulir)
     const savedForm = sessionStorage.getItem(storageKey);
@@ -463,9 +466,7 @@ function FormulirSJNPageInner({ params }) {
   const handleSave = () => {
     try {
       if (typeof window !== "undefined") {
-        const storageKey = tipe === "self-funded"
-          ? "sjn_custom_registration_form_self"
-          : "sjn_custom_registration_form_fully";
+        const storageKey = `sjn_custom_form_v2_${programId}_${tipe === "self-funded" ? "self" : "fully"}`;
         sessionStorage.setItem(storageKey, JSON.stringify(sections));
       }
       showToast("Formulir berhasil disimpan!");

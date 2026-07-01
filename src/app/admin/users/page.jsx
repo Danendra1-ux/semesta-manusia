@@ -244,9 +244,12 @@ export default function AdminUsersPage() {
 
   return (
     <div className={styles.pageLayout}>
-      <AdminSidebar />
+      <AdminSidebar
+        isCollapsed={isCollapsed}
+        onToggle={onToggleSidebar}
+      />
       <main
-        className={!isCollapsed ? styles.mainContent : `${styles.mainContent} ${styles.expanded}`}
+        className={`${styles.mainContent} ${isCollapsed ? styles.expanded : ""}`}
       >
         {/* Content Header */}
         <div className={styles.contentHeader}>
