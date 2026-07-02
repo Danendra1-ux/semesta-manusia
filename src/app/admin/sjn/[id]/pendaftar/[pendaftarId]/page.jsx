@@ -78,7 +78,7 @@ export default function SJNPendaftarDetailPage({ params }) {
   const getAnswerForField = (field) => {
     const ans = pendaftar?.registration_answers?.find(a => a.field_id === field.id);
     if (ans) {
-      return ans.value_text || ans.value_date || ans.value_number || "-";
+      return ans.value_text || "-";
     }
     return "-";
   };

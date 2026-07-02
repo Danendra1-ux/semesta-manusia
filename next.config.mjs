@@ -2,7 +2,7 @@
 const nextConfig = {
   images: {
     loader: 'custom',
-    loaderFile: './lib/supabaseImageLoader.js',
+    loaderFile: './src/lib/supabaseImageLoader.js',
   },
 };
 

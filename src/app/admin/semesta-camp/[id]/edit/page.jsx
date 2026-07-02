@@ -322,7 +322,11 @@ export default function EditProgramPage({ params }) {
       setDetailFields(processedDetail);
       setPekerjaanFields(processedPekerjaan);
 
-      // Payload untuk update tabel 'programs' dan 'program_funding_types'
+      // Payload untuk update tabel 'programs' dan 'program_funding_types'.
+      // Batas Registrasi dikirim via program_funding_types (mirip SJN) supaya
+      // halaman user-program ikut ter-update — kalau hanya dikirim via
+      // funding_deadline flat, kolom program_funding_types.deadline tetap stale
+      // dan user-facing tetap menampilkan "Segera Diumumkan".
       const payload = {
         title: nama,
         event_start_date: jadwalMulai,
@@ -331,6 +335,9 @@ export default function EditProgramPage({ params }) {
         description: deskripsi,
         image_url: imageUrl,
         funding_deadline: batasRegistrasi,
+        program_funding_types: [
+          { code: 'self', label: 'Self Funded', deadline: batasRegistrasi || null, is_active: true }
+        ],
         // --- TAMBAHAN BARU ---
         detail_program: processedDetail,
         pekerjaan: processedPekerjaan,
@@ -348,9 +355,6 @@ export default function EditProgramPage({ params }) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Gagal menyimpan perubahan');
       }
-
-      // NOTE: Update batasRegistrasi ke program_funding_types harusnya ada API terpisah 
-      // atau logika tambahan di route PUT /api/programs.
 
       showToast("Perubahan berhasil disimpan!", false);
 

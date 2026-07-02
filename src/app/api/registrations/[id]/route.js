@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       *,
       program_funding_types(code, label),
       registration_answers(
-        id, field_id, field_label, value_text, value_date, value_number
+        id, field_id, value_text
       ),
       registration_files(
         id, field_key, file_url, file_name, file_size, mime_type, uploaded_at
@@ -84,7 +84,6 @@ export async function PUT(request, { params }) {
           bodyHtml: `
             <p>Terima kasih atas minat Anda untuk mendaftar di program <strong>${programTitle}</strong>.</p>
             <p>Setelah melakukan peninjauan, dengan berat hati kami sampaikan bahwa pendaftaran Anda <strong style="color:#dc2626;">belum dapat diterima</strong> pada periode ini.</p>
-            ${data.rejection_note ? `<p style="background-color:#fef3c7;padding:12px 16px;border-left:4px solid #f59e0b;border-radius:4px;margin:16px 0;"><strong>Catatan dari tim:</strong><br/>${data.rejection_note}</p>` : ''}
             <p>Jangan berkecil hati — kami berharap dapat berjumpa dengan Anda di kesempatan berikutnya.</p>
           `,
         });

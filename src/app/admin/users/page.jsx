@@ -426,13 +426,7 @@ export default function AdminUsersPage() {
                       <tr key={u.id} className={styles.tableRow}>
                         <td>
                           <div className={styles.userCell}>
-                            <div className={styles.userAvatar}>
-                              {u.avatar_url ? (
-                                <img src={u.avatar_url} alt={u.name} />
-                              ) : (
-                                getInitials(u.name, u.email)
-                              )}
-                            </div>
+                            <div className={styles.userAvatar}>{getInitials(u.name, u.email)}</div>
                             <div className={styles.userInfo}>
                               <span className={styles.userName}>{u.name || "-"}</span>
                               <span className={styles.userEmail}>{u.email}</span>

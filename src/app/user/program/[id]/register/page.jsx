@@ -299,20 +299,11 @@ export default function RegisterPage({ params }) {
         }
       }
 
-      // Menyiapkan payload dynamic answers dan mencari labelnya
+      // Menyiapkan payload dynamic answers
       const formSchema = getFormSchema() || [];
       const dynamic_answers = Object.entries(formData).map(([key, value]) => {
-        let labelText = key;
-        // Cari label asli dari konfigurasi form
-        formSchema.forEach((sec) => {
-          const foundField = sec.fields.find((f) => f.id === key);
-          if (foundField) labelText = foundField.label;
-        });
-
         return {
           field_id: key,
-          field_key: key,
-          field_label: labelText, // <--- Menyimpan teks pertanyaan
           value_text: value
         };
       });

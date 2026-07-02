@@ -9,7 +9,6 @@ export async function POST(request) {
     const {
       program_id, funding_type_id,
       full_name, email, whatsapp, instagram, birth_date, region, institution, reason,
-      why_join,
       dynamic_answers,
       uploaded_files
     } = body;
@@ -51,7 +50,6 @@ export async function POST(request) {
       .insert({
         program_id, funding_type_id,
         full_name, email, whatsapp, instagram, birth_date, region, institution, reason,
-        why_join,
         status: 'Pending'
       })
       .select()
@@ -109,9 +107,7 @@ export async function POST(request) {
         return {
           registration_id: registration.id,
           field_id: ans.field_id,
-          value_text: ans.value_text,
-          value_date: ans.value_date,
-          value_number: ans.value_number
+          value_text: ans.value_text
         };
       });
 
@@ -121,23 +117,6 @@ export async function POST(request) {
 
       if (ansError) throw ansError;
     }
-
-    // =====================================================================
-    // 5. UPDATE REGISTRATION COUNT MANUAL (PENGGANTI RPC)
-    // =====================================================================
-    const { data: progData } = await supabase
-      .from('programs')
-      .select('registration_count')
-      .eq('id', program_id)
-      .single();
-
-    if (progData) {
-      await supabase
-        .from('programs')
-        .update({ registration_count: (progData.registration_count || 0) + 1 })
-        .eq('id', program_id);
-    }
-    // =====================================================================
 
     return NextResponse.json({ success: true, registration }, { status: 201 });
   } catch (error) {

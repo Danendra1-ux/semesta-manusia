@@ -74,7 +74,7 @@ export default function PendaftarDetailPage({ params }) {
     // 1. Coba cari di jawaban dinamis
     const dynamicAns = pendaftar?.registration_answers?.find(a => a.field_id === field.id);
     if (dynamicAns) {
-      return dynamicAns.value_text || dynamicAns.value_date || dynamicAns.value_number || "-";
+      return dynamicAns.value_text || "-";
     }
 
     // 2. Fallback untuk data yang tersimpan di kolom statis lama
@@ -86,7 +86,7 @@ export default function PendaftarDetailPage({ params }) {
     if (labelLower.includes("tanggal lahir")) return formatDate(pendaftar.birth_date);
     if (labelLower.includes("asal daerah")) return pendaftar.region;
     if (labelLower.includes("instansi")) return pendaftar.institution;
-    if (labelLower.includes("alasan")) return pendaftar.reason || pendaftar.why_join;
+    if (labelLower.includes("alasan")) return pendaftar.reason || "-";
     
     return "-";
   };

@@ -75,14 +75,15 @@ export async function PUT(request, { params }) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Update program_funding_types from admin payload (array of {code, label, deadline})
+  // Sync program_funding_types: update existing codes, insert new ones.
+  // We do NOT delete rows because `registrations.funding_type_id` has a FK
+  // pointing to this table.  Legacy/stale rows are soft-disabled (see below).
   if (Array.isArray(program_funding_types) && program_funding_types.length > 0) {
     for (const ft of program_funding_types) {
-      // Try update first; if no row matches, insert
       const { data: existing } = await supabase
         .from('program_funding_types')
         .select('id')
-        .eq('program_id', id)
+        .eq('program_id', Number(id))
         .eq('code', ft.code)
         .maybeSingle();
 
@@ -90,30 +91,69 @@ export async function PUT(request, { params }) {
         await supabase
           .from('program_funding_types')
           .update({
-            deadline: ft.deadline || null,
             label: ft.label,
-            is_active: ft.is_active !== false
+            deadline: ft.deadline || null,
+            is_active: ft.is_active !== false,
           })
           .eq('id', existing.id);
       } else {
-        await supabase
+        // Only insert if there is no OTHER active row with the same code
+        // for this program (race-condition guard when there's no DB unique constraint).
+        const { data: other } = await supabase
           .from('program_funding_types')
-          .insert({
-            program_id: id,
-            code: ft.code,
-            label: ft.label,
-            deadline: ft.deadline || null,
-            is_active: ft.is_active !== false
-          });
+          .select('id')
+          .eq('program_id', Number(id))
+          .eq('code', ft.code)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (other) {
+          // Another race won — update that row instead of inserting.
+          await supabase
+            .from('program_funding_types')
+            .update({
+              label: ft.label,
+              deadline: ft.deadline || null,
+              is_active: true,
+            })
+            .eq('id', other.id);
+        } else {
+          await supabase
+            .from('program_funding_types')
+            .insert({
+              program_id: Number(id),
+              code: ft.code,
+              label: ft.label,
+              deadline: ft.deadline || null,
+              is_active: ft.is_active !== false,
+            });
+        }
       }
     }
-  } else if (funding_deadline !== undefined) {
-    // Fallback legacy: update self-coded deadline if no array payload
-    await supabase
+  }
+
+  // 2) Soft-disable stale active rows that are no longer in the payload.
+  const codes = Array.isArray(program_funding_types)
+    ? new Set(program_funding_types.map((ft) => ft.code))
+    : new Set();
+
+  if (codes.size > 0) {
+    const { data: allActive } = await supabase
       .from('program_funding_types')
-      .update({ deadline: funding_deadline || null })
-      .eq('program_id', id)
-      .eq('code', 'self');
+      .select('id, code')
+      .eq('program_id', Number(id))
+      .eq('is_active', true);
+
+    const staleIds = (allActive || [])
+      .filter((r) => !codes.has(r.code))
+      .map((r) => r.id);
+
+    if (staleIds.length > 0) {
+      await supabase
+        .from('program_funding_types')
+        .update({ is_active: false })
+        .in('id', staleIds);
+    }
   }
 
   return NextResponse.json(data);
@@ -123,12 +163,20 @@ export async function DELETE(request, { params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
 
-  // Hapus semua registrasi yang terhubung dengan program ini dulu
+  // Hapus semua data terkait program ini secara cascade:
+  // 1. Hapus registrations (yang punya FK ke funding_type_id & program_id)
   await supabase
     .from('registrations')
     .delete()
     .eq('program_id', id);
 
+  // 2. Hapus funding types (setelah registrations aman)
+  await supabase
+    .from('program_funding_types')
+    .delete()
+    .eq('program_id', Number(id));
+
+  // 3. Hapus program itu sendiri
   const { error } = await supabase.from('programs').delete().eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

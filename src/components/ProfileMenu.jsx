@@ -101,17 +101,7 @@ export default function ProfileMenu({ user, open, onClose, anchor = "right" }) {
     <div className={styles.menuWrapper} ref={wrapperRef}>
       <div className={styles.dropdown} role="menu" aria-label="Menu profil">
         <div className={styles.header}>
-          <div className={styles.avatar} aria-hidden="true">
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt=""
-                className={styles.avatarImg}
-              />
-            ) : (
-              initials
-            )}
-          </div>
+          <div className={styles.avatar} aria-hidden="true">{initials}</div>
           <div className={styles.headerText}>
             <p className={styles.headerName}>{user?.name || "Pengguna"}</p>
             <p className={styles.headerEmail}>{user?.email}</p>

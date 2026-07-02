@@ -142,15 +142,7 @@ export default function Navbar({
                 aria-expanded={profileMenuOpen}
                 aria-label="Menu profil"
               >
-                {user.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt=""
-                    className={styles.profileButtonAvatar}
-                  />
-                ) : (
-                  <span className={styles.profileButtonInitials}>{initials}</span>
-                )}
+                <span className={styles.profileButtonInitials}>{initials}</span>
               </button>
               <ProfileMenu
                 user={user}
