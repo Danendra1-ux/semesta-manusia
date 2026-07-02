@@ -9,11 +9,16 @@ export async function GET(request, { params }) {
 
   const { data: program, error } = await supabase
     .from('programs')
-    .select('custom_registration_form, custom_registration_form_fully, custom_registration_form_self')
+    .select('custom_registration_form, custom_registration_form_fully, custom_registration_form_self, is_active, status')
     .eq('id', id)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+
+  // Blokir form jika program ditutup admin (is_active=false / status="Ditutup")
+  if (program?.is_active === false || program?.status === 'Ditutup') {
+    return NextResponse.json({ error: 'Program ini sedang ditutup' }, { status: 410 });
+  }
 
   return NextResponse.json({
     custom_registration_form: program?.custom_registration_form || [],

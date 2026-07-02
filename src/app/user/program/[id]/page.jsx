@@ -68,6 +68,11 @@ export default function ProgramDetailPage({ params }) {
     }
   }, [program, fundingOption]);
 
+  // Program yang ditutup admin harus diperlakukan seolah tidak ada,
+  // bahkan kalau user akses URL-nya langsung. is_active false / status "Ditutup"
+  // kita anggap program tidak ditemukan.
+  const isClosed = program?.is_active === false || program?.status === "Ditutup";
+
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -149,8 +154,8 @@ export default function ProgramDetailPage({ params }) {
     );
   }
 
-  // Not found state
-  if (error || !program) {
+  // Not found state — termasuk program yang ditutup admin (is_active=false / status="Ditutup")
+  if (error || !program || isClosed) {
     return (
       <div className={styles.page}>
         <Navbar showCta={false} />

@@ -470,7 +470,19 @@ export default function RegisterPage({ params }) {
     );
   };
 
-  if (loading || !program || !type) {
+  // Program yang ditutup admin harus diperlakukan seolah tidak ada,
+  // sehingga form pendaftaran tidak bisa di-bypass via URL langsung.
+  const isClosed = program?.is_active === false || program?.status === "Ditutup";
+
+  // Redirect ke daftar program begitu ketahuan program sudah ditutup.
+  // Hindari flicker dengan efek ini.
+  useEffect(() => {
+    if (!loading && program && isClosed) {
+      router.replace("/user/program");
+    }
+  }, [loading, program, isClosed, router]);
+
+  if (loading || !program || !type || isClosed) {
     return (
       <div className={styles.page}>
         <Navbar showCta={false} />
