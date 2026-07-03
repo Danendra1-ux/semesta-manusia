@@ -74,6 +74,7 @@ function FormulirSJNPageInner({ params }) {
   const tipe = searchParams.get("tipe") || "fully-funded";
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [toastShow, setToastShow] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -463,7 +464,9 @@ function FormulirSJNPageInner({ params }) {
   //   (event_start_date, event_end_date, dll) di program. Commit akhir
   //   terjadi di halaman edit lewat tombol "Simpan Perubahan".
   //   Logic ini sama dengan /admin/sjn/tambah/formulir.
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (isSaving) return; // prevent double-click
+    setIsSaving(true);
     try {
       if (typeof window !== "undefined") {
         const storageKey = `sjn_custom_form_v2_${programId}_${tipe === "self-funded" ? "self" : "fully"}`;
@@ -476,6 +479,8 @@ function FormulirSJNPageInner({ params }) {
     } catch (err) {
       console.error(err);
       showToast("Terjadi kesalahan saat menyimpan formulir.", true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -499,13 +504,13 @@ function FormulirSJNPageInner({ params }) {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Form Pendaftaran — {tipe === "fully-funded" ? "Fully Funded" : "Self Funded"}</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Perubahan
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>
@@ -581,13 +586,13 @@ function FormulirSJNPageInner({ params }) {
         </div>
 
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Simpan Perubahan
+            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
 

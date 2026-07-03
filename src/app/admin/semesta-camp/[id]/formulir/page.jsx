@@ -66,6 +66,7 @@ export default function FormulirPage({ params }) {
   const router = useRouter();
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [toastShow, setToastShow] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
   // Edit placeholder state
@@ -114,6 +115,8 @@ export default function FormulirPage({ params }) {
   }, [programId]);
 
   const handleSave = async () => {
+    if (isSaving) return; // prevent double-click
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/programs/${programId}`, {
         method: 'PUT',
@@ -123,13 +126,15 @@ export default function FormulirPage({ params }) {
 
       if (!response.ok) throw new Error("Gagal menyimpan");
 
-      showToast("Form berhasil disimpan!", false);
+      showToast("Form berhasil disimpan!");
 
       setTimeout(() => {
         router.push(`/admin/semesta-camp/${programId}/edit`);
       }, 1000);
     } catch (err) {
       showToast(err.message, true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -366,13 +371,13 @@ export default function FormulirPage({ params }) {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Form Pendaftaran</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Perubahan
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>Buat dan kelola form pendaftaran untuk program ini</p>
@@ -474,13 +479,13 @@ export default function FormulirPage({ params }) {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Simpan Perubahan
+            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
 

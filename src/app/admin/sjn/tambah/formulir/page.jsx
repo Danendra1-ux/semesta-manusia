@@ -82,6 +82,7 @@ function TambahFormulirSJNPageInner() {
   const namaProgram = searchParams.get("nama") || "Program Baru";
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [toastShow, setToastShow] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
@@ -459,7 +460,9 @@ function TambahFormulirSJNPageInner() {
   };
 
   // Simpan ke sessionStorage, lalu redirect balik ke tambah page
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (isSaving) return; // prevent double-click
+    setIsSaving(true);
     try {
       if (typeof window !== "undefined") {
         const storageKey = tipe === "self-funded" ? STORAGE_KEY_SELF : STORAGE_KEY_FULLY;
@@ -473,6 +476,8 @@ function TambahFormulirSJNPageInner() {
     } catch (err) {
       console.error(err);
       showToast("Terjadi kesalahan saat menyimpan formulir.", true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -497,13 +502,13 @@ function TambahFormulirSJNPageInner() {
             <h1 className={styles.headerTitle}>
               Form Pendaftaran — {tipe === "fully-funded" ? "Fully Funded" : "Self Funded"}
             </h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Perubahan
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>
@@ -602,13 +607,13 @@ function TambahFormulirSJNPageInner() {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Simpan Perubahan
+            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
 

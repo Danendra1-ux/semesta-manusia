@@ -87,6 +87,8 @@ function TambahSJNProgramPageInner() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   // 1. Load draft & created-flag dari sessionStorage saat mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -315,6 +317,7 @@ function TambahSJNProgramPageInner() {
   };
 
   const handleSave = async () => {
+    if (isSaving) return; // prevent double-click
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
@@ -327,6 +330,7 @@ function TambahSJNProgramPageInner() {
       return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!", true);
     }
 
+    setIsSaving(true);
     try {
       let customFormFully = [];
       let customFormSelf = [];
@@ -404,6 +408,8 @@ function TambahSJNProgramPageInner() {
     } catch (err) {
       console.error(err);
       showToast("Gagal menyimpan program.", true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -425,13 +431,13 @@ function TambahSJNProgramPageInner() {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Tambah Program SJN</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Program
+              {isSaving ? "Menyimpan..." : "Simpan Program"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>Buat program Semesta Jelajah Nusantara baru</p>
@@ -881,8 +887,8 @@ function TambahSJNProgramPageInner() {
         </div>
 
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
-            Simpan Program
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Menyimpan..." : "Simpan Program"}
           </button>
         </div>
 

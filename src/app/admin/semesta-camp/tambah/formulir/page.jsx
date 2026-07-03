@@ -83,6 +83,7 @@ function FormulirTambahSemestaCampInner() {
   const namaProgram = searchParams.get("nama") || "Program Baru";
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const [toastShow, setToastShow] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
@@ -339,15 +340,21 @@ function FormulirTambahSemestaCampInner() {
     setEditingTitle(null);
   };
 
-  const handleSave = () => {
-    showToast("Formulir berhasil disimpan!");
-    // Mark that formulir was created
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("sc_formulir_created", "true");
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      showToast("Formulir berhasil disimpan!");
+      // Mark that formulir was created
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("sc_formulir_created", "true");
+      }
+      setTimeout(() => {
+        router.push(`/admin/semesta-camp/tambah?created=true`);
+      }, 1000);
+    } finally {
+      setIsSaving(false);
     }
-    setTimeout(() => {
-      router.push(`/admin/semesta-camp/tambah?created=true`);
-    }, 1000);
   };
 
   return (
@@ -369,13 +376,13 @@ function FormulirTambahSemestaCampInner() {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Form Pendaftaran — Semesta Camp</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Perubahan
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>
@@ -479,13 +486,13 @@ function FormulirTambahSemestaCampInner() {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Simpan Perubahan
+            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
 

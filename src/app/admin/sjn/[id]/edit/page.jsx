@@ -45,6 +45,7 @@ export default function EditSJNProgramPage({ params }) {
 
   // Loading State
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Read form data (sections) from sessionStorage on mount
   const [fullyFormSections, setFullyFormSections] = useState([]);
@@ -314,6 +315,7 @@ export default function EditSJNProgramPage({ params }) {
   };
 
   const handleSave = async () => {
+    if (isSaving) return; // prevent double-click
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
@@ -325,7 +327,8 @@ export default function EditSJNProgramPage({ params }) {
     if (new Date(selfFundedBatasReg) > new Date(jadwalMulai)) {
       return showToast("Batas Registrasi Self Funded tidak boleh setelah jadwal mulai!", true);
     }
-    
+
+    setIsSaving(true);
     try {
       // Baca sessionStorage fresh — sama seperti alur tambah
       // supaya draft dari halaman formulir selalu menang atas state yang mungkin stale
@@ -425,6 +428,8 @@ export default function EditSJNProgramPage({ params }) {
     } catch (err) {
       console.error(err);
       showToast("Terjadi kesalahan pada server.", true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -462,13 +467,13 @@ export default function EditSJNProgramPage({ params }) {
               </svg>
             </Link>
             <h1 className={styles.headerTitle}>Detail Program</h1>
-            <button className={styles.saveButtonTop} onClick={handleSave}>
+            <button className={styles.saveButtonTop} onClick={handleSave} disabled={isSaving}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              Simpan Perubahan
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
           <p className={styles.headerSubtitle}>Edit detail program anda</p>
@@ -921,13 +926,13 @@ export default function EditSJNProgramPage({ params }) {
 
         {/* Save Button Bottom */}
         <div className={styles.saveSection}>
-          <button className={styles.saveButtonBottom} onClick={handleSave}>
+          <button className={styles.saveButtonBottom} onClick={handleSave} disabled={isSaving}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Simpan Perubahan
+            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
 
