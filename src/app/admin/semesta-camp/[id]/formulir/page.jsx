@@ -85,6 +85,7 @@ export default function FormulirPage({ params }) {
   const [modalLabel, setModalLabel] = useState("");
   const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
+  const [modalRequired, setModalRequired] = useState(false);
 
   // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
@@ -255,6 +256,7 @@ export default function FormulirPage({ params }) {
     setModalLabel("");
     setModalPlaceholder("");
     setModalOptions([""]);
+    setModalRequired(false);
     setModalOpen(true);
   };
 
@@ -284,7 +286,7 @@ export default function FormulirPage({ params }) {
       label: modalLabel,
       type: modalFieldType === "Upload File" ? "upload" : modalFieldType.toLowerCase(),
       placeholder: modalPlaceholder,
-      required: false,
+      required: modalRequired,
       isFixed: false,
       value: modalFieldType === "Upload File" ? null : "",
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
@@ -540,6 +542,17 @@ export default function FormulirPage({ params }) {
                     onChange={(e) => setModalPlaceholder(e.target.value)}
                     placeholder="Contoh: Pilih divisi"
                   />
+                </div>
+
+                <div className={styles.modalField}>
+                  <label className={styles.fieldCheckboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={modalRequired}
+                      onChange={(e) => setModalRequired(e.target.checked)}
+                    />
+                    Wajib diisi
+                  </label>
                 </div>
 
                 {/* Dropdown Options — only show when type is Dropdown */}

@@ -96,6 +96,7 @@ function FormulirSJNPageInner({ params }) {
   const [modalLabel, setModalLabel] = useState("");
   const [modalPlaceholder, setModalPlaceholder] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
+  const [modalRequired, setModalRequired] = useState(false);
 
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
@@ -398,6 +399,7 @@ function FormulirSJNPageInner({ params }) {
     setModalLabel("");
     setModalPlaceholder("");
     setModalOptions([""]);
+    setModalRequired(false);
     setModalOpen(true);
   };
 
@@ -420,7 +422,7 @@ function FormulirSJNPageInner({ params }) {
       label: modalLabel,
       type: modalFieldType === "Upload File" ? "upload" : modalFieldType.toLowerCase(),
       placeholder: modalPlaceholder,
-      required: false,
+      required: modalRequired,
       isFixed: false,
       value: modalFieldType === "Upload File" ? null : "",
       ...(modalFieldType === "Dropdown" ? { options: validOptions } : {}),
@@ -647,6 +649,17 @@ function FormulirSJNPageInner({ params }) {
                     onChange={(e) => setModalPlaceholder(e.target.value)}
                     placeholder="Contoh: Pilih divisi"
                   />
+                </div>
+
+                <div className={styles.modalField}>
+                  <label className={styles.fieldCheckboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={modalRequired}
+                      onChange={(e) => setModalRequired(e.target.checked)}
+                    />
+                    Wajib diisi
+                  </label>
                 </div>
 
                 {modalFieldType === "Dropdown" && (

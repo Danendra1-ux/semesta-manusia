@@ -375,6 +375,25 @@
   font-size: 0.875rem;
 }
 
+.fieldCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.fieldCheckboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* =================== FIELD ACTIONS (EDIT + TRASH) =================== */
 .fieldActions {
   display: flex;
