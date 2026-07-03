@@ -7,6 +7,7 @@ import AdminSidebar from "../../components/AdminSidebar.jsx";
 import { useSidebar } from "../../components/SidebarContext";
 import styles from "./page.module.css";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import { uploadFileDirect, buildFileName } from "@/lib/uploadFile";
 
 const supabase = createSupabaseClient();
 
@@ -272,20 +273,17 @@ function TambahSemestaCampProgramInner() {
       const key = `${section}-${field.id}`;
       const file = uploadFiles[key];
       if (!file) continue;
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("bucket", "program-files");
-      const res = await fetch("/api/upload-file", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: formData,
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`Gagal upload file ${field.label}: ${errData.error || res.statusText}`);
+      const fileName = buildFileName("program-file", file.name);
+      try {
+        const { url } = await uploadFileDirect(file, {
+          bucket: "program-files",
+          fileName,
+          accessToken: token,
+        });
+        updated[i] = { ...field, value: url };
+      } catch (err) {
+        throw new Error(`Gagal upload file "${field.label}": ${err.message}`);
       }
-      const data = await res.json();
-      updated[i] = { ...field, value: data.url };
     }
     return updated;
   };
@@ -312,32 +310,21 @@ function TambahSemestaCampProgramInner() {
     let imageUrl = null;
 
     try {
-      // TAHAP 1: Upload Poster ke Supabase Storage (via server route)
+      // TAHAP 1: Upload Poster ke Supabase Storage (signed URL, langsung browser → Supabase)
       if (posterFile) {
-        const fileExt = posterFile.name.split('.').pop();
-        const fileName = `poster-${Date.now()}.${fileExt}`;
-        const filePath = fileName;
-
-        const formData = new FormData();
-        formData.append('file', posterFile);
-        formData.append('bucket', 'program-images');
-        formData.append('filePath', filePath);
-
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
-        const uploadResponse = await fetch('/api/upload-file', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          const errData = await uploadResponse.json().catch(() => ({}));
-          throw new Error(`Gagal upload poster: ${errData.error || uploadResponse.statusText}`);
+        const fileName = buildFileName("poster", posterFile.name);
+        try {
+          const { url } = await uploadFileDirect(posterFile, {
+            bucket: "program-images",
+            fileName,
+            accessToken: token,
+          });
+          imageUrl = url;
+        } catch (err) {
+          throw new Error(`Gagal upload poster: ${err.message}`);
         }
-
-        const uploadData = await uploadResponse.json();
-        imageUrl = uploadData.url;
       }
 
       // TAHAP 1b: Upload file dari field dinamis Upload File ke Supabase Storage

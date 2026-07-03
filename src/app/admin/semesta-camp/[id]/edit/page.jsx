@@ -8,6 +8,7 @@ import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
 import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import { uploadFileDirect, buildFileName } from "@/lib/uploadFile";
 
 // Inisialisasi Supabase untuk Upload Gambar Baru
 const supabase = createSupabaseClient();
@@ -268,23 +269,22 @@ export default function EditProgramPage({ params }) {
       let imageUrl = posterPreview;
 
       if (posterFile) {
-        const fileExt = posterFile.name.split('.').pop();
-        const fileName = `poster-${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('program-images')
-          .upload(fileName, posterFile);
-
-        if (uploadError) throw new Error(`Gagal upload poster: ${uploadError.message}`);
-
-        const { data: publicUrlData } = supabase.storage
-          .from('program-images')
-          .getPublicUrl(fileName);
-
-        imageUrl = publicUrlData.publicUrl;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const fileName = buildFileName("poster", posterFile.name);
+        try {
+          const { url } = await uploadFileDirect(posterFile, {
+            bucket: "program-images",
+            fileName,
+            accessToken: token,
+          });
+          imageUrl = url;
+        } catch (err) {
+          throw new Error(`Gagal upload poster: ${err.message}`);
+        }
       }
 
-      // Upload pending files before saving
+      // Upload pending files before saving (signed URL — file langsung ke Supabase)
       const processUploads = async (fields, section) => {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
@@ -294,20 +294,17 @@ export default function EditProgramPage({ params }) {
           if (field.type === "upload-file") {
             const fileObj = uploadFiles[`${section}-${field.id}`];
             if (fileObj && typeof fileObj === "object" && !(fileObj instanceof URL || typeof fileObj === "string")) {
-              const formData = new FormData();
-              formData.append("file", fileObj);
-              formData.append("bucket", "program-files");
-              const res = await fetch("/api/upload-file", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${token}` },
-                body: formData,
-              });
-              if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(`Gagal upload "${field.label}": ${errData.error || res.statusText}`);
+              const fileName = buildFileName("program-file", fileObj.name);
+              try {
+                const { url } = await uploadFileDirect(fileObj, {
+                  bucket: "program-files",
+                  fileName,
+                  accessToken: token,
+                });
+                newFields[i] = { ...field, value: url };
+              } catch (err) {
+                throw new Error(`Gagal upload "${field.label}": ${err.message}`);
               }
-              const data = await res.json();
-              newFields[i] = { ...field, value: data.url };
             } else if (typeof field.value === 'string' && field.value && !field.value.startsWith('http')) {
               // Was just a filename string — discard as invalid
               newFields[i] = { ...field, value: "" };

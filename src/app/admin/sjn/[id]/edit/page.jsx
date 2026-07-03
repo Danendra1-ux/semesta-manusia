@@ -7,6 +7,7 @@ import AdminSidebar from "../../../components/AdminSidebar.jsx";
 import { useSidebar } from "../../../components/SidebarContext";
 import styles from "./page.module.css";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import { uploadFileDirect, buildFileName } from "@/lib/uploadFile";
 
 const supabase = createSupabaseClient();
 
@@ -296,24 +297,16 @@ export default function EditSJNProgramPage({ params }) {
       const key = `${section}-${field.id}`;
       const file = uploadFiles[key];
       if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('bucket', 'program-files');
-
-        const res = await fetch('/api/upload-file', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(`Gagal upload file "${field.label}": ${errData.error || res.statusText}`);
-        }
-
-        const data = await res.json();
-        if (data.url) {
-          updated[i] = { ...field, value: data.url };
+        const fileName = buildFileName("program-file", file.name);
+        try {
+          const { url } = await uploadFileDirect(file, {
+            bucket: "program-files",
+            fileName,
+            accessToken: token,
+          });
+          updated[i] = { ...field, value: url };
+        } catch (err) {
+          throw new Error(`Gagal upload file "${field.label}": ${err.message}`);
         }
       }
     }

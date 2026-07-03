@@ -9,6 +9,22 @@ const supabaseAdmin = createClient(
 
 const ADMIN_EMAILS = ['semestamanusia.indonesia@gmail.com'];
 
+// Allowed buckets for admin uploads — keep tight to avoid abuse
+const ALLOWED_BUCKETS = new Set(['program-files', 'program-images']);
+
+/**
+ * POST /api/upload-file
+ *
+ * Mode: SIGNED-URL bootstrap. Menghindari batasan body 4.5 MB Vercel dengan
+ * mengembalikan signed upload URL ke client, sehingga file di-PUT langsung
+ * ke Supabase Storage tanpa melewati Vercel function body.
+ *
+ * Body (JSON kecil, ~200 byte):
+ *   { fileName: string, bucket: 'program-files' | 'program-images', contentType?: string }
+ *
+ * Response:
+ *   { signedUrl, token, path, publicUrl }
+ */
 export async function POST(request) {
   try {
     // 1. Ambil token dari Header Authorization
@@ -32,43 +48,53 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized: User is not an admin' }, { status: 401 });
     }
 
-    // 4. Proses Upload Form Data
-    const formData = await request.formData();
-    const file = formData.get('file');
-    const bucket = formData.get('bucket') || 'program-files';
-    const filePathOverride = formData.get('filePath');
-
-    if (!file || typeof file === 'string') {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    // 4. Parse JSON body (bukan formData — file tidak ikut lewat Vercel)
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = filePathOverride || `program-file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+    const { fileName, bucket, contentType } = body || {};
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    if (!fileName || typeof fileName !== 'string') {
+      return NextResponse.json({ error: 'Missing fileName' }, { status: 400 });
+    }
+    if (!bucket || !ALLOWED_BUCKETS.has(bucket)) {
+      return NextResponse.json({ error: 'Invalid or unauthorized bucket' }, { status: 400 });
+    }
 
-    // 5. Upload ke Supabase Storage
-    const { error: uploadError } = await supabaseAdmin.storage
+    // Sanitize fileName: tidak boleh slash/path traversal. Client mengirim nama
+    // file random seperti `program-file-<ts>-<rand>.<ext>` atau `poster-<ts>.<ext>`.
+    if (fileName.includes('/') || fileName.includes('..') || fileName.startsWith('.')) {
+      return NextResponse.json({ error: 'Invalid fileName' }, { status: 400 });
+    }
+
+    // 5. Buat signed upload URL (expired 5 menit — cukup untuk browser upload)
+    const { data: signed, error: signedError } = await supabaseAdmin
+      .storage
       .from(bucket)
-      .upload(fileName, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
+      .createSignedUploadUrl(fileName);
 
-    if (uploadError) {
-      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    if (signedError || !signed) {
+      return NextResponse.json(
+        { error: signedError?.message || 'Failed to create signed upload URL' },
+        { status: 500 }
+      );
     }
 
-    // 6. Ambil Public URL
+    // 6. Ambil Public URL untuk dikembalikan ke client
     const { data: publicUrlData } = supabaseAdmin.storage
       .from(bucket)
       .getPublicUrl(fileName);
 
     return NextResponse.json({
-      url: publicUrlData.publicUrl,
-      fileName: fileName,
-      originalName: file.name,
+      signedUrl: signed.signedUrl,
+      token: signed.token,
+      path: fileName,
+      publicUrl: publicUrlData.publicUrl,
+      contentType: contentType || 'application/octet-stream',
     });
   } catch (error) {
     console.error('Upload error:', error);
