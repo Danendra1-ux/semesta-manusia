@@ -301,6 +301,7 @@ function TambahSemestaCampProgramInner() {
   const handleSave = async () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
+    if (new Date(jadwalSelesai) < new Date(jadwalMulai)) return showToast("Tanggal Selesai tidak boleh sebelum tanggal Mulai!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
     if (!batasRegistrasi) return showToast("Batas Registrasi harus diisi!", true);
     if (batasRegistrasi && jadwalMulai && new Date(batasRegistrasi) > new Date(jadwalMulai)) {

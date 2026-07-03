@@ -318,6 +318,7 @@ export default function EditSJNProgramPage({ params }) {
     if (isSaving) return; // prevent double-click
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
+    if (new Date(jadwalSelesai) < new Date(jadwalMulai)) return showToast("Tanggal Selesai tidak boleh sebelum tanggal Mulai!", true);
     if (!lokasi.trim()) return showToast("Lokasi harus diisi!", true);
     if (!fullyFundedBatasReg) return showToast("Batas Registrasi Fully Funded harus diisi!", true);
     if (!selfFundedBatasReg) return showToast("Batas Registrasi Self Funded harus diisi!", true);
