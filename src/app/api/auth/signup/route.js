@@ -62,21 +62,21 @@ export async function POST(request) {
     const emailRedirectTo = `${siteUrl}/user/login`;
 
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: email,       
+      password: password, 
       options: {
-        emailRedirectTo,
-        data: {
-          name,
-          whatsapp: whatsapp || "",
-          instagram: ig,
-          birth_date: birth_date || "",
-          region: region || "",
-          institution: institution || "",
-        },
-      },
+        data: {           
+          name: name,
+          whatsapp: whatsapp,
+          instagram: instagram,
+          birth_date: birth_date,
+          region: region,
+          institution: institution
+        }
+      }
     });
 
+    // Pastikan error dikembalikan sebagai teks, bukan objek kosong
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
