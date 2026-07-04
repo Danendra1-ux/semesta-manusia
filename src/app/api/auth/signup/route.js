@@ -53,9 +53,6 @@ export async function POST(request) {
     });
 
     // Build the redirect target for the email confirmation link.
-    // Priority: NEXT_PUBLIC_SITE_URL env > request origin. Always point to
-    // /user/login so the link bounces back to our app after the user clicks
-    // "Confirm" in their inbox.
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
       new URL(request.url).origin;
@@ -65,10 +62,11 @@ export async function POST(request) {
       email: email,       
       password: password, 
       options: {
+        emailRedirectTo: emailRedirectTo, // PERBAIKAN 1: Wajib dimasukkan agar tombol email berfungsi
         data: {           
           name: name,
           whatsapp: whatsapp,
-          instagram: instagram,
+          instagram: ig, // PERBAIKAN 2: Menggunakan variabel ig yang sudah dibersihkan
           birth_date: birth_date,
           region: region,
           institution: institution
@@ -76,13 +74,11 @@ export async function POST(request) {
       }
     });
 
-    // Pastikan error dikembalikan sebagai teks, bukan objek kosong
     if (error) {
+      console.error("Supabase Error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    // If Supabase returned a session, the user is auto-signed-in
-    // (email confirmation disabled). Otherwise they must confirm via email.
     const requiresConfirmation = !data?.session;
 
     return NextResponse.json(
@@ -94,6 +90,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (err) {
+    console.error("Server Error:", err.message);
     return NextResponse.json(
       { error: err.message || "Terjadi kesalahan saat mendaftar." },
       { status: 500 }
