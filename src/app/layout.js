@@ -11,7 +11,7 @@ export const metadata = {
   title: "Semesta Manusia — Platform Volunteer Indonesia",
   description: "Bergabunglah dengan Semesta Manusia untuk menciptakan dampak positif bagi masyarakat Indonesia melalui program volunteer di bidang pendidikan, kesehatan, dan pemberdayaan sosial.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.png",
   },
 };
 
