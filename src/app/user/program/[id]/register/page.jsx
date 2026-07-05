@@ -510,7 +510,7 @@ export default function RegisterPage({ params }) {
           </button>
           <h2 className={styles.sidebarTitle}>{getSidebarTitle()}</h2>
           <span className={styles.sidebarSubtitle}>
-            {type === "semesta-camp" ? "Semesta Camp Registration" : "SJN Registration"}
+            {type === "semesta-camp" ? "Pendaftaran Semesta Camp" : "Pendaftaran SJN"}
           </span>
           {renderStepper()}
 
@@ -534,7 +534,7 @@ export default function RegisterPage({ params }) {
           <div className={styles.stepHeaderContent}>
             <h1 className={styles.stepPageTitle}>{stepTitles[currentStep - 1]}</h1>
             <div className={styles.stepMeta}>
-              <span className={styles.stepNumber}>Step {currentStep} of {totalSteps}</span>
+              <span className={styles.stepNumber}>Langkah {currentStep} dari {totalSteps}</span>
               <div className={styles.stepProgress}>
                 {Array.from({ length: totalSteps }, (_, i) => (
                   <div
@@ -647,11 +647,11 @@ export default function RegisterPage({ params }) {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
-                Back
+                Kembali
               </button>
             )}
             <button type="button" className={styles.continueButton} onClick={handleNext} disabled={isSubmitting}>
-              {currentStep === totalSteps ? (isSubmitting ? "Mengirim..." : "Submit") : "Continue"}
+              {currentStep === totalSteps ? (isSubmitting ? "Mengirim..." : "Kirim") : "Lanjutkan"}
               {!isSubmitting && (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />

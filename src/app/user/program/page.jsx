@@ -225,7 +225,7 @@ export default function ProgramPage() {
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="Search"
+              placeholder="Cari program..."
               value={searchQuery}
               onChange={handleSearch}
             />

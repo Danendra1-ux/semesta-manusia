@@ -234,7 +234,7 @@ export default function LandingPage() {
             <div className={styles.programPhotos}>
               <div className={styles.programPhotoItem} style={{ background: "linear-gradient(165deg, rgba(0,191,255,0.15) 0%, rgba(0,153,204,0.85) 100%)", boxShadow: "0 20px 60px rgba(0,191,255,0.15), 0 4px 24px rgba(0,153,204,0.1)" }}>
                 <Image
-                  src="/sc-kategori.jpeg"
+                  src="/sc-kategori.webp"
                   alt="Semesta Camp"
                   fill
                   style={{ objectFit: 'cover' }}
@@ -248,7 +248,7 @@ export default function LandingPage() {
               </div>
               <div className={styles.programPhotoItem} style={{ background: "linear-gradient(165deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.85) 100%)", boxShadow: "0 20px 60px rgba(124,58,237,0.15), 0 4px 24px rgba(168,85,247,0.1)" }}>
                 <Image
-                  src="/sjn-kategori.jpeg"
+                  src="/sjn-kategori.webp"
                   alt="Semesta Jelajah Nusantara"
                   fill
                   style={{ objectFit: 'cover' }}
@@ -397,12 +397,12 @@ export default function LandingPage() {
 
           <div className={styles.galleryGrid}>
             {[
-              "/galeri/galeri1.jpeg",
-              "/galeri/galeri2.jpeg",
-              "/galeri/galeri3.jpeg",
-              "/galeri/galeri4.jpeg",
-              "/galeri/galeri5.jpeg",
-              "/galeri/galeri6.JPG"
+              "/galeri/galeri1.webp",
+              "/galeri/galeri2.webp",
+              "/galeri/galeri3.webp",
+              "/galeri/galeri4.webp",
+              "/galeri/galeri5.webp",
+              "/galeri/galeri6.webp"
             ].map((src, index) => (
               <div key={index} className={`${styles.galleryItem} ${index === 0 ? styles.galleryItemLarge : ""}`}>
                 <Image
