@@ -9,14 +9,14 @@ import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recha
 
 // Chart data (initial empty state — replaced by fetched data)
 const emptyChartData = [
-  { name: "Pending", value: 0, color: "#00bfff" },
+  { name: "Menunggu", value: 0, color: "#00bfff" },
   { name: "Diterima", value: 0, color: "#10b981" },
   { name: "Ditolak", value: 0, color: "#ef4444" },
 ];
 
 const getStatusBadgeClass = (status) => {
   switch (status) {
-    case "Pending":
+    case "Menunggu":
       return styles.badgePending;
     case "Diterima":
       return styles.badgeDiterima;
@@ -329,7 +329,7 @@ export default function DashboardPage() {
                       </td>
                       <td>
                         <span className={`${styles.statusBadge} ${getStatusBadgeClass(item.status)}`}>
-                          {item.status}
+                          {item.status === "Pending" ? "Menunggu" : item.status}
                         </span>
                       </td>
                       <td>

@@ -21,7 +21,7 @@ export async function GET() {
     if (programsRes.error) throw programsRes.error;
     if (registrationsRes.error) throw registrationsRes.error;
 
-    const bucket = { 'Semesta Camp': { Pending: 0, Diterima: 0, Ditolak: 0 }, 'SJN': { Pending: 0, Diterima: 0, Ditolak: 0 } };
+    const bucket = { 'Semesta Camp': { Menunggu: 0, Diterima: 0, Ditolak: 0 }, 'SJN': { Menunggu: 0, Diterima: 0, Ditolak: 0 } };
     (registrationsRes.data || []).forEach((r) => {
       const category = r.programs?.category;
       const status = r.status;
@@ -31,7 +31,7 @@ export async function GET() {
     });
 
     const toChart = (obj, colors) => ([
-      { name: 'Pending', value: obj.Pending, color: colors[0] },
+      { name: 'Menunggu', value: obj.Menunggu, color: colors[0] },
       { name: 'Diterima', value: obj.Diterima, color: colors[1] },
       { name: 'Ditolak', value: obj.Ditolak, color: colors[2] },
     ]);

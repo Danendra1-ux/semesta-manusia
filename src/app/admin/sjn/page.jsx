@@ -469,7 +469,7 @@ export default function SJNPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedPrograms.map((program) => (
+                {paginatedPrograms.length > 0 ? paginatedPrograms.map((program) => (
                   <tr
                     key={program.id}
                     className={`${styles.tableRow} ${selectedRows.includes(program.id) ? styles.selected : ""}`}
@@ -517,7 +517,13 @@ export default function SJNPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      Tidak ada program ditemukan.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
             )}

@@ -166,7 +166,7 @@ export default function SemestaCampDetailPage({ params }) {
     }
 
     if (statusFilter !== "Semua") {
-      result = result.filter((p) => p.status === statusFilter);
+      result = result.filter((p) => p.status === statusFilter || p.status === "Pending");
     }
 
     if (sortBy === "terbaru") {
@@ -422,11 +422,11 @@ export default function SemestaCampDetailPage({ params }) {
                       Semua
                     </button>
                     <button
-                      className={`${styles.filterDropdownItem} ${statusFilter === "Pending" ? styles.filterDropdownItemActive : ""}`}
-                      onClick={() => { setStatusFilter("Pending"); setFilterDropdownOpen(false); setCurrentPage(1); }}
+                      className={`${styles.filterDropdownItem} ${statusFilter === "Menunggu" ? styles.filterDropdownItemActive : ""}`}
+                      onClick={() => { setStatusFilter("Menunggu"); setFilterDropdownOpen(false); setCurrentPage(1); }}
                     >
-                      {statusFilter === "Pending" && <CheckIcon />}
-                      Pending
+                      {statusFilter === "Menunggu" && <CheckIcon />}
+                      Menunggu
                     </button>
                     <button
                       className={`${styles.filterDropdownItem} ${statusFilter === "Diterima" ? styles.filterDropdownItemActive : ""}`}
@@ -578,7 +578,7 @@ export default function SemestaCampDetailPage({ params }) {
                       </td>
                       <td>
                         <span className={`${styles.statusBadge} ${getStatusBadgeClass(p.status)}`}>
-                          {p.status}
+                          {p.status === "Pending" ? "Menunggu" : p.status}
                         </span>
                       </td>
                       <td className={styles.instansiCell}>

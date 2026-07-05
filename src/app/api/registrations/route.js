@@ -50,7 +50,7 @@ export async function POST(request) {
       .insert({
         program_id, funding_type_id,
         full_name, email, whatsapp, instagram, birth_date, region, institution, reason,
-        status: 'Pending'
+        status: 'Menunggu'
       })
       .select()
       .single();

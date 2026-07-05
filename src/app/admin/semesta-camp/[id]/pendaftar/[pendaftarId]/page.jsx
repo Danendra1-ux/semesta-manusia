@@ -163,7 +163,7 @@ export default function PendaftarDetailPage({ params }) {
             <div className={styles.headerTitleRow}>
               <h1 className={styles.pageTitle}>{fullName}</h1>
               <span className={`${styles.statusBadge} ${getStatusBadgeClass(pendaftar.status)}`}>
-                {pendaftar.status}
+                {pendaftar.status === "Pending" ? "Menunggu" : pendaftar.status}
               </span>
             </div>
             <p className={styles.pageSubtitle}>Detail pendaftar program</p>
