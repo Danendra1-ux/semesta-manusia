@@ -58,6 +58,10 @@ export default function LandingPage() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
+  // Status login user — dipakai untuk route CTA dinamis (login vs program).
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,6 +85,29 @@ export default function LandingPage() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data?.user || null);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // CTA href: program list jika sudah login, login page jika belum.
+  const ctaHref = user ? '/user/program' : '/user/login';
 
   const filteredPrograms = activeFilter === "semua"
     ? programs
@@ -149,12 +176,12 @@ export default function LandingPage() {
               Di setiap sudut Indonesia, selalu ada cerita yang perlu didengar, tangan yang perlu digenggam, dan harapan yang perlu dijaga. Bersama Semesta Manusia Indonesia, mari hadir melalui aksi nyata untuk berbagi, menginspirasi, dan menciptakan perubahan yang berarti bagi mereka yang membutuhkan.
             </p>
             <div className={styles.heroActions}>
-              <a href="#program" className={styles.primaryButton}>
+              <Link href={ctaHref} className={styles.primaryButton}>
                 <span>Jelajahi Program</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-              </a>
+              </Link>
               <a href="#tentang" className={styles.secondaryButton}>
                 <span>Pelajari Lebih Lanjut</span>
               </a>
@@ -348,7 +375,7 @@ export default function LandingPage() {
           </div>
 
           {/* Load More Button */}
-          <Link href="/user/program" className={styles.previewLoadMore}>
+          <Link href={ctaHref} className={styles.previewLoadMore}>
             <span>Lihat lebih banyak</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -529,7 +556,7 @@ export default function LandingPage() {
                 Perjalananmu bermakna dimulai dari satu langkah.<br />
                 Jadilah bagian dari gerakan yang nyata, berbagi dampak ke seluruh Nusantara.
               </p>
-              <Link href="/user/program" className={styles.ctaButton}>
+              <Link href={ctaHref} className={styles.ctaButton}>
                 <span>Daftar Sekarang</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>

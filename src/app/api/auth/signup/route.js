@@ -34,6 +34,7 @@ export async function POST(request) {
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return NextResponse.json(
@@ -51,6 +52,38 @@ export async function POST(request) {
         autoRefreshToken: false,
       },
     });
+
+    // Pre-flight: pastikan email belum terdaftar. signUp() di Supabase kadang
+    // tidak melempar error untuk duplikat (terutama jika setting "Allow duplicate
+    // signups" aktif), jadi kita cek dulu lewat admin API sebelum lanjut.
+    if (supabaseServiceKey) {
+      const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const perPage = 200;
+      for (let page = 1; page <= 20; page += 1) {
+        const { data: listData, error: listErr } =
+          await adminClient.auth.admin.listUsers({ page, perPage });
+        if (listErr) {
+          console.error("listUsers preflight error:", listErr.message);
+          break; // Jangan blokir signup kalau cek gagal; signUp() akan jadi fallback.
+        }
+        const match = (listData?.users || []).find(
+          (u) => (u.email || "").toLowerCase() === normalizedEmail
+        );
+        if (match) {
+          return NextResponse.json(
+            {
+              error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
+              code: "email_taken",
+            },
+            { status: 409 }
+          );
+        }
+        if (!listData || (listData.users || []).length < perPage) break;
+      }
+    }
 
     // Build the redirect target for the email confirmation link.
     const siteUrl =
@@ -76,7 +109,15 @@ export async function POST(request) {
 
     if (error) {
       console.error("Supabase Error:", error.message);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      // Tandai secara eksplisit agar klien bisa menampilkan toast khusus.
+      const isEmailTaken = /already.*registered|already been registered|email.*exist/i.test(error.message);
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: isEmailTaken ? "email_taken" : undefined,
+        },
+        { status: 400 }
+      );
     }
 
     const requiresConfirmation = !data?.session;

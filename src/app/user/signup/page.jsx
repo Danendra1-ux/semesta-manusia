@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -27,6 +27,7 @@ function SignupForm() {
   const [errors, setErrors] = useState({});
   const [shakeField, setShakeField] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [emailTakenToast, setEmailTakenToast] = useState(null);
   const inFlightRef = useRef(false);
 
   const update = (key, value) => {
@@ -38,7 +39,18 @@ function SignupForm() {
         return next;
       });
     }
+    // Clear the email-taken toast as soon as the user edits the email field.
+    if (key === "email" && emailTakenToast) {
+      setEmailTakenToast(null);
+    }
   };
+
+  // Auto-dismiss the email-taken toast after a short delay.
+  useEffect(() => {
+    if (!emailTakenToast) return undefined;
+    const id = setTimeout(() => setEmailTakenToast(null), 6000);
+    return () => clearTimeout(id);
+  }, [emailTakenToast]);
 
   const validate = () => {
     const newErrors = {};
@@ -116,8 +128,13 @@ function SignupForm() {
 
       if (!res.ok) {
         let msg = data?.error || "Pendaftaran gagal. Silakan coba lagi.";
-        if (/already|registered|exist/i.test(msg)) {
+        const isEmailTaken = data?.code === "email_taken";
+        if (isEmailTaken) {
           msg = "Email sudah terdaftar. Silakan masuk atau gunakan email lain.";
+          setEmailTakenToast({
+            email: formData.email.trim(),
+            id: Date.now(),
+          });
         }
         setErrors({ general: msg });
         triggerShake("general");
@@ -441,6 +458,40 @@ function SignupForm() {
           </p>
         </div>
       </div>
+
+      {emailTakenToast && (
+        <div
+          className={styles.emailTakenToast}
+          role="status"
+          aria-live="polite"
+        >
+          <div className={styles.emailTakenToastIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div className={styles.emailTakenToastBody}>
+            <p className={styles.emailTakenToastTitle}>Email sudah terdaftar</p>
+            <p className={styles.emailTakenToastDescription}>
+              {emailTakenToast.email} sudah dipakai. Silakan{" "}
+              <Link href="/user/login">masuk</Link> atau gunakan email lain.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.emailTakenToastClose}
+            onClick={() => setEmailTakenToast(null)}
+            aria-label="Tutup notifikasi"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {success && (
         <div className={styles.modalBackdrop}>
