@@ -304,6 +304,7 @@ export default function UserProfilePage() {
     total: programs.length,
     verified: programs.filter((p) => ["verified", "diterima", "approved"].includes((p.status || "").toLowerCase())).length,
     pending: programs.filter((p) => ["pending", "menunggu"].includes((p.status || "").toLowerCase())).length,
+    rejected: programs.filter((p) => ["rejected", "ditolak"].includes((p.status || "").toLowerCase())).length,
   };
 
   return (
@@ -357,6 +358,18 @@ export default function UserProfilePage() {
             </div>
           </div>
           <div className={styles.statCard}>
+            <div className={styles.statIcon} style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <div className={styles.statInfo}>
+              <div className={styles.statValue}>{stats.pending}</div>
+              <div className={styles.statLabel}>Menunggu</div>
+            </div>
+          </div>
+          <div className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="20 6 9 17 4 12" />
@@ -368,15 +381,16 @@ export default function UserProfilePage() {
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" }}>
+            <div className={styles.statIcon} style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
             </div>
             <div className={styles.statInfo}>
-              <div className={styles.statValue}>{stats.pending}</div>
-              <div className={styles.statLabel}>Menunggu</div>
+              <div className={styles.statValue}>{stats.rejected}</div>
+              <div className={styles.statLabel}>Ditolak</div>
             </div>
           </div>
         </div>
