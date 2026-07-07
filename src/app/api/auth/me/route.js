@@ -38,7 +38,7 @@ export async function GET() {
     const { data: sessionData } = await ssrClient.auth.getUser();
     const authUser = sessionData?.user;
     if (!authUser) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 200 });
     }
 
     // Query the public.users row with the service-role client.

@@ -1,0 +1,560 @@
+/* ==========================================
+   GALLERY SLIDER — PROGRAM CARDS
+   Brand: #00BFFF | Font: Poppins
+   ========================================== */
+
+/* Section layout — match other sections' radial bg effects */
+.gallerySection {
+  background: var(--background);
+  position: relative;
+  overflow: hidden;
+}
+
+.gallerySection::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 65vw;
+  height: 65vw;
+  max-width: 700px;
+  max-height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 191, 255, 0.10) 0%, rgba(0, 191, 255, 0.04) 50%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gallerySection::after {
+  content: '';
+  position: absolute;
+  bottom: -25%;
+  right: -12%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 650px;
+  max-height: 650px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gallerySection > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   SLIDER WRAPPER — relative for absolute arrow positioning
+   ============================================================ */
+
+.sliderWrapper {
+  position: relative;
+  margin-top: 2.5rem;
+}
+
+/* ============================================================
+   ARROW BUTTONS — absolute overlay, positioned by FIXED px
+   so they stay aligned with card image center regardless of
+   whether a card is expanded (wrapper height changes).
+   Desktop: card 320px × 4/3 → img = 240px.
+   Track padding-top = 0.5rem (8px).
+   Image center from sliderWrapper top = 8px (padding) + 120px (half img) = 128px.
+   Arrow height = 44px → offset-top = 128 - 22 = 106px.
+   ============================================================ */
+
+.sliderArrow {
+  position: absolute;
+  top: 106px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  color: #00bfff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 6px 18px rgba(0, 191, 255, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.sliderArrow:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 10px 24px rgba(0, 191, 255, 0.25);
+  background: linear-gradient(135deg, #00bfff 0%, #0084cc 100%);
+  color: #fff;
+}
+
+.sliderArrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sliderArrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sliderArrowLeft {
+  left: -12px;
+}
+
+.sliderArrowRight {
+  right: -12px;
+}
+
+/* ============================================================
+   SCROLL TRACK
+   ============================================================ */
+
+.sliderTrack {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0.5rem 0 1.5rem;
+  align-items: flex-start;
+  /* NO scroll-behavior: smooth — fights with scroll-snap & manual scrollTo,
+     causing jerky/stutter scroll. */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide horizontal scrollbar on desktop only */
+@media (min-width: 769px) {
+  .sliderTrack {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .sliderTrack::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============================================================
+   INDIVIDUAL CARD
+   Height = photo + chevron (collapsed) | photo + chevron + panel (expanded)
+   Independent per card — no stretching from siblings.
+   ============================================================ */
+
+.programCard {
+  flex: 0 0 320px;
+  min-width: 320px;
+  max-width: 320px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 8px 32px rgba(0, 191, 255, 0.1);
+  scroll-snap-align: start;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  /* GPU-friendly: only animate will-change on hover, not during scroll */
+}
+
+.programCard:hover {
+  box-shadow: 0 12px 40px rgba(0, 191, 255, 0.18);
+  will-change: box-shadow;
+}
+
+/* ---- Image wrapper row (inside card, no expand panel) ---- */
+.cardImageRow {
+  position: relative;
+  width: 100%;
+}
+
+/* ---- Image ---- */
+.cardImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Hover dimming via a pseudo-element overlay instead of image transform */
+.programCard:hover .cardImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 191, 255, 0.06);
+  pointer-events: none;
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Bottom info bar on the photo */
+.cardInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  padding: 1.25rem 1.5rem;
+}
+
+.cardTitle {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 1.25;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Date badge */
+.cardDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.3rem 0 0;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.cardDate svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.8;
+}
+
+/* ---- Chevron trigger — bottom-right corner of the image ---- */
+.expandTrigger {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  opacity: 1;
+  transition: opacity 0.25s ease, transform 0.2s ease;
+}
+
+.programCard:hover .expandTrigger {
+  transform: scale(1.1);
+}
+
+.chevronCollapsed {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.chevronExpanded {
+  width: 20px;
+  height: 20px;
+  transform: rotate(180deg);
+  color: var(--primary-dark);
+}
+
+/* ============================================================
+   EXPAND CONTAINER — smooth 0→height animation
+   Uses grid-template-rows trick. Does NOT affect sibling cards.
+   ============================================================ */
+
+.expandContainer {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expandOpen {
+  grid-template-rows: 1fr;
+}
+
+.expandInner {
+  min-height: 0;
+}
+
+/* ---- Expanded panel ---- */
+.expandPanel {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Stat bar — compact for 320px card */
+.statBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--background-alt);
+  border-radius: 10px;
+  flex-wrap: nowrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  position: relative;
+  flex: 1;
+}
+
+.statValue {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.statLabel {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.statDivider {
+  position: absolute;
+  right: -0.5rem;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: #e5e7eb;
+}
+
+.statItem:last-child .statDivider {
+  display: none;
+}
+
+/* Categories stacked vertically inside 320px card */
+.categoriesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.categoryBlock {
+  border-top: 2px solid;
+  padding-top: 0.5rem;
+}
+
+.categoryName {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.categoryList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.categoryList li {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding-left: 0.9rem;
+  position: relative;
+}
+
+.categoryList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.5;
+}
+
+/* ============================================================
+   DOT INDICATORS
+   ============================================================ */
+
+.sliderDots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.sliderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  padding: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 0 0 transparent;
+}
+
+.sliderDot:hover {
+  background: rgba(15, 23, 42, 0.35);
+  width: 10px;
+}
+
+.sliderDotActive {
+  background: linear-gradient(135deg, #00bfff 0%, #7c3aed 100%);
+  width: 24px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 191, 255, 0.3);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .programCard {
+    flex: 0 0 280px;
+    min-width: 280px;
+    max-width: 280px;
+  }
+
+  .expandPanel {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  /* Tablet: card 280px × 4/3 = 210px img height.
+     Track pt = 8px. Center = 8 + 105 = 113px.
+     Arrow height = 36px → top = 113 - 18 = 95px. */
+  .sliderArrow {
+    top: 95px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .sliderArrowLeft {
+    left: -8px;
+  }
+
+  .sliderArrowRight {
+    right: -8px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sliderTrack {
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: none;
+    padding-bottom: 1rem;
+    padding-right: 0.5rem;
+    max-height: calc(100vh - 220px);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .programCard {
+    flex: 0 0 auto;
+    min-width: auto;
+    max-width: 100%;
+    width: 100%;
+    border-radius: 20px;
+    scroll-snap-align: start;
+  }
+
+  .cardImage {
+    aspect-ratio: 16 / 9;
+  }
+
+  .cardInfo {
+    padding: 1rem;
+  }
+
+  .cardTitle {
+    font-size: 0.95rem;
+  }
+
+  .cardDate {
+    font-size: 0.72rem;
+  }
+
+  .expandPanel {
+    padding: 0 1.25rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .statBar {
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .statLabel {
+    font-size: 0.55rem;
+  }
+
+  .categoriesGrid {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Hide arrows on mobile — scroll is enough */
+  .sliderArrow {
+    display: none;
+  }
+
+  .sliderDots {
+    display: none;
+  }
+}
+
+/* ============================================================
+   VERTICAL SCROLLBAR STYLING (mobile only)
+   ============================================================ */
+
+.sliderTrack::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: 6px;
+}
+
+.sliderTrack::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00bfff 0%, #7c3aed 100%);
+  border-radius: 6px;
+  min-height: 20px;
+}
+

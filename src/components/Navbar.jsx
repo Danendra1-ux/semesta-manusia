@@ -11,6 +11,7 @@ const navItems = [
   { href: "/user/landingpage#beranda", label: "Beranda", key: "beranda" },
   { href: "/user/landingpage#tentang", label: "Tentang", key: "tentang" },
   { href: "/user/landingpage#program", label: "Program", key: "program" },
+  { href: "/user/landingpage#cara-bergabung", label: "Cara Bergabung", key: "cara-bergabung" },
   { href: "/user/landingpage#galeri", label: "Galeri", key: "galeri" },
   { href: "/user/landingpage#faq", label: "FAQ", key: "faq" },
   { href: "/user/landingpage#kontak", label: "Kontak", key: "kontak" },

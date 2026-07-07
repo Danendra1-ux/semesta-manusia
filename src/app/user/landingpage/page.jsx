@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
+import GallerySlider from "@/components/GallerySlider.jsx";
 import styles from "./landingpage.module.css";
 
 const faqData = [
@@ -169,11 +170,11 @@ export default function LandingPage() {
               <span>Berbagi | Bermakna | Bergerak Lebih Luas</span>
             </div>
             <h1 className={styles.heroTitle}>
-              <span className={styles.heroTitleLine}>Karena Kebaikan</span>
-              <span className={styles.heroTitleAccent}>Tak Mengenal Batas.</span>
+              <span className={styles.heroTitleLine}>Jadilah Relawan</span>
+              <span className={styles.heroTitleAccent}>Ciptakan Dampak Nyata</span>
             </h1>
             <p className={styles.heroDescription}>
-              Di setiap sudut Indonesia, selalu ada cerita yang perlu didengar, tangan yang perlu digenggam, dan harapan yang perlu dijaga. Bersama Semesta Manusia Indonesia, mari hadir melalui aksi nyata untuk berbagi, menginspirasi, dan menciptakan perubahan yang berarti bagi mereka yang membutuhkan.
+              Di setiap sudut Indonesia, selalu ada cerita yang perlu didengar, tangan yang perlu digenggam, dan harapan yang perlu dijaga. Bersama Semesta Manusia Indonesia, mari hadir melalui aksi nyata untuk berbagi, menginspirasi, dan menciptakan perubahan yang berarti bagi masyarakat di berbagai daerah Indonesia.
             </p>
             <div className={styles.heroActions}>
               <Link href={ctaHref} className={styles.primaryButton}>
@@ -205,14 +206,14 @@ export default function LandingPage() {
           <div className={styles.aboutGrid}>
             <div className={styles.aboutContent}>
               <h2 className={styles.aboutTitle}>
-                Menghubungkan Hati,<br/>
-                Menciptakan Dampak
+                Mengenal<br/>
+                Semesta Manusia Indonesia
               </h2>
               <p className={styles.aboutDescription}>
-                <span className={styles.aboutHighlight}>Semesta Manusia Indonesia</span> adalah organisasi sosial yang lahir dari keyakinan bahwa setiap orang memiliki kemampuan untuk membawa perubahan. Kami mempertemukan individu yang peduli dengan anak-anak, komunitas, dan masyarakat yang membutuhkan melalui berbagai program kemanusiaan yang bermakna.
+                <span className={styles.aboutHighlight}>Semesta Manusia Indonesia</span> merupakan lembaga swadaya masyarakat yang bergerak di bidang sosial, kemanusiaan, pendidikan, dan pemberdayaan masyarakat. Sejak <span className={styles.aboutHighlight}>tahun 2024,</span> kami menghubungkan masyarakat dengan berbagai program relawan yang memberikan dampak nyata bagi komunitas di berbagai daerah Indonesia.
               </p>
               <p className={styles.aboutDescription}>
-                Sejak <span className={styles.aboutHighlight}>Oktober 2024</span>, kami hadir sebagai ruang kolaborasi bagi generasi muda untuk berbagi, belajar, dan bergerak bersama. Dengan semangat kepedulian dan gotong royong, kami percaya bahwa langkah kecil yang dilakukan bersama dapat menghadirkan dampak besar bagi Indonesia.
+                <span className={styles.aboutHighlight}>Melalui website ini,</span> kamu dapat menemukan berbagai program relawan, mendaftar secara online, serta mengikuti kegiatan sosial yang sesuai dengan minat dan kemampuanmu. Bersama para relawan dari berbagai daerah, kami percaya bahwa kolaborasi dan kepedulian dapat menciptakan perubahan yang berkelanjutan.
               </p>
             </div>
             <div className={styles.aboutPhotoWrap}>
@@ -384,39 +385,106 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Galeri Section */}
-      <section id="galeri" className={styles.gallerySection}>
+      {/* Cara Bergabung Section */}
+      <section id="cara-bergabung" className={styles.joinSection}>
         <div className={styles.sectionContainer}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionTag}>Galeri</span>
+            <span className={styles.sectionTag}>Cara Bergabung</span>
             <h2 className={styles.sectionTitle}>
-              Momen Berharga dari<br/>
-              <span className={styles.titleAccent}>Para Relawan Kami</span>
+              Empat Langkah Mudah<br/>
+              <span className={styles.titleAccent}>Menjadi Relawan</span>
             </h2>
+            <p className={styles.sectionDescription}>
+              Mulai perjalanan kontribusimu bersama Semesta Manusia Indonesia. Cukup ikuti empat langkah sederhana berikut ini.
+            </p>
           </div>
 
-          <div className={styles.galleryGrid}>
-            {[
-              "/galeri/galeri1.webp",
-              "/galeri/galeri2.webp",
-              "/galeri/galeri3.webp",
-              "/galeri/galeri4.webp",
-              "/galeri/galeri5.webp",
-              "/galeri/galeri6.webp"
-            ].map((src, index) => (
-              <div key={index} className={`${styles.galleryItem} ${index === 0 ? styles.galleryItemLarge : ""}`}>
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  style={{ objectFit: 'cover' }}
-                />
+          <ol className={styles.timeline}>
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>1</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
               </div>
-            ))}
-          </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Pilih Program</h3>
+                <p className={styles.timelineText}>Cari kegiatan yang sesuai minat dan ketersediaanmu, mulai dari Semesta Camp hingga Semesta Jelajah Nusantara.</p>
+              </div>
+            </li>
 
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>2</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Daftar Online</h3>
+                <p className={styles.timelineText}>Lengkapi formulir pendaftaran melalui website ini, pilih skema Fully Funded atau Self Funded, dan unggah berkas yang dibutuhkan.</p>
+              </div>
+            </li>
+
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>3</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Proses Seleksi</h3>
+                <p className={styles.timelineText}>Tim Semesta Manusia akan melakukan verifikasi pendaftaran dan seleksi untuk memastikan kecocokan dengan program.</p>
+              </div>
+            </li>
+
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>4</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Menjadi Relawan</h3>
+                <p className={styles.timelineText}>Ikuti kegiatan, berkolaborasi bersama komunitas lokal, dan berkontribusi langsung kepada masyarakat di berbagai daerah.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div className={styles.joinCta}>
+            <Link href={ctaHref} className={styles.joinCtaButton}>
+              <span>Mulai Langkah Pertamamu</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </Link>
+          </div>
         </div>
       </section>
+
+      {/* Galeri Section — replaced with interactive expandable slider */}
+      <GallerySlider />
 
       {/* Partner Section */}
       <section className={styles.partnerSection}>
