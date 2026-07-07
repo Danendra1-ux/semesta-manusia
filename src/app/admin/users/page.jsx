@@ -23,12 +23,16 @@ export default function AdminUsersPage() {
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const optionsButtonRefs = useRef({});
 
+  // Selected rows for bulk delete
+  const [selectedRows, setSelectedRows] = useState([]);
+
   // Delete confirmation modal
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     id: null,
     name: "",
     email: "",
+    isBulk: false,
   });
   const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
@@ -37,14 +41,20 @@ export default function AdminUsersPage() {
   const [remindModal, setRemindModal] = useState({ open: false, id: null, name: "", email: "" });
   const [reminding, setReminding] = useState(false);
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users", { cache: "no-store" });
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (err) {
+      console.error("Fetch users error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/admin/users", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        setUsers(data.users || []);
-      })
-      .catch((err) => console.error("Fetch users error:", err))
-      .finally(() => setLoading(false));
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -100,16 +110,48 @@ export default function AdminUsersPage() {
       id: user.id,
       name: user.name || "",
       email: user.email || "",
+      isBulk: false,
     });
     setActiveDropdown(null);
   };
 
+  const openBulkDeleteModal = () => {
+    setDeleteModal({
+      open: true,
+      id: null,
+      name: "",
+      email: "",
+      isBulk: true,
+      bulkCount: selectedRows.length,
+    });
+  };
+
   const closeDeleteModal = () => {
     if (deleting) return;
-    setDeleteModal({ open: false, id: null, name: "", email: "" });
+    setDeleteModal({ open: false, id: null, name: "", email: "", isBulk: false, bulkCount: 0 });
   };
 
   const handleDelete = async () => {
+    if (deleteModal.isBulk) {
+      setDeleting(true);
+      let successCount = 0;
+      try {
+        for (const id of selectedRows) {
+          const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+          if (res.ok) successCount++;
+        }
+        await fetchUsers();
+        setSelectedRows([]);
+        setDeleteModal({ open: false, id: null, name: "", email: "", isBulk: false, bulkCount: 0 });
+        showToast(`Berhasil menghapus ${successCount} pengguna`);
+      } catch (err) {
+        showToast(err.message || "Gagal menghapus", true);
+      } finally {
+        setDeleting(false);
+      }
+      return;
+    }
+
     const id = deleteModal.id;
     if (!id) return;
     setDeleting(true);
@@ -118,7 +160,8 @@ export default function AdminUsersPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menghapus pengguna");
       setUsers((prev) => prev.filter((u) => u.id !== id));
-      setDeleteModal({ open: false, id: null, name: "", email: "" });
+      setSelectedRows((prev) => prev.filter((rowId) => rowId !== id));
+      setDeleteModal({ open: false, id: null, name: "", email: "", isBulk: false, bulkCount: 0 });
       showToast("Pengguna berhasil dihapus");
     } catch (err) {
       showToast(err.message || "Gagal menghapus", true);
@@ -230,6 +273,22 @@ export default function AdminUsersPage() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRows.length === paged.length && paged.length > 0) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(paged.map((u) => u.id));
+    }
+  };
+
+  const toggleSelectRow = (id) => {
+    if (selectedRows.includes(id)) {
+      setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
+    } else {
+      setSelectedRows([...selectedRows, id]);
+    }
   };
 
   const pageNumbers = useMemo(() => {
@@ -393,6 +452,26 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
+          {/* Selected rows bar */}
+          {selectedRows.length > 0 && !loading && (
+            <div className={styles.selectedBar}>
+              <span>{selectedRows.length} baris dipilih</span>
+              <button
+                className={styles.deleteSelectedBtn}
+                onClick={() => openBulkDeleteModal()}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Hapus yang dipilih
+              </button>
+              <button className={styles.cancelSelectionBtn} onClick={() => setSelectedRows([])}>
+                Batalkan
+              </button>
+            </div>
+          )}
+
           {/* Table */}
           {loading ? (
             <div className={styles.tableLoading}>
@@ -414,6 +493,14 @@ export default function AdminUsersPage() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
+                      <th className={styles.checkboxCell}>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={selectedRows.length === paged.length && paged.length > 0}
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
                       <th>Pengguna</th>
                       <th>Status</th>
                       <th>Bergabung</th>
@@ -423,7 +510,18 @@ export default function AdminUsersPage() {
                   </thead>
                   <tbody>
                     {paged.map((u) => (
-                      <tr key={u.id} className={styles.tableRow}>
+                      <tr
+                        key={u.id}
+                        className={`${styles.tableRow} ${selectedRows.includes(u.id) ? styles.selected : ""}`}
+                      >
+                        <td className={styles.checkboxCell}>
+                          <input
+                            type="checkbox"
+                            className={styles.checkbox}
+                            checked={selectedRows.includes(u.id)}
+                            onChange={() => toggleSelectRow(u.id)}
+                          />
+                        </td>
                         <td>
                           <div className={styles.userCell}>
                             <div className={styles.userAvatar}>{getInitials(u.name, u.email)}</div>
@@ -566,10 +664,14 @@ export default function AdminUsersPage() {
             </div>
 
             <h3 id="delete-user-modal-title" className={styles.modalTitle}>
-              Hapus Pengguna?
+              {deleteModal.isBulk ? "Hapus Pengguna Terpilih?" : "Hapus Pengguna?"}
             </h3>
             <p className={styles.modalDescription}>
-              Anda akan menghapus akun <strong>"{deleteModal.name || deleteModal.email}"</strong>. Tindakan ini tidak dapat dibatalkan dan akan menghapus akses login serta seluruh data terkait.
+              {deleteModal.isBulk ? (
+                <>Anda akan menghapus <strong>{deleteModal.bulkCount} pengguna</strong>. Tindakan ini tidak dapat dibatalkan dan akan menghapus akses login serta seluruh data terkait.</>
+              ) : (
+                <>Anda akan menghapus akun <strong>&ldquo;{deleteModal.name || deleteModal.email}&rdquo;</strong>. Tindakan ini tidak dapat dibatalkan dan akan menghapus akses login serta seluruh data terkait.</>
+              )}
             </p>
 
             <div className={styles.modalActions}>

@@ -1,47 +1,55 @@
+/* ==========================================
+   ULASAN ADMIN PAGE STYLES — SEMESTA MANUSIA
+   Brand Color: #00BFFF
+   ========================================== */
+
 /* =================== PAGE LAYOUT =================== */
 .pageLayout {
   display: flex;
   min-height: 100vh;
-  background: var(--bg-light, #f9fafb);
+  background: #f0f4f8;
 }
 
 .mainContent {
   flex: 1;
-  margin-left: 250px;
-  padding: 2rem 2.5rem;
+  margin-left: 240px;
   transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
 .mainContent.expanded {
-  margin-left: 70px;
+  margin-left: 72px;
 }
 
-/* =================== HEADER =================== */
+/* =================== CONTENT HEADER =================== */
 .contentHeader {
+  padding: 1.5rem 2rem 0;
+}
+
+.headerText {
   margin-bottom: 1.5rem;
 }
 
-.headerTitle {
-  font-size: 1.875rem;
+.pageTitle {
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-dark, #111827);
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.5px;
+  color: #111827;
+  margin: 0 0 0.25rem;
 }
 
-.headerSubtitle {
-  font-size: 0.9375rem;
-  color: var(--text-muted, #6b7280);
+.pageSubtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
   margin: 0;
-  max-width: 720px;
 }
 
 /* =================== FILTER TABS =================== */
 .filterTabs {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem;
   flex-wrap: wrap;
 }
 
@@ -51,23 +59,24 @@
   gap: 0.5rem;
   padding: 0.55rem 1.1rem;
   background: white;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid #e5e7eb;
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-muted, #6b7280);
+  color: #6b7280;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .filterTab:hover {
-  border-color: var(--brand, #00BFFF);
-  color: var(--brand, #00BFFF);
+  border-color: #00bfff;
+  color: #00bfff;
 }
 
 .filterTabActive {
-  background: linear-gradient(135deg, var(--brand, #00BFFF), var(--brand-dark, #0099CC));
+  background: linear-gradient(135deg, #00bfff, #0099cc);
   border-color: transparent;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 191, 255, 0.25);
@@ -95,15 +104,17 @@
   color: white;
 }
 
-/* =================== MAIN CARD =================== */
-.mainCard {
+/* =================== TABLE CARD =================== */
+.tableCard {
+  margin: 0 2rem 2rem;
   background: white;
-  border: 1px solid var(--border, #e5e7eb);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex: 1;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* =================== STATES =================== */
@@ -111,7 +122,7 @@
 .errorState {
   text-align: center;
   padding: 3rem 1.5rem;
-  color: var(--text-muted, #6b7280);
+  color: #6b7280;
 }
 
 .emptyState svg {
@@ -139,7 +150,7 @@
 
 .retryBtn {
   padding: 0.5rem 1.25rem;
-  background: var(--brand, #00BFFF);
+  background: #00bfff;
   color: white;
   border: none;
   border-radius: 50px;
@@ -172,34 +183,67 @@
 /* =================== TABLE =================== */
 .tableWrapper {
   overflow-x: auto;
-  margin: 0 -0.5rem;
+  overflow-y: visible;
+  padding: 0 1.5rem;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .table {
   width: 100%;
+  min-width: 1100px;
   border-collapse: collapse;
   font-size: 0.875rem;
+  table-layout: auto;
 }
 
 .table thead {
-  background: #f9fafb;
+  background: #f8fafc;
 }
 
 .table th {
   text-align: left;
-  padding: 0.85rem 0.9rem;
+  padding: 0.875rem 1rem;
   font-weight: 600;
-  color: var(--text-muted, #6b7280);
-  font-size: 0.75rem;
+  color: #9ca3af;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  border-bottom: 1px solid #e5e7eb;
   white-space: nowrap;
 }
 
+.table th:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.table th:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
 .table td {
-  padding: 0.9rem;
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
 }
 
@@ -207,13 +251,62 @@
   border-bottom: none;
 }
 
+.tableRow {
+  transition: background 0.15s ease;
+}
+
 .tableRow:hover {
-  background: #f9fafb;
+  background: #f0f9ff;
+}
+
+.tableRow.selected {
+  background: rgba(0, 191, 255, 0.05);
 }
 
 /* Column-specific styles */
+.thName,
 .tdName {
-  min-width: 160px;
+  min-width: 180px;
+}
+
+.thProgram,
+.tdProgram {
+  min-width: 150px;
+  color: #111827;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.thRating,
+.tdRating {
+  min-width: 130px;
+  white-space: nowrap;
+}
+
+.thContent,
+.tdContent {
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.thDate,
+.tdDate {
+  min-width: 120px;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.thStatus,
+.tdStatus {
+  min-width: 130px;
+  white-space: nowrap;
+}
+
+.thActions,
+.tdActions {
+  min-width: 200px;
+  white-space: nowrap;
 }
 
 .nameCell {
@@ -226,7 +319,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00BFFF 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #00bfff 0%, #7c3aed 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -238,17 +331,7 @@
 
 .nameText {
   font-weight: 600;
-  color: var(--text-dark, #111827);
-}
-
-.tdProgram {
-  color: var(--text-dark, #111827);
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.tdRating {
-  white-space: nowrap;
+  color: #111827;
 }
 
 .starDisplay {
@@ -262,53 +345,37 @@
   height: 16px;
 }
 
-.tdContent {
-  max-width: 320px;
-}
-
 .contentText {
   margin: 0;
-  color: var(--text-dark, #111827);
+  color: #111827;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
   font-style: italic;
-}
-
-.tdDate {
-  color: var(--text-muted, #6b7280);
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-.tdStatus {
-  white-space: nowrap;
 }
 
 .statusBadge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.65rem;
-  border-radius: 50px;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .statusPublished {
-  background: rgba(16, 185, 129, 0.12);
+  background: #d1fae5;
   color: #059669;
 }
 
 .statusPending {
   background: rgba(245, 158, 11, 0.12);
   color: #d97706;
-}
-
-.tdActions {
-  white-space: nowrap;
 }
 
 .actionGroup {
@@ -404,11 +471,11 @@
   height: 36px;
   padding: 0 0.65rem;
   background: white;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-dark, #111827);
+  color: #111827;
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
@@ -418,8 +485,8 @@
 }
 
 .paginationBtn:hover:not(:disabled) {
-  border-color: var(--brand, #00BFFF);
-  color: var(--brand, #00BFFF);
+  border-color: #00bfff;
+  color: #00bfff;
 }
 
 .paginationBtn:disabled {
@@ -433,19 +500,19 @@
 }
 
 .paginationBtnActive {
-  background: var(--brand, #00BFFF);
-  border-color: var(--brand, #00BFFF);
+  background: #00bfff;
+  border-color: #00bfff;
   color: white;
 }
 
 .paginationBtnActive:hover {
-  background: var(--brand-dark, #0099CC);
+  background: #0099cc;
   color: white;
 }
 
 .paginationDots {
   padding: 0 0.25rem;
-  color: var(--text-muted, #6b7280);
+  color: #6b7280;
 }
 
 /* =================== TOAST =================== */
@@ -541,4 +608,238 @@
     white-space: nowrap;
     flex-shrink: 0;
   }
+}
+
+/* =================== CHECKBOX + SELECTED ROWS =================== */
+.checkboxCell {
+  width: 48px;
+  text-align: center;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #00bfff;
+}
+
+.tableRow.selected {
+  background: rgba(0, 191, 255, 0.05);
+}
+
+/* =================== SELECTED BAR =================== */
+.selectedBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: #eff6ff;
+  border-bottom: 1px solid #dbeafe;
+  font-size: 0.875rem;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.deleteSelectedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.deleteSelectedBtn:hover {
+  background: #b91c1c;
+}
+
+.cancelSelectionBtn {
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cancelSelectionBtn:hover {
+  background: #dbeafe;
+}
+
+/* =================== MODAL KONFIRMASI =================== */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: backdropFadeIn 0.2s ease;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalDialog {
+  background: white;
+  border-radius: 18px;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  animation: modalPopIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  margin: 0 auto 1.25rem;
+  position: relative;
+}
+
+.modalIconWrap::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(239, 68, 68, 0.2);
+  animation: pulseRing 2s ease-out infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+.modalIcon {
+  width: 36px;
+  height: 36px;
+  color: #dc2626;
+  stroke-width: 2;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.625rem;
+  letter-spacing: -0.01em;
+}
+
+.modalDescription {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #6b7280;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.modalDescription strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.modalCancelBtn,
+.modalConfirmBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.modalCancelBtn {
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  color: #374151;
+}
+
+.modalCancelBtn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.modalConfirmBtn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modalConfirmBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+  transform: translateY(-1px);
+}
+
+.modalCancelBtn:disabled,
+.modalConfirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modalSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

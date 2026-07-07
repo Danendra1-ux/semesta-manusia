@@ -129,6 +129,19 @@ export default function AdminReviewsPage() {
   const [actionInFlight, setActionInFlight] = useState(null); // review id being processed
   const toastTimeoutRef = useRef(null);
 
+  // Selected rows for bulk delete
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  // Delete confirmation modal
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    id: null,
+    name: "",
+    isBulk: false,
+    bulkCount: 0,
+  });
+  const [deleting, setDeleting] = useState(false);
+
   const showToast = useCallback((msg, isError = false) => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     setToastMessage(msg);
@@ -143,32 +156,28 @@ export default function AdminReviewsPage() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/admin/reviews", { cache: "no-store" });
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(data?.error || "Gagal memuat ulasan");
-          setReviews([]);
-          setLoading(false);
-          return;
-        }
-        setReviews(data.reviews || []);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        console.error("Fetch admin reviews error:", err);
-        setError("Tidak dapat terhubung ke server");
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch("/api/admin/reviews", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || "Gagal memuat ulasan");
         setReviews([]);
         setLoading(false);
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      setReviews(data.reviews || []);
+      setLoading(false);
+    } catch (err) {
+      console.error("Fetch admin reviews error:", err);
+      setError("Tidak dapat terhubung ke server");
+      setReviews([]);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
   }, []);
 
   const handleTogglePublish = async (review) => {
@@ -198,14 +207,51 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const openDeleteModal = (review) => {
+    setDeleteModal({
+      open: true,
+      id: review.id,
+      name: review.name || "",
+      isBulk: false,
+      bulkCount: 0,
+    });
+  };
+
+  const openBulkDeleteModal = () => {
+    setDeleteModal({
+      open: true,
+      id: null,
+      name: "",
+      isBulk: true,
+      bulkCount: selectedRows.length,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteModal({ open: false, id: null, name: "", isBulk: false, bulkCount: 0 });
+  };
+
   const handleDelete = async (review) => {
-    if (actionInFlight) return;
-    if (!window.confirm(`Hapus ulasan dari "${review.name}"? Tindakan ini tidak dapat dibatalkan.`)) {
-      return;
-    }
-    setActionInFlight(review.id);
+    if (actionInFlight || deleting) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/reviews?id=${review.id}`, {
+      if (deleteModal.isBulk) {
+        let successCount = 0;
+        for (const id of selectedRows) {
+          const res = await fetch(`/api/admin/reviews?id=${id}`, { method: "DELETE" });
+          if (res.ok) successCount++;
+        }
+        await fetchReviews();
+        setSelectedRows([]);
+        setDeleteModal({ open: false, id: null, name: "", isBulk: false, bulkCount: 0 });
+        showToast(`Berhasil menghapus ${successCount} ulasan`);
+        return;
+      }
+
+      const id = deleteModal.id || review?.id;
+      if (!id) return;
+      const res = await fetch(`/api/admin/reviews?id=${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -213,13 +259,15 @@ export default function AdminReviewsPage() {
         showToast(data?.error || "Gagal menghapus ulasan", true);
         return;
       }
-      setReviews((prev) => prev.filter((r) => r.id !== review.id));
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+      setSelectedRows((prev) => prev.filter((rowId) => rowId !== id));
+      setDeleteModal({ open: false, id: null, name: "", isBulk: false, bulkCount: 0 });
       showToast("Ulasan berhasil dihapus");
     } catch (err) {
       console.error("Delete review error:", err);
       showToast("Gagal menghapus ulasan", true);
     } finally {
-      setActionInFlight(null);
+      setDeleting(false);
     }
   };
 
@@ -236,6 +284,22 @@ export default function AdminReviewsPage() {
     (safePage - 1) * ITEMS_PER_PAGE,
     safePage * ITEMS_PER_PAGE
   );
+
+  const toggleSelectAll = () => {
+    if (selectedRows.length === currentItems.length && currentItems.length > 0) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(currentItems.map((r) => r.id));
+    }
+  };
+
+  const toggleSelectRow = (id) => {
+    if (selectedRows.includes(id)) {
+      setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
+    } else {
+      setSelectedRows([...selectedRows, id]);
+    }
+  };
 
   const counts = {
     all: reviews.length,
@@ -260,48 +324,68 @@ export default function AdminReviewsPage() {
 
         {/* Header */}
         <div className={styles.contentHeader}>
-          <h1 className={styles.headerTitle}>Ulasan Relawan</h1>
-          <p className={styles.headerSubtitle}>
-            Moderasi ulasan yang dikirimkan oleh pengguna. Ulasan yang disetujui akan tampil di landing page.
-          </p>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className={styles.filterTabs} role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={filter === "all"}
-            className={`${styles.filterTab} ${filter === "all" ? styles.filterTabActive : ""}`}
-            onClick={() => handleFilterChange("all")}
-          >
-            Semua
-            <span className={styles.filterCount}>{counts.all}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={filter === "pending"}
-            className={`${styles.filterTab} ${filter === "pending" ? styles.filterTabActive : ""}`}
-            onClick={() => handleFilterChange("pending")}
-          >
-            Menunggu
-            <span className={styles.filterCount}>{counts.pending}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={filter === "published"}
-            className={`${styles.filterTab} ${filter === "published" ? styles.filterTabActive : ""}`}
-            onClick={() => handleFilterChange("published")}
-          >
-            Ditampilkan
-            <span className={styles.filterCount}>{counts.published}</span>
-          </button>
+          <div className={styles.headerText}>
+            <h1 className={styles.pageTitle}>Ulasan Relawan</h1>
+            <p className={styles.pageSubtitle}>
+              Moderasi ulasan yang dikirimkan oleh pengguna. Ulasan yang disetujui akan tampil di landing page.
+            </p>
+          </div>
         </div>
 
         {/* Main Card */}
-        <div className={styles.mainCard}>
+        <div className={styles.tableCard}>
+          {/* Filter Tabs */}
+          <div className={styles.filterTabs} role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "all"}
+              className={`${styles.filterTab} ${filter === "all" ? styles.filterTabActive : ""}`}
+              onClick={() => handleFilterChange("all")}
+            >
+              Semua
+              <span className={styles.filterCount}>{counts.all}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "pending"}
+              className={`${styles.filterTab} ${filter === "pending" ? styles.filterTabActive : ""}`}
+              onClick={() => handleFilterChange("pending")}
+            >
+              Menunggu
+              <span className={styles.filterCount}>{counts.pending}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "published"}
+              className={`${styles.filterTab} ${filter === "published" ? styles.filterTabActive : ""}`}
+              onClick={() => handleFilterChange("published")}
+            >
+              Ditampilkan
+              <span className={styles.filterCount}>{counts.published}</span>
+            </button>
+          </div>
+          {/* Selected rows bar */}
+          {selectedRows.length > 0 && !loading && (
+            <div className={styles.selectedBar}>
+              <span>{selectedRows.length} baris dipilih</span>
+              <button
+                className={styles.deleteSelectedBtn}
+                onClick={() => openBulkDeleteModal()}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Hapus yang dipilih
+              </button>
+              <button className={styles.cancelSelectionBtn} onClick={() => setSelectedRows([])}>
+                Batalkan
+              </button>
+            </div>
+          )}
           {loading ? (
             <div className={styles.skeletonList}>
               {[1, 2, 3].map((i) => (
@@ -336,6 +420,14 @@ export default function AdminReviewsPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
+                    <th className={styles.checkboxCell}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={selectedRows.length === currentItems.length && currentItems.length > 0}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className={styles.thName}>Nama</th>
                     <th className={styles.thProgram}>Program</th>
                     <th className={styles.thRating}>Rating</th>
@@ -347,7 +439,18 @@ export default function AdminReviewsPage() {
                 </thead>
                 <tbody>
                   {currentItems.map((review) => (
-                    <tr key={review.id} className={styles.tableRow}>
+                    <tr
+                      key={review.id}
+                      className={`${styles.tableRow} ${selectedRows.includes(review.id) ? styles.selected : ""}`}
+                    >
+                      <td className={styles.checkboxCell}>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={selectedRows.includes(review.id)}
+                          onChange={() => toggleSelectRow(review.id)}
+                        />
+                      </td>
                       <td className={styles.tdName}>
                         <div className={styles.nameCell}>
                           <div className={styles.avatar}>
@@ -402,7 +505,7 @@ export default function AdminReviewsPage() {
                           <button
                             type="button"
                             className={`${styles.actionBtn} ${styles.actionDelete}`}
-                            onClick={() => handleDelete(review)}
+                            onClick={() => openDeleteModal(review)}
                             disabled={actionInFlight === review.id}
                             title="Hapus ulasan"
                           >
@@ -429,6 +532,69 @@ export default function AdminReviewsPage() {
           />
         )}
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && (
+        <div className={styles.modalBackdrop} onClick={closeDeleteModal}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-review-modal-title"
+          >
+            <div className={styles.modalIconWrap}>
+              <svg className={styles.modalIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+            </div>
+
+            <h3 id="delete-review-modal-title" className={styles.modalTitle}>
+              {deleteModal.isBulk ? "Hapus Ulasan Terpilih?" : "Hapus Ulasan?"}
+            </h3>
+            <p className={styles.modalDescription}>
+              {deleteModal.isBulk ? (
+                <>Anda akan menghapus <strong>{deleteModal.bulkCount} ulasan</strong>. Tindakan ini tidak dapat dibatalkan.</>
+              ) : (
+                <>Anda akan menghapus ulasan dari <strong>&ldquo;{deleteModal.name}&rdquo;</strong>. Tindakan ini tidak dapat dibatalkan.</>
+              )}
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={closeDeleteModal}
+                disabled={deleting}
+              >
+                Batal
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={() => handleDelete()}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className={styles.modalSpinner} />
+                    <span>Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}>
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    </svg>
+                    <span>Ya, Hapus</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
