@@ -432,7 +432,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
                 <h3 className={styles.timelineTitle}>Daftar Online</h3>
-                <p className={styles.timelineText}>Lengkapi formulir pendaftaran melalui website ini, pilih skema Fully Funded atau Self Funded, dan unggah berkas yang dibutuhkan.</p>
+                <p className={styles.timelineText}>Lengkapi formulir pendaftaran melalui website ini, pilih jalur pendaftaran Fully Funded atau Self Funded (khusus untuk program Semesta Jelajah Nusantara), dan unggah berkas yang dibutuhkan.</p>
               </div>
             </li>
 
