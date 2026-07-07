@@ -276,6 +276,104 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Cara Bergabung Section */}
+      <section id="cara-bergabung" className={styles.joinSection}>
+        <div className={styles.sectionContainer}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTag}>Cara Bergabung</span>
+            <h2 className={styles.sectionTitle}>
+              Empat Langkah Mudah<br/>
+              <span className={styles.titleAccent}>Menjadi Relawan</span>
+            </h2>
+            <p className={styles.sectionDescription}>
+              Mulai perjalanan kontribusimu bersama Semesta Manusia Indonesia. Cukup ikuti empat langkah sederhana berikut ini.
+            </p>
+          </div>
+
+          <ol className={styles.timeline}>
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>1</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Pilih Program</h3>
+                <p className={styles.timelineText}>Cari kegiatan yang sesuai minat dan ketersediaanmu, mulai dari Semesta Camp hingga Semesta Jelajah Nusantara.</p>
+              </div>
+            </li>
+
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>2</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Daftar Online</h3>
+                <p className={styles.timelineText}>Lengkapi formulir pendaftaran melalui website ini, pilih jalur pendaftaran Fully Funded atau Self Funded (khusus untuk program Semesta Jelajah Nusantara), dan unggah berkas yang dibutuhkan.</p>
+              </div>
+            </li>
+
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>3</span>
+                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Proses Seleksi</h3>
+                <p className={styles.timelineText}>Tim Semesta Manusia akan melakukan verifikasi pendaftaran dan seleksi untuk memastikan kecocokan dengan program.</p>
+              </div>
+            </li>
+
+            <li className={styles.timelineItem}>
+              <div className={styles.timelineStep}>
+                <span className={styles.timelineNumber}>4</span>
+              </div>
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <h3 className={styles.timelineTitle}>Menjadi Relawan</h3>
+                <p className={styles.timelineText}>Ikuti kegiatan, berkolaborasi bersama komunitas lokal, dan berkontribusi langsung kepada masyarakat di berbagai daerah.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div className={styles.joinCta}>
+            <Link href={ctaHref} className={styles.joinCtaButton}>
+              <span>Mulai Langkah Pertamamu</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Program Preview Section */}
       <section className={styles.previewSection}>
         <div className={styles.sectionContainer}>
@@ -382,104 +480,6 @@ export default function LandingPage() {
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </Link>
-        </div>
-      </section>
-
-      {/* Cara Bergabung Section */}
-      <section id="cara-bergabung" className={styles.joinSection}>
-        <div className={styles.sectionContainer}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionTag}>Cara Bergabung</span>
-            <h2 className={styles.sectionTitle}>
-              Empat Langkah Mudah<br/>
-              <span className={styles.titleAccent}>Menjadi Relawan</span>
-            </h2>
-            <p className={styles.sectionDescription}>
-              Mulai perjalanan kontribusimu bersama Semesta Manusia Indonesia. Cukup ikuti empat langkah sederhana berikut ini.
-            </p>
-          </div>
-
-          <ol className={styles.timeline}>
-            <li className={styles.timelineItem}>
-              <div className={styles.timelineStep}>
-                <span className={styles.timelineNumber}>1</span>
-                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
-              </div>
-              <div className={styles.timelineCard}>
-                <div className={styles.timelineIcon} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                </div>
-                <h3 className={styles.timelineTitle}>Pilih Program</h3>
-                <p className={styles.timelineText}>Cari kegiatan yang sesuai minat dan ketersediaanmu, mulai dari Semesta Camp hingga Semesta Jelajah Nusantara.</p>
-              </div>
-            </li>
-
-            <li className={styles.timelineItem}>
-              <div className={styles.timelineStep}>
-                <span className={styles.timelineNumber}>2</span>
-                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
-              </div>
-              <div className={styles.timelineCard}>
-                <div className={styles.timelineIcon} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="9" y1="13" x2="15" y2="13"/>
-                    <line x1="9" y1="17" x2="13" y2="17"/>
-                  </svg>
-                </div>
-                <h3 className={styles.timelineTitle}>Daftar Online</h3>
-                <p className={styles.timelineText}>Lengkapi formulir pendaftaran melalui website ini, pilih jalur pendaftaran Fully Funded atau Self Funded (khusus untuk program Semesta Jelajah Nusantara), dan unggah berkas yang dibutuhkan.</p>
-              </div>
-            </li>
-
-            <li className={styles.timelineItem}>
-              <div className={styles.timelineStep}>
-                <span className={styles.timelineNumber}>3</span>
-                <span className={styles.timelineArrow} aria-hidden="true">↓</span>
-              </div>
-              <div className={styles.timelineCard}>
-                <div className={styles.timelineIcon} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 11l3 3L22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
-                </div>
-                <h3 className={styles.timelineTitle}>Proses Seleksi</h3>
-                <p className={styles.timelineText}>Tim Semesta Manusia akan melakukan verifikasi pendaftaran dan seleksi untuk memastikan kecocokan dengan program.</p>
-              </div>
-            </li>
-
-            <li className={styles.timelineItem}>
-              <div className={styles.timelineStep}>
-                <span className={styles.timelineNumber}>4</span>
-              </div>
-              <div className={styles.timelineCard}>
-                <div className={styles.timelineIcon} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </div>
-                <h3 className={styles.timelineTitle}>Menjadi Relawan</h3>
-                <p className={styles.timelineText}>Ikuti kegiatan, berkolaborasi bersama komunitas lokal, dan berkontribusi langsung kepada masyarakat di berbagai daerah.</p>
-              </div>
-            </li>
-          </ol>
-
-          <div className={styles.joinCta}>
-            <Link href={ctaHref} className={styles.joinCtaButton}>
-              <span>Mulai Langkah Pertamamu</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Link>
-          </div>
         </div>
       </section>
 
