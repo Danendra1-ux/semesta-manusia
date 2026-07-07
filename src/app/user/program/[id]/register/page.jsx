@@ -514,7 +514,12 @@ export default function RegisterPage({ params }) {
           </span>
           {renderStepper()}
 
-          <div className={styles.helpBox}>
+          <a
+            href="https://wa.me/6285121594627"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.helpBox}
+          >
             <div className={styles.helpIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -527,7 +532,7 @@ export default function RegisterPage({ params }) {
               <h4>Butuh Bantuan?</h4>
               <p>Hubungi kami via WhatsApp</p>
             </div>
-          </div>
+          </a>
         </aside>
 
         <main className={styles.mainContent}>
