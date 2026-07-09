@@ -148,13 +148,13 @@ function TambahFormulirSJNPageInner() {
           },
           {
             id: `f-${baseId}-d2`,
-            label: "Jika anda terpilih sebagai delegasi, bidang apa yang akan anda pilih?",
+            label: "Jika anda terpilih sebagai delegasi, divisi apa yang akan anda pilih?",
             type: "dropdown",
             required: true,
             isFixed: false,
             value: "",
-            placeholder: "Pilih bidang",
-            options: [],
+            placeholder: "Pilih divisi",
+            options: ["Pariwisata dan Lingkungan", "Kesehatan", "Pendidikan"],
           },
           {
             id: `f-${baseId}-d3`,

@@ -146,7 +146,7 @@ function FormulirSJNPageInner({ params }) {
             isFixed: false,
             value: "",
             placeholder: "Pilih divisi",
-            options: ["Pariwisata dan Lingkungan", "Kesehatan", "Pendidikan"],
+            options: [],
           },
           {
             id: `f-${baseId}-d3`,
