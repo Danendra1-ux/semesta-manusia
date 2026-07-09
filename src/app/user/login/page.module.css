@@ -214,6 +214,25 @@
   gap: 0.4rem;
 }
 
+.passwordLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forgotLink {
+  font-size: 0.82rem;
+  color: #00bfff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.forgotLink:hover {
+  color: #0084cc;
+  text-decoration: underline;
+}
+
 .inputLabel {
   font-size: 0.85rem;
   font-weight: 600;

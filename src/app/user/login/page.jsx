@@ -288,9 +288,14 @@ function LoginForm() {
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.inputLabel}>
-                Password
-              </label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="password" className={styles.inputLabel}>
+                  Password
+                </label>
+                <Link href="/user/forgot-password" className={styles.forgotLink}>
+                  Lupa password?
+                </Link>
+              </div>
               <div className={styles.passwordWrapper}>
                 <input
                   id="password"
