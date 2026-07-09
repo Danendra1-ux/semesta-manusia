@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,51 +9,93 @@ import styles from "../forgot-password/page.module.css";
 
 function ResetPasswordForm() {
   const router = useRouter();
+  const supabaseRef = useRef(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState("verifying"); // verifying | ready | invalid | success
+  const [status, setStatus] = useState("verifying");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Build a single, stable Supabase client and keep it alive.
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createSupabaseClient();
+    }
+    return supabaseRef.current;
+  };
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const supabase = getSupabase();
     let cancelled = false;
+    let resolved = false;
 
-    async function checkSession() {
-      if (typeof window === "undefined") return;
-      const supabase = createSupabaseClient();
-      const { data } = await supabase.auth.getSession();
+    function markReady() {
+      if (cancelled || resolved) return;
+      resolved = true;
+      // Clean URL so tokens don't linger.
+      try {
+        window.history.replaceState(null, "", window.location.pathname);
+      } catch (_e) {}
+      setStatus("ready");
+    }
 
-      // Supabase detectSessionInUrl picks up tokens from window.location.hash
-      // on the client. We trigger an explicit exchange here so the recovery
-      // session is established before the user submits a new password.
-      const hash = window.location.hash || "";
-      const hasRecoveryTokens =
-        hash.includes("access_token") || hash.includes("type=recovery");
+    function markInvalid() {
+      if (cancelled || resolved) return;
+      resolved = true;
+      setStatus("invalid");
+    }
 
-      if (hasRecoveryTokens) {
-        try {
-          await supabase.auth.exchangeCodeForSession(window.location.href);
-        } catch (_e) {
-          // Fall through to session check below.
-        }
-      }
+    // ── 1. onAuthStateChange fires whenever the session is set/updated. ──
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) markReady();
+    });
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData?.session;
+    // ── 2. Try exchanging a PKCE code from the query string. ──
+    //     Supabase password-reset links use PKCE: ?code=XXX&type=recovery
+    const searchQuery = window.location.search || "";
+    const searchParams = new URLSearchParams(searchQuery);
+    const codeFromQuery = searchParams.get("code");
 
-      if (cancelled) return;
-
-      if (session) {
-        setStatus("ready");
-      } else {
-        setStatus("invalid");
+    if (codeFromQuery) {
+      try {
+        supabase.auth
+          .exchangeCodeForSession(codeFromQuery)
+          .then(() => {
+            supabase.auth.getSession().then(({ data }) => {
+              if (data?.session) markReady();
+            });
+          })
+          .catch(() => {
+            // Fall through — maybe the code expired.
+          });
+      } catch (_e) {
+        // Fall through.
       }
     }
 
-    checkSession();
+    // ── 3. Check getSession (pick up cookies from a previous visit or
+    //     from detectSessionInUrl processing implicit-flow tokens). ──
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) markReady();
+    });
+
+    // ── 4. Hard timeout — never leave the user on "verifying..." forever. ──
+    const timeoutId = setTimeout(() => {
+      // At expiry, do one final check: maybe onAuthStateChange hasn't fired
+      // yet for the PKCE flow.
+      supabase.auth.getSession().then(({ data }) => {
+        if (data?.session) markReady();
+        else markInvalid();
+      });
+    }, 5000);
+
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
+      sub?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -81,7 +123,7 @@ function ResetPasswordForm() {
 
     setIsLoading(true);
     try {
-      const supabase = createSupabaseClient();
+      const supabase = getSupabase();
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
@@ -89,8 +131,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      // Sign out so the user lands on login fresh instead of being auto-logged
-      // into whatever protected page they were about to be sent to.
+      // Sign out so the user lands on login fresh.
       await supabase.auth.signOut();
 
       setStatus("success");
@@ -164,6 +205,7 @@ function ResetPasswordForm() {
       );
     }
 
+    // status === "ready" → show the form
     return (
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {errorMsg && (
