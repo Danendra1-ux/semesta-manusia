@@ -33,7 +33,7 @@ export async function POST(request) {
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
       new URL(request.url).origin;
-    const emailRedirectTo = `${siteUrl}/user/login`;
+    const emailRedirectTo = `${siteUrl}/user/reset-password`;
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
