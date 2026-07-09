@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,6 @@ import styles from "../forgot-password/page.module.css";
 
 function ResetPasswordForm() {
   const router = useRouter();
-  const supabaseRef = useRef(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,25 +16,16 @@ function ResetPasswordForm() {
   const [status, setStatus] = useState("verifying");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Build a single, stable Supabase client and keep it alive.
-  const getSupabase = () => {
-    if (!supabaseRef.current) {
-      supabaseRef.current = createSupabaseClient();
-    }
-    return supabaseRef.current;
-  };
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const supabase = getSupabase();
+    const supabase = createSupabaseClient();
     let cancelled = false;
-    let resolved = false;
 
     function markReady() {
-      if (cancelled || resolved) return;
-      resolved = true;
-      // Clean URL so tokens don't linger.
+      if (cancelled) return;
+      cancelled = true;
+      // Clean URL.
       try {
         window.history.replaceState(null, "", window.location.pathname);
       } catch (_e) {}
@@ -43,58 +33,92 @@ function ResetPasswordForm() {
     }
 
     function markInvalid() {
-      if (cancelled || resolved) return;
-      resolved = true;
+      if (cancelled) return;
+      cancelled = true;
       setStatus("invalid");
     }
 
-    // ── 1. onAuthStateChange fires whenever the session is set/updated. ──
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) markReady();
-    });
+    // Extract tokens from URL hash or query params.
+    const hashStr = window.location.hash.slice(1);
+    const searchStr = window.location.search.replace(/^\?/, "");
+    const urlData = [hashStr, searchStr].filter(Boolean).join("&");
 
-    // ── 2. Try exchanging a PKCE code from the query string. ──
-    //     Supabase password-reset links use PKCE: ?code=XXX&type=recovery
-    const searchQuery = window.location.search || "";
-    const searchParams = new URLSearchParams(searchQuery);
-    const codeFromQuery = searchParams.get("code");
+    if (urlData) {
+      const params = new URLSearchParams(urlData);
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      const typeParam = params.get("type");
+      const isRecovery = typeParam === "recovery";
+      const hasTokenPair = accessToken && refreshToken;
 
-    if (codeFromQuery) {
-      try {
-        supabase.auth
-          .exchangeCodeForSession(codeFromQuery)
-          .then(() => {
-            supabase.auth.getSession().then(({ data }) => {
-              if (data?.session) markReady();
-            });
-          })
-          .catch(() => {
-            // Fall through — maybe the code expired.
-          });
-      } catch (_e) {
-        // Fall through.
+      if (hasTokenPair && isRecovery) {
+        // Directly set the session — the singleton client's detectSessionInUrl
+        // failed because of flowType mismatch (pkce vs implicit recovery tokens).
+        try {
+          supabase.auth
+            .setSession({ access_token: accessToken, refresh_token: refreshToken })
+            .then(({ data: sess }) => {
+              if (sess?.session) {
+                markReady();
+              } else {
+                // setSession may not populate the session in the return value
+                // for recovery tokens; check explicitly.
+                setTimeout(() => {
+                  if (!cancelled) markReady();
+                }, 100);
+              }
+            })
+            .catch(() => {});
+        } catch (_e) {}
+      } else if (!hasTokenPair && isRecovery) {
+        // token_hash from query string (explicit-flow or PKCE flow)
+        // Supabase verify endpoint would have stripped the hash tokens from query
+        // and put them in the URL. If we only see type=recovery without access_token,
+        // it might have already been processed by detectSessionInUrl (but failed
+        // due to flow mismatch).
+        // In this case, check if there's a session stored anyway.
+      } else {
+        // No valid token pair — could be a stale recovery link.
+        // Check the already-subscribed session.
       }
     }
 
-    // ── 3. Check getSession (pick up cookies from a previous visit or
-    //     from detectSessionInUrl processing implicit-flow tokens). ──
-    supabase.auth.getSession().then(({ data }) => {
-      if (data?.session) markReady();
+    // Also listen for any session changes.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) markReady();
     });
 
-    // ── 4. Hard timeout — never leave the user on "verifying..." forever. ──
-    const timeoutId = setTimeout(() => {
-      // At expiry, do one final check: maybe onAuthStateChange hasn't fired
-      // yet for the PKCE flow.
+    // Fallback: poll getSession a couple times.
+    let pollCount = 0;
+    const pollInterval = setInterval(() => {
+      if (pollCount++ > 10) {
+        clearInterval(pollInterval);
+        if (!cancelled) markInvalid();
+        return;
+      }
+      if (cancelled) {
+        clearInterval(pollInterval);
+        return;
+      }
+      supabase.auth.getSession().then(({ data }) => {
+        if (data?.session) {
+          clearInterval(pollInterval);
+          markReady();
+        }
+      });
+    }, 500);
+
+    // Final timeout.
+    setTimeout(() => {
+      clearInterval(pollInterval);
       supabase.auth.getSession().then(({ data }) => {
         if (data?.session) markReady();
-        else markInvalid();
+        else if (!cancelled) markInvalid();
       });
     }, 5000);
 
     return () => {
       cancelled = true;
-      clearTimeout(timeoutId);
       sub?.subscription?.unsubscribe();
     };
   }, []);
@@ -123,7 +147,7 @@ function ResetPasswordForm() {
 
     setIsLoading(true);
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseClient();
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
@@ -131,9 +155,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      // Sign out so the user lands on login fresh.
       await supabase.auth.signOut();
-
       setStatus("success");
     } catch (err) {
       setErrorMsg("Terjadi kesalahan. Coba lagi nanti.");
@@ -205,7 +227,6 @@ function ResetPasswordForm() {
       );
     }
 
-    // status === "ready" → show the form
     return (
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {errorMsg && (

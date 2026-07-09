@@ -7,7 +7,25 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to landing page
+    // Supabase verify endpoint redirects to the site root with hash tokens:
+    //   /#access_token=...&type=recovery
+    // Detect recovery tokens and forward to the password-reset page.
+    const hash = window.location.hash.slice(1);
+    const searchQuery = window.location.search;
+    const queryParts = [hash, searchQuery].filter(Boolean).join("&");
+    const hasRecoveryTokens =
+      queryParts.includes("access_token") ||
+      queryParts.includes("type=recovery") ||
+      queryParts.includes("type=signup");
+
+    if (hasRecoveryTokens) {
+      // Clean the URL and navigate to the password-reset page.
+      window.history.replaceState(null, "", "/user/reset-password");
+      router.replace("/user/reset-password");
+      return;
+    }
+
+    // Normal root behaviour: go to landing page.
     router.replace("/user/landingpage");
   }, [router]);
 
