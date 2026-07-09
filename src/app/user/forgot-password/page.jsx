@@ -74,17 +74,6 @@ export default function ForgotPasswordPage() {
               </svg>
               <span>Cek inbox email kamu untuk tautan reset</span>
             </div>
-            <div className={styles.featureItem}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div className={styles.featureItem}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Bisa kirim ulang jika belum terima email</span>
-            </div>
           </div>
         </div>
       </div>
@@ -164,7 +153,7 @@ export default function ForgotPasswordPage() {
                 <strong>{email}</strong>
               </p>
               <p className={styles.sentSubtext}>
-                Cek inbox (atau folder spam) kamu. Tautan berlaku selama 1 jam.
+                Cek inbox (atau folder spam) kamu.
               </p>
             </div>
           )}
