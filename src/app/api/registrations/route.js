@@ -14,6 +14,47 @@ export async function POST(request) {
     } = body;
 
     // =====================================================================
+    // 0. GUARD STATUS PROGRAM / FUNDING TYPE
+    // Frontend bisa di-bypass (langsung POST /api/registrations via curl/
+    // devtools, atau JavaScript dimatikan), jadi kita validasi status di
+    // server. Tolak jika program non-aktif, status "Ditutup", atau
+    // funding_type yang diminta Non-aktif.
+    // =====================================================================
+    const programCheck = await supabase
+      .from('programs')
+      .select('id, is_active, status')
+      .eq('id', program_id)
+      .maybeSingle();
+
+    if (programCheck.error) throw programCheck.error;
+    if (!programCheck.data) {
+      return NextResponse.json(
+        { error: 'Program tidak ditemukan.' },
+        { status: 404 }
+      );
+    }
+    if (programCheck.data.is_active === false || programCheck.data.status === 'Ditutup') {
+      return NextResponse.json(
+        { error: 'Pendaftaran untuk program ini sudah ditutup.' },
+        { status: 403 }
+      );
+    }
+    if (funding_type_id) {
+      const ftCheck = await supabase
+        .from('program_funding_types')
+        .select('is_active')
+        .eq('id', funding_type_id)
+        .maybeSingle();
+      if (ftCheck.error) throw ftCheck.error;
+      if (ftCheck.data && ftCheck.data.is_active === false) {
+        return NextResponse.json(
+          { error: 'Pendaftaran untuk tipe pendanaan ini sudah ditutup.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // =====================================================================
     // 1. CEK DUPLIKAT EMAIL ATAU WHATSAPP DI PROGRAM & TIPE PENDAFTARAN YANG SAMA
     // =====================================================================
     let duplicateQuery = supabase

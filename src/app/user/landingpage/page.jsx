@@ -127,27 +127,74 @@ export default function LandingPage() {
     return "linear-gradient(135deg, #00BFFF 0%, #0099CC 100%)";
   };
 
-  const formatDate = (dateString) => {
+  const formatShortDate = (dateString) => {
     if (!dateString) return null;
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: 'numeric',
-      month: 'long',
+      month: 'short',
       year: 'numeric'
     });
   };
 
-  const formatDateRange = (start, end) => {
+  const isSameDay = (a, b) => {
+    if (!a || !b) return false;
+    const da = new Date(a);
+    const db = new Date(b);
+    return (
+      da.getFullYear() === db.getFullYear() &&
+      da.getMonth() === db.getMonth() &&
+      da.getDate() === db.getDate()
+    );
+  };
+
+  const formatEventDateRange = (start, end) => {
     if (!start) return null;
+    const startStr = formatShortDate(start);
+    if (!end || isSameDay(start, end)) return startStr;
+    return `${startStr} - ${formatShortDate(end)}`;
+  };
 
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    const startDate = new Date(start).toLocaleDateString('id-ID', options);
+  const getFundingDeadline = (program) => {
+    const fundingTypes = Array.isArray(program.program_funding_types)
+      ? program.program_funding_types
+      : [];
+    return fundingTypes.find((ft) => ft.deadline && ft.is_active !== false) || null;
+  };
 
-    if (!end || start === end) {
-      return startDate;
+  const getFundedEntries = (program) => {
+    const fundingTypes = Array.isArray(program.program_funding_types)
+      ? program.program_funding_types
+      : [];
+    return fundingTypes
+      .filter((ft) => ft.deadline && ft.is_active !== false)
+      .sort((a, b) => {
+        const order = { fully: 0, self: 1 };
+        return (order[a.code] ?? 99) - (order[b.code] ?? 99);
+      });
+  };
+
+  const getDeadlineLabel = (program) => {
+    if (program.category === "SJN") {
+      const entries = getFundedEntries(program);
+      if (entries.length === 0) return null;
+      return entries.map((ft) => {
+        const label =
+          ft.code === "fully"
+            ? "Batas Registrasi Fully"
+            : ft.code === "self"
+            ? "Batas Registrasi Self"
+            : ft.label || ft.code;
+        return { label, date: formatShortDate(ft.deadline) };
+      });
     }
 
-    const endDate = new Date(end).toLocaleDateString('id-ID', options);
-    return `${startDate} - ${endDate}`;
+    const rootEntry = program.funding_deadline
+      ? { label: "Batas Registrasi", date: formatShortDate(program.funding_deadline) }
+      : getFundingDeadline(program)
+      ? { label: "Batas Registrasi", date: formatShortDate(getFundingDeadline(program).deadline) }
+      : null;
+
+    return rootEntry ? [rootEntry] : null;
   };
 
   const getBadgeClass = (category) => {
@@ -431,7 +478,8 @@ export default function LandingPage() {
                           <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
                         <span>
-                          {formatDate(program.event_start_date) || "Segera Hadir"}
+                          {formatEventDateRange(program.event_start_date, program.event_end_date)
+                            || "Segera Hadir"}
                         </span>
                       </div>
                       <div className={styles.previewMetaItem}>
@@ -443,15 +491,24 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    {/* Deadline Badge */}
+                    {/* Registration Deadline Badge */}
                     <div className={`${styles.previewDeadlineBadge} ${getBadgeClass(program.category)}`}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                       </svg>
-                      <span>
-                        {formatDateRange(program.event_start_date, program.event_end_date) || "Segera Daftar"}
-                      </span>
+                      <div className={styles.previewDeadlineBadgeContent}>
+                        {(() => {
+                          const entries = getDeadlineLabel(program);
+                          if (!entries) return <span>Segera Daftar</span>;
+                          return entries.map((entry, i) => (
+                            <div key={i} className={styles.previewDeadlineBadgeRow}>
+                              <span className={styles.previewDeadlineBadgeLabel}>{entry.label}:</span>
+                              <span className={styles.previewDeadlineBadgeDate}>{entry.date}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
                     </div>
                   </div>
                   <Link href={`/user/program/${program.id}`} className={styles.previewButton}>

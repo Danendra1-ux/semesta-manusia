@@ -62,6 +62,7 @@ function TambahSemestaCampProgramInner() {
 
   // Batas Registrasi — satu field tunggal, unlock setelah formulir dibuat
   const [batasRegistrasi, setBatasRegistrasi] = useState("");
+  const [batasRegistrasiStatus, setBatasRegistrasiStatus] = useState("Aktif");
   const [formulirCreated, setFormulirCreated] = useState(false);
   const isLocked = !formulirCreated;
 
@@ -102,6 +103,7 @@ function TambahSemestaCampProgramInner() {
         if (parsed.lokasi) setLokasi(parsed.lokasi);
         if (parsed.deskripsi) setDeskripsi(parsed.deskripsi);
         if (parsed.batasRegistrasi) setBatasRegistrasi(parsed.batasRegistrasi);
+        if (parsed.batasRegistrasiStatus) setBatasRegistrasiStatus(parsed.batasRegistrasiStatus);
         if (parsed.detailFields) setDetailFields(parsed.detailFields);
         if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
       }
@@ -131,10 +133,10 @@ function TambahSemestaCampProgramInner() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("sc_draft", JSON.stringify({
-        nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields
+        nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields
       }));
     }
-  }, [nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields]);
+  }, [nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields]);
 
   // Check if navigated back from formulir page with created=true
   useEffect(() => {
@@ -357,6 +359,14 @@ function TambahSemestaCampProgramInner() {
         image_url: imageUrl,
         is_active: true,
         funding_deadline: batasRegistrasi,
+        program_funding_types: [
+          {
+            code: 'self',
+            label: 'Self Funded',
+            deadline: batasRegistrasi || null,
+            is_active: batasRegistrasiStatus === 'Aktif',
+          }
+        ],
         detail_program: processedDetail,       // JSON column
         pekerjaan: processedPekerjaan,          // JSON column
         custom_registration_form: customForm // JSON column
@@ -551,6 +561,21 @@ function TambahSemestaCampProgramInner() {
                       <line x1="8" y1="2" x2="8" y2="6" />
                       <line x1="3" y1="10" x2="21" y2="10" />
                     </svg>
+                  </div>
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Status <span className={styles.required}>*</span></label>
+                  <div className={styles.selectWrapper}>
+                    <select
+                      className={styles.input}
+                      value={batasRegistrasiStatus}
+                      onChange={(e) => setBatasRegistrasiStatus(e.target.value)}
+                    >
+                      <option value="Aktif">Aktif</option>
+                      <option value="Non-aktif">Non-aktif</option>
+                    </select>
+                    <ChevronIcon />
                   </div>
                 </div>
 

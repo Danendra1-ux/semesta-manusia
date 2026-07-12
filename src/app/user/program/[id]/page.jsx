@@ -295,7 +295,11 @@ export default function ProgramDetailPage({ params }) {
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
               <span className={styles.warningText}>
-                Batas registrasi program: <strong>{formatDate(selfDeadline)}</strong>
+                {selfActive ? (
+                  <>Batas registrasi program: <strong>{formatDate(selfDeadline)}</strong></>
+                ) : (
+                  <strong>Pendaftaran untuk program ini sedang ditutup.</strong>
+                )}
               </span>
             </div>
           )}
@@ -374,7 +378,7 @@ export default function ProgramDetailPage({ params }) {
 
           {/* Action Buttons */}
           <div className={styles.actionButtons}>
-            {isSJN && (!fullyActive && !selfActive) ? (
+            {(isSJN && !fullyActive && !selfActive) || (!isSJN && !selfActive) ? (
               <button
                 className={`${styles.primaryAction} ${styles.gradient} ${getCategoryClass()}`}
                 disabled

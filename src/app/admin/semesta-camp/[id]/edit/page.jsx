@@ -51,6 +51,9 @@ export default function EditProgramPage({ params }) {
   const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
   const [lokasi, setLokasi] = useState("");
   const [batasRegistrasi, setBatasRegistrasi] = useState(""); // Beda kolom
+  // null = belum di-load (sentinel). Beda dengan "" / "Aktif" supaya useEffect #3
+  // bisa membedakan "user/admin belum sentuh" vs "admin sudah pilih Aktif".
+  const [batasRegistrasiStatus, setBatasRegistrasiStatus] = useState(null);
   const [deskripsi, setDeskripsi] = useState("");
   const [posterPreview, setPosterPreview] = useState(null);
   const [posterFile, setPosterFile] = useState(null);
@@ -93,6 +96,9 @@ export default function EditProgramPage({ params }) {
         if (parsed.lokasi) setLokasi(parsed.lokasi);
         if (parsed.deskripsi) setDeskripsi(parsed.deskripsi);
         if (parsed.batasRegistrasi) setBatasRegistrasi(parsed.batasRegistrasi);
+        if (parsed.batasRegistrasiStatus === "Aktif" || parsed.batasRegistrasiStatus === "Non-aktif") {
+          setBatasRegistrasiStatus(parsed.batasRegistrasiStatus);
+        }
         if (parsed.detailFields) setDetailFields(parsed.detailFields);
         if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
       } catch (e) {
@@ -101,14 +107,18 @@ export default function EditProgramPage({ params }) {
     }
   }, [programId]);
 
-  // 2. Auto-save form state to sessionStorage on every change
+  // 2. Auto-save form state to sessionStorage on every change.
+  //    Jangan tulis sebelum loading DB selesai — kalau tidak, mount-first
+  //    callback akan overwrite draft lama di sessionStorage dengan nilai
+  //    default state (mis. batasRegistrasiStatus null) sebelum useEffect #3
+  //    sempat mengisinya dari DB.
   useEffect(() => {
-    if (typeof window === "undefined" || !programId) return;
+    if (typeof window === "undefined" || !programId || loading) return;
     const draftKey = `sc_edit_draft_${programId}`;
     sessionStorage.setItem(draftKey, JSON.stringify({
-      nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields
+      nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields
     }));
-  }, [programId, nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, detailFields, pekerjaanFields]);
+  }, [loading, programId, nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields]);
 
   // 3. Fetch Data Lama dari Database (only fills fields not yet in sessionStorage draft)
   useEffect(() => {
@@ -131,8 +141,15 @@ export default function EditProgramPage({ params }) {
         setDeskripsi((prev) => prev || data.description || "");
 
         if (data.program_funding_types && data.program_funding_types.length > 0) {
-          const deadline = data.program_funding_types[0].deadline;
-          setBatasRegistrasi((prev) => prev || (deadline ? deadline.split('T')[0] : ""));
+          const selfEntry = data.program_funding_types.find((ft) => ft.code === 'self') || data.program_funding_types[0];
+          setBatasRegistrasi((prev) => prev || (selfEntry.deadline ? selfEntry.deadline.split('T')[0] : ""));
+          // sentinel null = belum di-init; ambil dari DB. Kalau sudah
+          // ter-set (dari draft atau dari klik admin) jangan overwrite.
+          setBatasRegistrasiStatus((prev) =>
+            prev === null
+              ? (selfEntry.is_active === false ? "Non-aktif" : "Aktif")
+              : prev
+          );
         }
 
         // Dynamic fields — hanya replace jika state masih kosong
@@ -334,7 +351,14 @@ export default function EditProgramPage({ params }) {
         image_url: imageUrl,
         funding_deadline: batasRegistrasi,
         program_funding_types: [
-          { code: 'self', label: 'Self Funded', deadline: batasRegistrasi || null, is_active: true }
+          {
+            code: 'self',
+            label: 'Self Funded',
+            deadline: batasRegistrasi || null,
+            // Default ke "Aktif" kalau state masih null (belum loaded) —
+            // agar save yang tidak sengaja tidak menonaktifkan pendaftaran.
+            is_active: batasRegistrasiStatus === null ? true : batasRegistrasiStatus === 'Aktif',
+          }
         ],
         // --- TAMBAHAN BARU ---
         detail_program: processedDetail,
@@ -532,6 +556,20 @@ export default function EditProgramPage({ params }) {
                       <line x1="8" y1="2" x2="8" y2="6" />
                       <line x1="3" y1="10" x2="21" y2="10" />
                     </svg>
+                  </div>
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Status <span className={styles.required}>*</span></label>
+                  <div className={styles.selectWrapper}>
+                    <select
+                      className={styles.input}
+                      value={batasRegistrasiStatus ?? "Aktif"}
+                      onChange={(e) => setBatasRegistrasiStatus(e.target.value)}
+                    >
+                      <option value="Aktif">Aktif</option>
+                      <option value="Non-aktif">Non-aktif</option>
+                    </select>
+                    <ChevronIcon />
                   </div>
                 </div>
                 <Link href={`/admin/semesta-camp/${programId}/formulir`} className={styles.viewFormBtn}>

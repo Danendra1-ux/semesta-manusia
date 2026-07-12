@@ -183,18 +183,75 @@ export default function ProgramPage() {
     return styles.placeholder;
   };
 
-  const formatDateRange = (start, end) => {
+  const formatShortDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const isSameDay = (a, b) => {
+    if (!a || !b) return false;
+    const da = new Date(a);
+    const db = new Date(b);
+    return (
+      da.getFullYear() === db.getFullYear() &&
+      da.getMonth() === db.getMonth() &&
+      da.getDate() === db.getDate()
+    );
+  };
+
+  const formatEventDateRange = (start, end) => {
     if (!start) return null;
-    
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    const startDate = new Date(start).toLocaleDateString('id-ID', options);
-    
-    if (!end || start === end) {
-      return startDate;
+    const startStr = formatShortDate(start);
+    if (!end || isSameDay(start, end)) return startStr;
+    return `${startStr} - ${formatShortDate(end)}`;
+  };
+
+  const getFundingDeadline = (program) => {
+    const fundingTypes = Array.isArray(program.program_funding_types)
+      ? program.program_funding_types
+      : [];
+    return fundingTypes.find((ft) => ft.deadline && ft.is_active !== false) || null;
+  };
+
+  const getFundedEntries = (program) => {
+    const fundingTypes = Array.isArray(program.program_funding_types)
+      ? program.program_funding_types
+      : [];
+    return fundingTypes
+      .filter((ft) => ft.deadline && ft.is_active !== false)
+      .sort((a, b) => {
+        const order = { fully: 0, self: 1 };
+        return (order[a.code] ?? 99) - (order[b.code] ?? 99);
+      });
+  };
+
+  const getDeadlineLabel = (program) => {
+    if (program.category === "SJN") {
+      const entries = getFundedEntries(program);
+      if (entries.length === 0) return null;
+      return entries
+        .map((ft) => {
+          const label =
+            ft.code === "fully"
+              ? "Batas Registrasi Fully"
+              : ft.code === "self"
+              ? "Batas Registrasi Self"
+              : ft.label || ft.code;
+          return { label, date: formatShortDate(ft.deadline) };
+        });
     }
-    
-    const endDate = new Date(end).toLocaleDateString('id-ID', options);
-    return `${startDate} - ${endDate}`;
+
+    const rootDeadline = program.funding_deadline
+      ? { label: "Batas Registrasi", date: formatShortDate(program.funding_deadline) }
+      : getFundingDeadline(program)
+      ? { label: "Batas Registrasi", date: formatShortDate(getFundingDeadline(program).deadline) }
+      : null;
+
+    return rootDeadline ? [rootDeadline] : null;
   };
 
   return (
@@ -356,9 +413,8 @@ export default function ProgramPage() {
                         </svg>
                         {/* Memanggil event_start_date ke icon kalender */}
                         <span>
-                          {program.event_start_date 
-                            ? new Date(program.event_start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-                            : "Segera Hadir"}
+                          {formatEventDateRange(program.event_start_date, program.event_end_date)
+                            || "Segera Hadir"}
                         </span>
                       </div>
                       <div className={styles.programCardMetaItem}>
@@ -370,18 +426,24 @@ export default function ProgramPage() {
                       </div>
                     </div>
 
-                    {/* Registration / Event Deadline Badge */}
+                    {/* Registration Deadline Badge */}
                     <div className={`${styles.deadlineBadge} ${getBadgeClass(program.category)}`}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                       </svg>
-                      {/* Memasukkan format tanggal ke dalam Badge */}
-                      <span>
-                        {program.event_start_date 
-                          ? formatDateRange(program.event_start_date, program.event_end_date)
-                          : "Segera Daftar"}
-                      </span>
+                      <div className={styles.deadlineBadgeContent}>
+                        {(() => {
+                          const entries = getDeadlineLabel(program);
+                          if (!entries) return <span>Segera Hadir</span>;
+                          return entries.map((entry, i) => (
+                            <div key={i} className={styles.deadlineBadgeRow}>
+                              <span className={styles.deadlineBadgeLabel}>{entry.label}:</span>
+                              <span className={styles.deadlineBadgeDate}>{entry.date}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
                     </div>
 
                   </div>

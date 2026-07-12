@@ -472,7 +472,23 @@ export default function RegisterPage({ params }) {
 
   // Program yang ditutup admin harus diperlakukan seolah tidak ada,
   // sehingga form pendaftaran tidak bisa di-bypass via URL langsung.
-  const isClosed = program?.is_active === false || program?.status === "Ditutup";
+  // Untuk SJN: tutup jika funding yang sedang diakses user Non-aktif.
+  // Untuk Semesta Camp: tutup jika self (satu-satunya funding) Non-aktif.
+  const fundingTypes = program?.program_funding_types || [];
+  const selfEntry = fundingTypes.find((f) => f.code === "self");
+  const fullyEntry = fundingTypes.find((f) => f.code === "fully");
+  const isFundingTypeClosed =
+    program?.category === "Semesta Camp"
+      ? selfEntry?.is_active === false
+      : type === "fully-funded"
+        ? fullyEntry?.is_active === false
+        : type === "self-funded"
+          ? selfEntry?.is_active === false
+          : false;
+  const isClosed =
+    program?.is_active === false ||
+    program?.status === "Ditutup" ||
+    isFundingTypeClosed;
 
   // Redirect ke daftar program begitu ketahuan program sudah ditutup.
   // Hindari flicker dengan efek ini.
