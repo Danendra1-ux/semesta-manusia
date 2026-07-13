@@ -59,7 +59,6 @@ export default function LandingPage() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Status login user — dipakai untuk route CTA dinamis (login vs program).
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -107,7 +106,6 @@ export default function LandingPage() {
     fetchUser();
   }, []);
 
-  // CTA href: program list jika sudah login, login page jika belum.
   const ctaHref = user ? '/user/program' : '/user/login';
 
   const filteredPrograms = activeFilter === "semua"
@@ -205,7 +203,6 @@ export default function LandingPage() {
 
   return (
     <div className={styles.container}>
-      {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
@@ -540,7 +537,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Galeri Section — replaced with interactive expandable slider */}
       <GallerySlider />
 
       {/* Partner Section */}
@@ -649,7 +645,6 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className={styles.ctaSection}>
         <div className={styles.ctaWrapper}>
-          {/* Layer 1: Photo background, full cover, rounded mengikuti container */}
             <div className={styles.ctaPhotoLayer}>
               <Image
                 src="/last-section2.png"
@@ -659,10 +654,8 @@ export default function LandingPage() {
               />
             </div>
           <div className={styles.ctaContainer}>
-            {/* Layer 2: Overlay gradient biru di atas foto */}
             <div className={styles.ctaOverlay} />
 
-            {/* Layer 3: Konten teks & logo, paling atas */}
             <div className={styles.ctaContent}>
               <div className={styles.ctaLogoWrap}>
                 <Image
@@ -737,7 +730,6 @@ function ReviewSlider({ reviews }) {
     setActiveIndex((i) => (i - 1 + pageCount) % pageCount);
   }, [total, pageCount]);
 
-  // Responsive slidesPerView
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth;
@@ -762,7 +754,6 @@ function ReviewSlider({ reviews }) {
     return () => clearInterval(autoplayTimerRef.current);
   }, [pageCount]);
 
-  // Track scrolling position for activeIndex sync (only during drag, not programmatic)
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return undefined;
@@ -797,8 +788,6 @@ function ReviewSlider({ reviews }) {
     };
   }, [isDragging, pageCount]);
 
-  // Scroll to active page when activeIndex changes via buttons or autoplay.
-  // Each page = slidesPerView cards; we snap to the first card of the page.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;

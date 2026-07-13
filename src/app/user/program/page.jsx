@@ -11,23 +11,19 @@ import styles from "./page.module.css";
 export default function ProgramPage() {
   const router = useRouter();
   
-  // State untuk API Data
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State untuk UI & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("semua");
   const [sortBy, setSortBy] = useState("terbaru");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   
-  // State untuk Paginasi
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
 
-  // 1. Mengambil data dari API
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
@@ -45,7 +41,6 @@ export default function ProgramPage() {
     fetchPrograms();
   }, []);
 
-  // 2. Menutup dropdown saat klik di luar area
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (showSortDropdown && !e.target.closest(`.${styles.sortWrapper}`)) {
@@ -76,7 +71,6 @@ export default function ProgramPage() {
     return filterOptions.find(f => f.value === activeFilter)?.label || "Filter";
   };
 
-  // 3. Logika Filter & Sort menggunakan data dari API (programs)
   const filteredPrograms = useMemo(() => {
     let result = [...programs];
 
@@ -123,7 +117,6 @@ export default function ProgramPage() {
     return result;
   }, [programs, searchQuery, activeFilter, sortBy]);
 
-  // 4. Logika Paginasi
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const paginatedPrograms = filteredPrograms.slice(
     (currentPage - 1) * itemsPerPage,
@@ -256,10 +249,8 @@ export default function ProgramPage() {
 
   return (
     <div className={styles.programPage}>
-      {/* Navbar */}
       <Navbar />
 
-      {/* Page Header */}
       <div className={styles.pageHeader}>
         <div className={styles.pageHeaderContainer}>
           <button className={styles.backButton} onClick={() => router.back()}>
@@ -271,7 +262,6 @@ export default function ProgramPage() {
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
       <div className={styles.searchFilterBar}>
         <div className={styles.searchFilterBarContainer}>
           <div className={styles.searchBar}>
@@ -289,7 +279,6 @@ export default function ProgramPage() {
           </div>
 
           <div className={styles.actionButtons}>
-            {/* Filter Dropdown */}
             <div className={styles.filterWrapper}>
               <button
                 className={styles.actionButton}
@@ -361,7 +350,6 @@ export default function ProgramPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <main className={styles.mainContent}>
         
         {/* Indikator Loading & Error */}
@@ -385,7 +373,6 @@ export default function ProgramPage() {
               paginatedPrograms.map((program) => (
                 <div key={program.id} className={styles.programCard}>
                   
-                  {/* Pengecekan URL Gambar. Menggunakan image_url dari API, atau fallback ke image */}
                   {(program.image_url || program.image) && (
                     <div className={styles.programCardImage}>
                       <Image
@@ -411,7 +398,6 @@ export default function ProgramPage() {
                           <line x1="8" y1="2" x2="8" y2="6"/>
                           <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
-                        {/* Memanggil event_start_date ke icon kalender */}
                         <span>
                           {formatEventDateRange(program.event_start_date, program.event_end_date)
                             || "Segera Hadir"}
@@ -465,7 +451,6 @@ export default function ProgramPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {!loading && !error && filteredPrograms.length > 0 && (
           <div className={styles.pagination}>
             <button
@@ -504,8 +489,6 @@ export default function ProgramPage() {
           </div>
         )}
       </main>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

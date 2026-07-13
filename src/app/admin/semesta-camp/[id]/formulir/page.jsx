@@ -68,17 +68,11 @@ export default function FormulirPage({ params }) {
   const [toastShow, setToastShow] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-
-  // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
   const [editPlaceholderField, setEditPlaceholderField] = useState(null);
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
-
-  // Section state — initialize with default template
   const [sections, setSections] = useState(DEFAULT_FORM_TEMPLATE);
-
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
@@ -87,7 +81,6 @@ export default function FormulirPage({ params }) {
   const [modalOptions, setModalOptions] = useState([""]);
   const [modalRequired, setModalRequired] = useState(false);
 
-  // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
 
@@ -97,8 +90,6 @@ export default function FormulirPage({ params }) {
     setTimeout(() => setToastShow(false), 3000);
   };
 
-  // Fetch form data from program when page loads
-  // If no saved form exists in DB, keep the default template (useState initialization)
   useEffect(() => {
     if (!programId) return;
     const fetchForm = async () => {
@@ -116,7 +107,7 @@ export default function FormulirPage({ params }) {
   }, [programId]);
 
   const handleSave = async () => {
-    if (isSaving) return; // prevent double-click
+    if (isSaving) return;
     setIsSaving(true);
     try {
       const response = await fetch(`/api/programs/${programId}`, {
@@ -186,7 +177,6 @@ export default function FormulirPage({ params }) {
     setEditPlaceholderOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Helper: render single field
   const renderField = (field, sectionId) => {
     const isFullWidth = field.label === "Nama Instansi" || field.label === "Alasan Mengikuti Kegiatan Semesta Camp";
 
@@ -351,7 +341,6 @@ export default function FormulirPage({ params }) {
     setEditingTitle(null);
   };
 
-  // Filter only real sections (not the add section trigger at bottom)
   const realSections = sections;
 
   return (
@@ -429,27 +418,27 @@ export default function FormulirPage({ params }) {
                 {/* Fields Card */}
                 <div className={styles.sectionCard}>
                   <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi dan Alasan) */}
+                    {/* Bagian 1: Field fixed */}
                     {section.fields
                       .filter(f => f.isFixed && f.label !== "Nama Instansi" && f.label !== "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 2: Nama Instansi (full width, fixed) */}
+                    {/* Bagian 2: Nama Instansi */}
                     {section.fields
                       .filter(f => f.label === "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 3: Alasan Mengikuti Kegiatan Semesta Camp (full width, fixed) */}
+                    {/* Bagian 3: Alasan Mengikuti Kegiatan Semesta Camp */}
                     {section.fields
                       .filter(f => f.label === "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 4: Field tambahan (tidak fixed, ditambah user) */}
+                    {/* Bagian 4: Field tambahan */}
                     {section.fields
                       .filter(f => !f.isFixed)
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 5: Tombol tambah — selalu di bawah semua field */}
+                    {/* Bagian 5: Tombol tambah */}
                     <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
                       <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -555,7 +544,7 @@ export default function FormulirPage({ params }) {
                   </label>
                 </div>
 
-                {/* Dropdown Options — only show when type is Dropdown */}
+                {/* Dropdown Options */}
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>

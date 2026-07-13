@@ -26,7 +26,6 @@ const Toast = ({ message, show, isError }) => (
   </div>
 );
 
-// ... (komponen ikon TrashIcon, CalendarIcon, ChevronIcon, EditIcon tetap sama seperti sebelumnya) ...
 const TrashIcon = ({ onClick }) => (
   <button className={styles.removeFieldBtn} onClick={onClick} title="Hapus field">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.trashSvg}>
@@ -80,16 +79,13 @@ function FormulirSJNPageInner({ params }) {
   const [loading, setLoading] = useState(true);
   const [programName, setProgramName] = useState("");
 
-  // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
   const [editPlaceholderField, setEditPlaceholderField] = useState(null);
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state di-fetch dari API
   const [sections, setSections] = useState([]);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
@@ -101,14 +97,10 @@ function FormulirSJNPageInner({ params }) {
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
 
-  // ============================================================
-  // Default sections — used when DB has no form data yet
-  // ============================================================
   const getDefaultSections = (tipe) => {
     const baseId = `section-${tipe}-${Date.now()}`;
 
     return [
-      // ===== DATA DIRI (fixed fields) =====
       {
         id: `${baseId}-data-diri`,
         title: "DATA DIRI",
@@ -123,7 +115,6 @@ function FormulirSJNPageInner({ params }) {
           { id: `f-${baseId}-7`, label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
         ],
       },
-      // ===== DESKRIPSI DIRI =====
       {
         id: `${baseId}-deskripsi`,
         title: "DESKRIPSI DIRI",
@@ -177,7 +168,6 @@ function FormulirSJNPageInner({ params }) {
           },
         ],
       },
-      // ===== KELENGKAPAN PERSYARATAN =====
       {
         id: `${baseId}-persyaratan`,
         title: "KELENGKAPAN PERSYARATAN",
@@ -224,17 +214,13 @@ function FormulirSJNPageInner({ params }) {
     ];
   };
 
-  // Ambil form data — priority: sessionStorage (draft edit per-program) > database
-  // NOTE: key include programId agar draft antar program tidak saling menimpa
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storageKey = `sjn_custom_form_v2_${programId}_${tipe === "self-funded" ? "self" : "fully"}`;
 
-    // Migrasi: hapus key lama (generic) yang masih tersimpan agar tidak bocor
     sessionStorage.removeItem("sjn_custom_registration_form_fully");
     sessionStorage.removeItem("sjn_custom_registration_form_self");
 
-    // Cek draft edit di sessionStorage dulu (logic sama dengan tambah/formulir)
     const savedForm = sessionStorage.getItem(storageKey);
     if (savedForm) {
       try {
@@ -242,7 +228,6 @@ function FormulirSJNPageInner({ params }) {
         if (Array.isArray(parsed) && parsed.length > 0) {
           setSections(parsed);
           setLoading(false);
-          // Tetap fetch nama program
           fetch(`/api/programs/${programId}`)
             .then((r) => r.ok ? r.json() : null)
             .then((data) => { if (data && data.title) setProgramName(data.title); })
@@ -254,7 +239,6 @@ function FormulirSJNPageInner({ params }) {
       }
     }
 
-    // Fallback ke database
     const fetchFormulir = async () => {
       try {
         const response = await fetch(`/api/programs/${programId}`);
@@ -461,13 +445,8 @@ function FormulirSJNPageInner({ params }) {
     setEditingTitle(null);
   };
 
-  // Simpan ke sessionStorage, lalu redirect balik ke edit page
-  // — TIDAK langsung PUT ke API karena akan me-reset field lain
-  //   (event_start_date, event_end_date, dll) di program. Commit akhir
-  //   terjadi di halaman edit lewat tombol "Simpan Perubahan".
-  //   Logic ini sama dengan /admin/sjn/tambah/formulir.
   const handleSave = async () => {
-    if (isSaving) return; // prevent double-click
+    if (isSaving) return;
     setIsSaving(true);
     try {
       if (typeof window !== "undefined") {

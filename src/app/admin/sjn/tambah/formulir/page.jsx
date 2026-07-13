@@ -86,16 +86,13 @@ function TambahFormulirSJNPageInner() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
   const [editPlaceholderField, setEditPlaceholderField] = useState(null);
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state — di-load dari sessionStorage atau default
   const [sections, setSections] = useState([]);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
@@ -104,19 +101,13 @@ function TambahFormulirSJNPageInner() {
   const [modalOptions, setModalOptions] = useState([""]);
   const [modalRequired, setModalRequired] = useState(false);
 
-  // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
 
-  // ============================================================
-  // Default sections — struktur identik dengan [id]/formulir/page.jsx
-  // baseId statis (tidak pakai Date.now()) agar konsisten antar render
-  // ============================================================
   const getDefaultSections = (tipe) => {
     const baseId = `section-${tipe}`;
 
     return [
-      // ===== DATA DIRI (fixed fields) =====
       {
         id: `${baseId}-data-diri`,
         title: "DATA DIRI",
@@ -131,7 +122,6 @@ function TambahFormulirSJNPageInner() {
           { id: `f-${baseId}-7`, label: "Nama Instansi", type: "teks", required: true, isFixed: true, value: "" },
         ],
       },
-      // ===== DESKRIPSI DIRI =====
       {
         id: `${baseId}-deskripsi`,
         title: "DESKRIPSI DIRI",
@@ -185,7 +175,6 @@ function TambahFormulirSJNPageInner() {
           },
         ],
       },
-      // ===== KELENGKAPAN PERSYARATAN =====
       {
         id: `${baseId}-persyaratan`,
         title: "KELENGKAPAN PERSYARATAN",
@@ -232,9 +221,6 @@ function TambahFormulirSJNPageInner() {
     ];
   };
 
-  // Load sections on mount — prefer draft from sessionStorage, fallback to default template
-  // Key generic (tanpa programId) karena ini khusus halaman "tambah program baru"
-  // — tidak ada konflik antar program karena tidak ada programId
   const STORAGE_KEY_FULLY = "sjn_custom_registration_form_fully";
   const STORAGE_KEY_SELF = "sjn_custom_registration_form_self";
 
@@ -310,7 +296,6 @@ function TambahFormulirSJNPageInner() {
     setEditPlaceholderOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Helper: render single field
   const renderField = (field, sectionId) => {
     const isNamaInstansi = field.label === "Nama Instansi";
     const isFullWidth = isNamaInstansi;
@@ -461,9 +446,8 @@ function TambahFormulirSJNPageInner() {
     setEditingTitle(null);
   };
 
-  // Simpan ke sessionStorage, lalu redirect balik ke tambah page
   const handleSave = async () => {
-    if (isSaving) return; // prevent double-click
+    if (isSaving) return;
     setIsSaving(true);
     try {
       if (typeof window !== "undefined") {
@@ -562,22 +546,18 @@ function TambahFormulirSJNPageInner() {
                 {/* Fields Card */}
                 <div className={styles.sectionCard}>
                   <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi) */}
                     {section.fields
                       .filter(f => f.isFixed && f.label !== "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 2: Nama Instansi (full width, fixed) */}
                     {section.fields
                       .filter(f => f.label === "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 3: Field tambahan (tidak fixed, ditambah user) */}
                     {section.fields
                       .filter(f => !f.isFixed)
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 4: Tombol tambah — selalu di bawah semua field */}
                     <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
                       <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -683,7 +663,6 @@ function TambahFormulirSJNPageInner() {
                   </label>
                 </div>
 
-                {/* Dropdown Options — only show when type is Dropdown */}
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>

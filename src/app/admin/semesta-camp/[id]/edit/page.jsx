@@ -10,7 +10,6 @@ import { DEFAULT_FORM_TEMPLATE } from "@/lib/form-template";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import { uploadFileDirect, buildFileName } from "@/lib/uploadFile";
 
-// Inisialisasi Supabase untuk Upload Gambar Baru
 const supabase = createSupabaseClient();
 
 const ChevronIcon = () => (
@@ -47,42 +46,34 @@ export default function EditProgramPage({ params }) {
 
   // Form state utama
   const [nama, setNama] = useState("");
-  const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
-  const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
+  const [jadwalMulai, setJadwalMulai] = useState("");
+  const [jadwalSelesai, setJadwalSelesai] = useState("");
   const [lokasi, setLokasi] = useState("");
-  const [batasRegistrasi, setBatasRegistrasi] = useState(""); // Beda kolom
-  // null = belum di-load (sentinel). Beda dengan "" / "Aktif" supaya useEffect #3
-  // bisa membedakan "user/admin belum sentuh" vs "admin sudah pilih Aktif".
+  const [batasRegistrasi, setBatasRegistrasi] = useState("");
   const [batasRegistrasiStatus, setBatasRegistrasiStatus] = useState(null);
   const [deskripsi, setDeskripsi] = useState("");
   const [posterPreview, setPosterPreview] = useState(null);
   const [posterFile, setPosterFile] = useState(null);
 
-  // Dynamic fields state (UI Only)
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
-  // File objects staged for upload (key: `${section}-${fieldId}`)
   const [uploadFiles, setUploadFiles] = useState({});
 
-  // Custom registration form state
   const [customRegistrationForm, setCustomRegistrationForm] = useState(DEFAULT_FORM_TEMPLATE);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
-  // Status & Toast
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // 1. Load draft from sessionStorage on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     const draftKey = `sc_edit_draft_${programId}`;
@@ -107,11 +98,6 @@ export default function EditProgramPage({ params }) {
     }
   }, [programId]);
 
-  // 2. Auto-save form state to sessionStorage on every change.
-  //    Jangan tulis sebelum loading DB selesai — kalau tidak, mount-first
-  //    callback akan overwrite draft lama di sessionStorage dengan nilai
-  //    default state (mis. batasRegistrasiStatus null) sebelum useEffect #3
-  //    sempat mengisinya dari DB.
   useEffect(() => {
     if (typeof window === "undefined" || !programId || loading) return;
     const draftKey = `sc_edit_draft_${programId}`;
@@ -120,7 +106,6 @@ export default function EditProgramPage({ params }) {
     }));
   }, [loading, programId, nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields]);
 
-  // 3. Fetch Data Lama dari Database (only fills fields not yet in sessionStorage draft)
   useEffect(() => {
     if (!programId) return;
 
@@ -131,9 +116,6 @@ export default function EditProgramPage({ params }) {
 
         const data = await response.json();
 
-        // Hanya set dari DB jika sessionStorage draft belum mengisinya.
-        // Logic sama dengan tambah — supaya Jadwal Pelaksanaan dll.
-        // tidak ter-reset saat admin bolak-balik ke halaman Formulir.
         setNama((prev) => prev || data.title || "");
         setJadwalMulai((prev) => prev || (data.event_start_date ? data.event_start_date.split('T')[0] : ""));
         setJadwalSelesai((prev) => prev || (data.event_end_date ? data.event_end_date.split('T')[0] : ""));
@@ -143,8 +125,7 @@ export default function EditProgramPage({ params }) {
         if (data.program_funding_types && data.program_funding_types.length > 0) {
           const selfEntry = data.program_funding_types.find((ft) => ft.code === 'self') || data.program_funding_types[0];
           setBatasRegistrasi((prev) => prev || (selfEntry.deadline ? selfEntry.deadline.split('T')[0] : ""));
-          // sentinel null = belum di-init; ambil dari DB. Kalau sudah
-          // ter-set (dari draft atau dari klik admin) jangan overwrite.
+
           setBatasRegistrasiStatus((prev) =>
             prev === null
               ? (selfEntry.is_active === false ? "Non-aktif" : "Aktif")
@@ -152,7 +133,6 @@ export default function EditProgramPage({ params }) {
           );
         }
 
-        // Dynamic fields — hanya replace jika state masih kosong
         if (data.detail_program && data.detail_program.length > 0) {
           setDetailFields((prev) => (prev && prev.length > 0) ? prev : data.detail_program);
         }
@@ -160,7 +140,6 @@ export default function EditProgramPage({ params }) {
           setPekerjaanFields((prev) => (prev && prev.length > 0) ? prev : data.pekerjaan);
         }
 
-        // Custom registration form (use saved form or fallback to default template)
         if (data.custom_registration_form && data.custom_registration_form.length > 0) {
           setCustomRegistrationForm((prev) =>
             prev && prev.length > 0 && JSON.stringify(prev) !== JSON.stringify(DEFAULT_FORM_TEMPLATE)
@@ -272,7 +251,6 @@ export default function EditProgramPage({ params }) {
     }
   };
 
-  // 2. Simpan Perubahan ke Database
   const handleSave = async () => {
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
@@ -302,7 +280,6 @@ export default function EditProgramPage({ params }) {
         }
       }
 
-      // Upload pending files before saving (signed URL — file langsung ke Supabase)
       const processUploads = async (fields, section) => {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
@@ -324,7 +301,6 @@ export default function EditProgramPage({ params }) {
                 throw new Error(`Gagal upload "${field.label}": ${err.message}`);
               }
             } else if (typeof field.value === 'string' && field.value && !field.value.startsWith('http')) {
-              // Was just a filename string — discard as invalid
               newFields[i] = { ...field, value: "" };
             }
           }
@@ -337,11 +313,6 @@ export default function EditProgramPage({ params }) {
       setDetailFields(processedDetail);
       setPekerjaanFields(processedPekerjaan);
 
-      // Payload untuk update tabel 'programs' dan 'program_funding_types'.
-      // Batas Registrasi dikirim via program_funding_types (mirip SJN) supaya
-      // halaman user-program ikut ter-update — kalau hanya dikirim via
-      // funding_deadline flat, kolom program_funding_types.deadline tetap stale
-      // dan user-facing tetap menampilkan "Segera Diumumkan".
       const payload = {
         title: nama,
         event_start_date: jadwalMulai,
@@ -355,16 +326,12 @@ export default function EditProgramPage({ params }) {
             code: 'self',
             label: 'Self Funded',
             deadline: batasRegistrasi || null,
-            // Default ke "Aktif" kalau state masih null (belum loaded) —
-            // agar save yang tidak sengaja tidak menonaktifkan pendaftaran.
             is_active: batasRegistrasiStatus === null ? true : batasRegistrasiStatus === 'Aktif',
           }
         ],
-        // --- TAMBAHAN BARU ---
         detail_program: processedDetail,
         pekerjaan: processedPekerjaan,
         custom_registration_form: customRegistrationForm,
-        // ---------------------
       };
 
       const response = await fetch(`/api/programs/${programId}`, {
@@ -380,7 +347,6 @@ export default function EditProgramPage({ params }) {
 
       showToast("Perubahan berhasil disimpan!", false);
 
-      // Clean up draft sessionStorage on successful save
       if (typeof window !== "undefined") {
         sessionStorage.removeItem(`sc_edit_draft_${programId}`);
       }

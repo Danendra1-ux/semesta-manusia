@@ -22,7 +22,6 @@ export default function UserReviewsPage() {
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
 
-  // Form state
   const [form, setForm] = useState({
     name: "",
     institution: "",
@@ -34,7 +33,6 @@ export default function UserReviewsPage() {
   const [submitting, setSubmitting] = useState(false);
   const inFlightRef = useRef(false);
 
-  // Program options + history
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(true);
   const [myReviews, setMyReviews] = useState([]);
@@ -181,7 +179,6 @@ export default function UserReviewsPage() {
         rating: 0,
         content: "",
       }));
-      // Refresh history
       const historyRes = await fetch("/api/users/me/reviews", {
         cache: "no-store",
       });

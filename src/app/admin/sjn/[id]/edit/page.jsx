@@ -42,25 +42,19 @@ export default function EditSJNProgramPage({ params }) {
   const router = useRouter();
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
-
-  // Loading State
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Read form data (sections) from sessionStorage on mount
   const [fullyFormSections, setFullyFormSections] = useState([]);
   const [selfFormSections, setSelfFormSections] = useState([]);
   const [hasFullyForm, setHasFullyForm] = useState(false);
   const [hasSelfForm, setHasSelfForm] = useState(false);
 
-  // Refs untuk nilai paling up-to-date — dipakai di dalam async fetch
-  // supaya tidak membaca closure stale saat race condition dengan effect pertama.
   const fullyFormSectionsRef = useRef(fullyFormSections);
   const selfFormSectionsRef = useRef(selfFormSections);
   useEffect(() => { fullyFormSectionsRef.current = fullyFormSections; }, [fullyFormSections]);
   useEffect(() => { selfFormSectionsRef.current = selfFormSections; }, [selfFormSections]);
 
-  // Form state
   const [nama, setNama] = useState("");
   const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
   const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
@@ -69,32 +63,26 @@ export default function EditSJNProgramPage({ params }) {
   const [posterPreview, setPosterPreview] = useState(null);
   const [posterFile, setPosterFile] = useState(null);
 
-  // Fully Funded & Self Funded state (SJN-specific)
   const [fullyFundedBatasReg, setFullyFundedBatasReg] = useState("");
   const [fullyFundedStatus, setFullyFundedStatus] = useState("Aktif");
   const [selfFundedBatasReg, setSelfFundedBatasReg] = useState("");
   const [selfFundedStatus, setSelfFundedStatus] = useState("Aktif");
 
-  // Dynamic fields
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
-  // File objects staged for upload (key: `${section}-${fieldId}`)
   const [uploadFiles, setUploadFiles] = useState({});
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
-  // Toast
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // Read form data from sessionStorage on mount (key include programId)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const fullyKey = `sjn_custom_form_v2_${programId}_fully`;
@@ -125,7 +113,6 @@ export default function EditSJNProgramPage({ params }) {
     }
   }, [programId]);
 
-  // Fetch Data dari API
   useEffect(() => {
     const fetchProgram = async () => {
       try {
@@ -139,11 +126,9 @@ export default function EditSJNProgramPage({ params }) {
           setDeskripsi(data.description || "");
           setPosterPreview(data.image_url || null);
 
-          // Dynamic fields parsing
           setDetailFields(data.detail_program || []);
           setPekerjaanFields(data.pekerjaan || []);
 
-          // Program Funding Types
           const fully = data.program_funding_types?.find(f => f.code === 'fully');
           const self = data.program_funding_types?.find(f => f.code === 'self');
 
@@ -156,9 +141,6 @@ export default function EditSJNProgramPage({ params }) {
             setSelfFundedStatus(self.is_active !== false ? 'Aktif' : 'Non-aktif');
           }
 
-          // Read form data from DB only if sessionStorage is empty for that tipe.
-          // Gunakan ref (bukan closure state) agar terpengaruh update dari effect pertama,
-          // karena dua useEffect bisa saling override saat closure masih menampung nilai awal.
           if (fullyFormSectionsRef.current.length === 0 && data.custom_registration_form_fully && Array.isArray(data.custom_registration_form_fully) && data.custom_registration_form_fully.length > 0) {
             setFullyFormSections(data.custom_registration_form_fully);
             setHasFullyForm(true);
@@ -315,7 +297,7 @@ export default function EditSJNProgramPage({ params }) {
   };
 
   const handleSave = async () => {
-    if (isSaving) return; // prevent double-click
+    if (isSaving) return;
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (new Date(jadwalSelesai) < new Date(jadwalMulai)) return showToast("Tanggal Selesai tidak boleh sebelum tanggal Mulai!", true);
@@ -331,8 +313,6 @@ export default function EditSJNProgramPage({ params }) {
 
     setIsSaving(true);
     try {
-      // Baca sessionStorage fresh — sama seperti alur tambah
-      // supaya draft dari halaman formulir selalu menang atas state yang mungkin stale
       let resolvedFully = fullyFormSections;
       let resolvedSelf = selfFormSections;
       let includeFully = hasFullyForm;
@@ -367,7 +347,6 @@ export default function EditSJNProgramPage({ params }) {
 
       let finalImageUrl = posterPreview || "";
 
-      // Upload poster ke Supabase Storage jika ada file baru
       if (posterFile) {
         const fileName = `program-${programId}-${Date.now()}-${posterFile.name}`;
         const { error: uploadError } = await supabase.storage
@@ -381,19 +360,13 @@ export default function EditSJNProgramPage({ params }) {
           if (urlData?.publicUrl) finalImageUrl = urlData.publicUrl;
         }
       }
-      // Jika tidak ada file baru, gunakan URL yang sudah ada dari preview
       else if (posterPreview && posterPreview !== 'null') {
         finalImageUrl = posterPreview;
       }
 
-      // Upload file Upload File dari detail/pekerjaan ke Supabase Storage
       const processedDetail = await processUploadFiles(detailFields, "detail");
       const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
 
-      // Siapkan payload dengan field dinamis dimasukkan ke kolom detail_program dan pekerjaan
-      // Sertakan custom form data — pakai nilai lokal (resolvedFully/resolvedSelf)
-      // yang sudah memprioritaskan sessionStorage draft, supaya perubahan dari halaman
-      // formulir tidak hilang akibat race condition.
       const payload = {
         title: nama,
         description: deskripsi,
@@ -616,7 +589,6 @@ export default function EditSJNProgramPage({ params }) {
                     href={`/admin/sjn/${programId}/formulir?tipe=fully-funded`}
                     className={styles.viewFormBtn}
                     onClick={() => {
-                      // Sync sessionStorage data to DB when viewing/editing form
                       if (hasFullyForm && fullyFormSections.length > 0) {
                         const storageKey = `sjn_custom_form_v2_${programId}_fully`;
                         const saved = sessionStorage.getItem(storageKey);
@@ -670,7 +642,6 @@ export default function EditSJNProgramPage({ params }) {
                     href={`/admin/sjn/${programId}/formulir?tipe=self-funded`}
                     className={styles.viewFormBtn}
                     onClick={() => {
-                      // Sync sessionStorage data to DB when viewing/editing form
                       if (hasSelfForm && selfFormSections.length > 0) {
                         const storageKey = `sjn_custom_form_v2_${programId}_self`;
                         const saved = sessionStorage.getItem(storageKey);

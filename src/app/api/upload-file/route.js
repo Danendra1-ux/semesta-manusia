@@ -12,19 +12,6 @@ const ADMIN_EMAILS = ['semestamanusia.indonesia@gmail.com'];
 // Allowed buckets for admin uploads — keep tight to avoid abuse
 const ALLOWED_BUCKETS = new Set(['program-files', 'program-images']);
 
-/**
- * POST /api/upload-file
- *
- * Mode: SIGNED-URL bootstrap. Menghindari batasan body 4.5 MB Vercel dengan
- * mengembalikan signed upload URL ke client, sehingga file di-PUT langsung
- * ke Supabase Storage tanpa melewati Vercel function body.
- *
- * Body (JSON kecil, ~200 byte):
- *   { fileName: string, bucket: 'program-files' | 'program-images', contentType?: string }
- *
- * Response:
- *   { signedUrl, token, path, publicUrl }
- */
 export async function POST(request) {
   try {
     // 1. Ambil token dari Header Authorization

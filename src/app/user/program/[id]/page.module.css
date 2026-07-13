@@ -1,8 +1,3 @@
-/* ==========================================
-   DETAIL PROGRAM PAGE STYLES — SEMESTA MANUSIA
-   ========================================== */
-
-/* Page Container */
 .page {
   width: 100%;
   min-height: 100vh;
@@ -11,7 +6,6 @@
   position: relative;
 }
 
-/* Hero Section — 2 Column Layout */
 .heroSection {
   max-width: 1280px;
   margin: 0 auto;

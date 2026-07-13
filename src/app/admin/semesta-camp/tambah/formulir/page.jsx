@@ -87,16 +87,13 @@ function FormulirTambahSemestaCampInner() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // Edit placeholder state
   const [editPlaceholderOpen, setEditPlaceholderOpen] = useState(false);
   const [editPlaceholderField, setEditPlaceholderField] = useState(null);
   const [editPlaceholderValue, setEditPlaceholderValue] = useState("");
   const [editPlaceholderOptions, setEditPlaceholderOptions] = useState([""]);
 
-  // Section state — initialized empty, populated from sessionStorage or default template on mount
   const [sections, setSections] = useState([]);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
@@ -105,7 +102,6 @@ function FormulirTambahSemestaCampInner() {
   const [modalOptions, setModalOptions] = useState([""]);
   const [modalRequired, setModalRequired] = useState(false);
 
-  // Editable title state
   const [editingTitle, setEditingTitle] = useState(null);
   const [titleValue, setTitleValue] = useState("");
 
@@ -116,7 +112,7 @@ function FormulirTambahSemestaCampInner() {
     setTimeout(() => setToastShow(false), 3500);
   };
 
-  // Auto-save sections to sessionStorage on every change
+  // Auto-save sections to sessionStorage
   useEffect(() => {
     if (typeof window !== "undefined" && sections.length > 0) {
       try {
@@ -127,7 +123,6 @@ function FormulirTambahSemestaCampInner() {
     }
   }, [sections]);
 
-  // Load sections on mount — restore from sessionStorage if present, otherwise use default template
   useEffect(() => {
     if (typeof window === "undefined") return;
     const savedForm = sessionStorage.getItem("sc_custom_registration_form");
@@ -192,7 +187,6 @@ function FormulirTambahSemestaCampInner() {
     setEditPlaceholderOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Helper: render single field
   const renderField = (field, sectionId) => {
     const isFullWidth = field.label === "Nama Instansi" || field.label === "Alasan Mengikuti Kegiatan Semesta Camp";
 
@@ -347,7 +341,6 @@ function FormulirTambahSemestaCampInner() {
     setIsSaving(true);
     try {
       showToast("Formulir berhasil disimpan!");
-      // Mark that formulir was created
       if (typeof window !== "undefined") {
         sessionStorage.setItem("sc_formulir_created", "true");
       }
@@ -436,27 +429,27 @@ function FormulirTambahSemestaCampInner() {
                 {/* Fields Card */}
                 <div className={styles.sectionCard}>
                   <div className={styles.fieldsGrid}>
-                    {/* Bagian 1: Field fixed (grid 2 kolom, kecuali Nama Instansi dan Alasan) */}
+                    {/* Bagian 1: Field fixed */}
                     {section.fields
                       .filter(f => f.isFixed && f.label !== "Nama Instansi" && f.label !== "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 2: Nama Instansi (full width, fixed) */}
+                    {/* Bagian 2: Nama Instansi */}
                     {section.fields
                       .filter(f => f.label === "Nama Instansi")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 3: Alasan Mengikuti Kegiatan Semesta Camp (full width, fixed) */}
+                    {/* Bagian 3: Alasan Mengikuti Kegiatan */}
                     {section.fields
                       .filter(f => f.label === "Alasan Mengikuti Kegiatan Semesta Camp")
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 4: Field tambahan (tidak fixed, ditambah user) */}
+                    {/* Bagian 4: Field tambahan */}
                     {section.fields
                       .filter(f => !f.isFixed)
                       .map(field => renderField(field, section.id))}
 
-                    {/* Bagian 4: Tombol tambah — selalu di bawah semua field */}
+                    {/* Bagian 4: Tombol tambah */}
                     <div className={`${styles.fieldItem} ${styles.addFormWrapper}`}>
                       <button className={styles.addFormBtn} onClick={() => openModal(section.id)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -562,7 +555,7 @@ function FormulirTambahSemestaCampInner() {
                   </label>
                 </div>
 
-                {/* Dropdown Options — only show when type is Dropdown */}
+                {/* Dropdown Options */}
                 {modalFieldType === "Dropdown" && (
                   <div className={styles.modalField}>
                     <label className={styles.fieldLabel}>Opsi</label>

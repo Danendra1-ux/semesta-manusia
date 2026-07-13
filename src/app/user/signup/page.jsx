@@ -39,13 +39,11 @@ function SignupForm() {
         return next;
       });
     }
-    // Clear the email-taken toast as soon as the user edits the email field.
     if (key === "email" && emailTakenToast) {
       setEmailTakenToast(null);
     }
   };
 
-  // Auto-dismiss the email-taken toast after a short delay.
   useEffect(() => {
     if (!emailTakenToast) return undefined;
     const id = setTimeout(() => setEmailTakenToast(null), 6000);
@@ -141,8 +139,6 @@ function SignupForm() {
         return;
       }
 
-      // If Supabase auto-creates a session (email confirmation disabled),
-      // sign the user in client-side too so cookies are set on the browser.
       if (!data.requiresConfirmation) {
         try {
           const supabase = createSupabaseClient();
@@ -151,7 +147,6 @@ function SignupForm() {
             password: formData.password,
           });
           if (signInError) {
-            // Fall back to login page.
             router.replace(`/user/login?redirect=${encodeURIComponent(redirectParam)}`);
             return;
           }

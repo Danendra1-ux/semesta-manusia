@@ -28,7 +28,6 @@ export default function SJNPage() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal konfirmasi hapus program
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: "", pendaftar: 0 });
   const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
@@ -118,7 +117,7 @@ export default function SJNPage() {
     }
   };
 
-  // --- FUNGSI TOGGLE STATUS PROGRAM ---
+  // FUNGSI TOGGLE STATUS PROGRAM
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "Dibuka" ? "Ditutup" : "Dibuka";
     const newIsActive = newStatus === "Dibuka";
@@ -143,7 +142,7 @@ export default function SJNPage() {
     }
   };
 
-  // --- FUNGSI HAPUS PROGRAM ---
+  // FUNGSI HAPUS PROGRAM
   const openDeleteModal = (id) => {
     const target = programs.find((p) => p.programId === id);
     setDeleteModal({
@@ -188,7 +187,6 @@ export default function SJNPage() {
         const response = await fetch(`/api/programs/${id}`, { method: "DELETE" });
         if (response.ok) successCount++;
       }
-      // Refresh to get accurate state
       await fetchPrograms();
       setSelectedRows([]);
       setDeleteModal({ open: false, id: null, title: "", pendaftar: 0 });

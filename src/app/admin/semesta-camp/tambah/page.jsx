@@ -51,7 +51,6 @@ function TambahSemestaCampProgramInner() {
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form state
   const [nama, setNama] = useState("");
   const [jadwalMulai, setJadwalMulai] = useState("");     // RANGE START
   const [jadwalSelesai, setJadwalSelesai] = useState(""); // RANGE END
@@ -60,35 +59,28 @@ function TambahSemestaCampProgramInner() {
   const [posterPreview, setPosterPreview] = useState(null);
   const [posterFile, setPosterFile] = useState(null);
 
-  // Batas Registrasi — satu field tunggal, unlock setelah formulir dibuat
   const [batasRegistrasi, setBatasRegistrasi] = useState("");
   const [batasRegistrasiStatus, setBatasRegistrasiStatus] = useState("Aktif");
   const [formulirCreated, setFormulirCreated] = useState(false);
   const isLocked = !formulirCreated;
 
-  // Dynamic fields
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
-  // File objects staged for upload (key: `${section}-${fieldId}`)
   const [uploadFiles, setUploadFiles] = useState({});
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
   const [modalLabel, setModalLabel] = useState("");
   const [modalOptions, setModalOptions] = useState([""]);
 
-  // Toast
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
 
-  // Tooltip state for "Buat Formulir" button
   const [tooltipShow, setTooltipShow] = useState(false);
 
-  // 1. Load draft from sessionStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const scCreated = sessionStorage.getItem("sc_formulir_created");
@@ -108,7 +100,6 @@ function TambahSemestaCampProgramInner() {
         if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
       }
 
-      // Reconstruct Poster File from Base64
       const posterDraft = sessionStorage.getItem("sc_poster_draft");
       const posterName = sessionStorage.getItem("sc_poster_name");
       const posterType = sessionStorage.getItem("sc_poster_type");
@@ -129,7 +120,7 @@ function TambahSemestaCampProgramInner() {
     }
   }, []);
 
-  // 2. Auto-save form state to sessionStorage on every change
+  // Auto-save form state
   useEffect(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("sc_draft", JSON.stringify({
@@ -138,7 +129,6 @@ function TambahSemestaCampProgramInner() {
     }
   }, [nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, batasRegistrasi, batasRegistrasiStatus, detailFields, pekerjaanFields]);
 
-  // Check if navigated back from formulir page with created=true
   useEffect(() => {
     const created = searchParams.get("created");
     if (created === "true") {
@@ -146,7 +136,6 @@ function TambahSemestaCampProgramInner() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("sc_formulir_created", "true");
       }
-      // Remove query params from URL without full reload
       const url = new URL(window.location.href);
       url.searchParams.delete("created");
       window.history.replaceState({}, "", url.pathname);
@@ -314,7 +303,7 @@ function TambahSemestaCampProgramInner() {
     let imageUrl = null;
 
     try {
-      // TAHAP 1: Upload Poster ke Supabase Storage (signed URL, langsung browser → Supabase)
+      // Upload Poster ke Supabase Storage (signed URL, langsung browser → Supabase)
       if (posterFile) {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
@@ -331,12 +320,12 @@ function TambahSemestaCampProgramInner() {
         }
       }
 
-      // TAHAP 1b: Upload file dari field dinamis Upload File ke Supabase Storage
+      // Upload file dari field dinamis Upload File ke Supabase Storage
       const processedDetail = await processUploadFiles(detailFields, "detail");
       const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
 
-      // TAHAP 2: Siapkan data untuk API
-      // Load custom_registration_form dari sessionStorage (disimpan saat user buat formulir)
+      // Siapkan data untuk API
+      // Load custom_registration_form dari sessionStorage
       let customForm = [];
       if (typeof window !== "undefined") {
         const savedForm = sessionStorage.getItem("sc_custom_registration_form");
@@ -367,12 +356,12 @@ function TambahSemestaCampProgramInner() {
             is_active: batasRegistrasiStatus === 'Aktif',
           }
         ],
-        detail_program: processedDetail,       // JSON column
-        pekerjaan: processedPekerjaan,          // JSON column
-        custom_registration_form: customForm // JSON column
+        detail_program: processedDetail,
+        pekerjaan: processedPekerjaan,
+        custom_registration_form: customForm
       };
 
-      // TAHAP 3: Simpan Data ke Database
+      // Simpan Data ke Database
       const response = await fetch('/api/programs', {
         method: 'POST',
         headers: {
@@ -396,8 +385,6 @@ function TambahSemestaCampProgramInner() {
       sessionStorage.removeItem("sc_formulir_created");
       sessionStorage.removeItem("sc_custom_registration_form");
 
-      // Redirect setelah sukses
-      // Jika formulir sudah dibuat, redirect ke detail program; jika belum, redirect ke formulir page
       setTimeout(() => {
         if (formulirCreated) {
           router.push("/admin/semesta-camp");

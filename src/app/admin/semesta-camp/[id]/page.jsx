@@ -36,7 +36,7 @@ const getStatusBadgeClass = (status) => {
   return styles.badgePending;
 };
 
-// Helper untuk format tanggal
+// Helper format tanggal
 const formatDate = (dateString) => {
   if (!dateString) return "-";
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -61,7 +61,7 @@ export default function SemestaCampDetailPage({ params }) {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
-  // Modal konfirmasi hapus
+  // popup konfirmasi hapus
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, fullName: "" });
   const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
@@ -112,7 +112,6 @@ export default function SemestaCampDetailPage({ params }) {
     fetchData();
   }, [programId]);
 
-  // Handle klik di luar dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
@@ -150,7 +149,7 @@ export default function SemestaCampDetailPage({ params }) {
     }
   }, [activeDropdown]);
 
-  // 2. Logika Sort & Filter dengan Data Database
+  // 2. Logika Sort & Filter
   const filteredPendaftar = useMemo(() => {
     if (!pendaftar) return [];
     let result = [...pendaftar];
@@ -220,7 +219,7 @@ export default function SemestaCampDetailPage({ params }) {
     }
   };
 
-  // 3. Fungsi Update Status via API
+  // 3. Fungsi Update Status
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       const response = await fetch(`/api/registrations/${id}`, {
@@ -231,7 +230,6 @@ export default function SemestaCampDetailPage({ params }) {
 
       if (!response.ok) throw new Error("Gagal mengubah status");
 
-      // Update state lokal agar UI langsung berubah tanpa refresh
       setPendaftar((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
       );

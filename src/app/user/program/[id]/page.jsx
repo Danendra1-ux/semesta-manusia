@@ -51,7 +51,6 @@ export default function ProgramDetailPage({ params }) {
     fetchData();
   }, [programId]);
 
-  // Clamp: if selected fundingOption is inactive, switch to the active one
   useEffect(() => {
     if (!program) return;
     const isSJN = program.category === "SJN";
@@ -68,9 +67,6 @@ export default function ProgramDetailPage({ params }) {
     }
   }, [program, fundingOption]);
 
-  // Program yang ditutup admin harus diperlakukan seolah tidak ada,
-  // bahkan kalau user akses URL-nya langsung. is_active false / status "Ditutup"
-  // kita anggap program tidak ditemukan.
   const isClosed = program?.is_active === false || program?.status === "Ditutup";
 
   const handleShare = async () => {
@@ -82,7 +78,6 @@ export default function ProgramDetailPage({ params }) {
           url,
         });
       } catch (err) {
-        // User cancelled
       }
     } else {
       await navigator.clipboard.writeText(url);
@@ -138,7 +133,6 @@ export default function ProgramDetailPage({ params }) {
     return `${startDate} - ${endDate}`;
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className={styles.page}>
@@ -154,7 +148,6 @@ export default function ProgramDetailPage({ params }) {
     );
   }
 
-  // Not found state — termasuk program yang ditutup admin (is_active=false / status="Ditutup")
   if (error || !program || isClosed) {
     return (
       <div className={styles.page}>
@@ -179,7 +172,6 @@ export default function ProgramDetailPage({ params }) {
 
   const isSJN = program.category === "SJN";
 
-  // Resolve funding deadlines & active status from program_funding_types
   const fundingTypes = program.program_funding_types || [];
   const fullyDeadline = fundingTypes.find(f => f.code === 'fully')?.deadline;
   const selfDeadline = fundingTypes.find(f => f.code === 'self')?.deadline;
@@ -188,12 +180,8 @@ export default function ProgramDetailPage({ params }) {
 
   return (
     <div className={styles.page}>
-      {/* Navbar */}
       <Navbar />
-
-      {/* Hero Section — 2 Column Layout */}
       <section className={styles.heroSection}>
-        {/* Left: Hero Image */}
         <div className={styles.heroImageCol}>
           <div className={styles.heroImage}>
             <Image
@@ -218,7 +206,6 @@ export default function ProgramDetailPage({ params }) {
             )}
           </div>
 
-          {/* Back Button — overlay on hero image */}
           <button
             className={styles.backButton}
             onClick={() => router.back()}
@@ -460,7 +447,6 @@ export default function ProgramDetailPage({ params }) {
 
           {/* Tab Panels */}
           <div className={styles.tabPanel}>
-            {/* === Tab: Deskripsi === */}
             {activeTab === "deskripsi" && (
               <div ref={(el) => (tabRefs.deskripsi = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Deskripsi</h2>
@@ -482,7 +468,6 @@ export default function ProgramDetailPage({ params }) {
               </div>
             )}
 
-            {/* === Tab: Detail Program === */}
             {activeTab === "detail" && (
               <div ref={(el) => (tabRefs.detail = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Detail Program</h2>
@@ -539,12 +524,9 @@ export default function ProgramDetailPage({ params }) {
                     <p>Detail program belum tersedia.</p>
                   </div>
                 )}
-
-                {/* Hapus tombol Download Guide Book statis yang lama dari sini karena sekarang sudah dinamis */}
               </div>
             )}
 
-            {/* === Tab: Divisi — SJN Only === */}
             {isSJN && activeTab === "divisi" && (
               <div ref={(el) => (tabRefs.divisi = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Divisi</h2>
@@ -603,7 +585,6 @@ export default function ProgramDetailPage({ params }) {
               </div>
             )}
 
-            {/* === Tab: Pekerjaan — Semesta Camp Only === */}
             {!isSJN && activeTab === "pekerjaan" && (
               <div ref={(el) => (tabRefs.pekerjaan = el)} className={styles.contentSection}>
                 <h2 className={styles.sectionTitle}>Pekerjaan</h2>
@@ -664,8 +645,6 @@ export default function ProgramDetailPage({ params }) {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

@@ -5,18 +5,6 @@ import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/adminAuth";
 import { sendRemindAccountEmail } from "@/lib/email";
 
-/**
- * GET    /api/admin/users/[id]   — full user detail + registration history
- * PATCH  /api/admin/users/[id]   — update name / is_active
- * DELETE /api/admin/users/[id]   — hard-delete the user (admin only)
- *
- * The `role` column on public.users is treated as an internal flag and is
- * forced to "user" on every update — admins live in Supabase auth only and
- * are not editable from this endpoint.
- *
- * Self-protection: admins cannot delete themselves.
- */
-
 export async function GET(_request, { params }) {
   try {
     const { id } = await params;

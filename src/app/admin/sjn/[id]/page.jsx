@@ -42,7 +42,6 @@ export default function SJNDetailPage({ params }) {
   const [pendaftar, setPendaftar] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal konfirmasi hapus
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, fullName: "" });
   const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);

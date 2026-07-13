@@ -6,20 +6,6 @@ import { getAdminSession } from "@/lib/adminAuth";
 
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
 
-/**
- * GET /api/admin/users
- *
- * Returns all registered volunteer users (the only role stored in
- * public.users). Admin accounts live in Supabase auth only and are
- * intentionally excluded from this listing.
- *
- * The effective status of a user is computed on read: a user is treated as
- * "Nonaktif" when their last_login_at is older than 6 months. The stored
- * is_active flag is preserved alongside for admin context, and is what gets
- * updated by the manual toggle endpoint.
- *
- * Uses service role to bypass RLS for the listing query.
- */
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -53,7 +39,6 @@ export async function GET() {
       .select(
         "id, email, name, role, is_active, whatsapp, instagram, region, institution, created_at, last_login_at"
       )
-      // Only volunteer / Pengguna rows. Admin lives in Supabase auth only.
       .or("role.eq.user,role.is.null")
       .order("created_at", { ascending: false });
 
@@ -67,8 +52,6 @@ export async function GET() {
       const isInactiveByLogin = last !== null && now - last > SIX_MONTHS_MS;
       return {
         ...u,
-        // Effective status used by the UI: dormant login OR explicit flag.
-        // Treat null is_active the same as true (presumably from a legacy row).
         effective_is_active:
           u.is_active === true && !isInactiveByLogin,
       };

@@ -13,7 +13,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Komponen Toast Notification
 const Toast = ({ message, show, isError }) => (
   <div className={`${styles.toast} ${show ? styles.toastShow : ""} ${isError ? styles.toastError : ""}`}>
     {isError ? (
@@ -31,7 +30,6 @@ const Toast = ({ message, show, isError }) => (
   </div>
 );
 
-// Ikon Kalender
 const CalendarIcon = () => (
   <svg className={styles.calendarIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -57,7 +55,6 @@ export default function RegisterPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // State untuk Toast
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastIsError, setToastIsError] = useState(false);
@@ -84,25 +81,17 @@ export default function RegisterPage({ params }) {
     fetchProgram();
   }, [programId]);
 
-  // Auto-fill "Data Diri" step 1 from the signed-in user's profile.
-  //
-  // Behavior:
-  //   - Logged out                -> nothing happens (anonymous flow).
-  //   - Logged in but no Data Diri -> nothing pre-filled (form stays blank).
-  //   - Logged in with Data Diri   -> step 1 fields are pre-filled, but only
-  //                                   when the user hasn't typed anything yet.
-  //                                   (re-running this hook won't clobber edits.)
+  // Auto-fill "Data Diri"
   useEffect(() => {
     if (!program) return;
 
     const fetchAndPrefill = async () => {
       try {
         const res = await fetch("/api/auth/me");
-        if (!res.ok) return; // not logged in or errored -> leave form blank
+        if (!res.ok) return;
         const { user } = await res.json();
         if (!user) return;
 
-        // Only pre-fill when at least one of the data-diri fields is present.
         const hasData =
           user.name || user.email || user.whatsapp || user.instagram ||
           user.birth_date || user.region || user.institution;
@@ -113,19 +102,15 @@ export default function RegisterPage({ params }) {
         if (!firstSection?.fields) return;
 
         setFormData((prev) => {
-          // Skip if user already started filling the form.
           if (Object.keys(prev).length > 0) return prev;
 
           const next = { ...prev };
 
-          // Map user-profile values to form fields by matching the field label.
           const fillByLabel = (regex, value) => {
             if (!value) return;
             const field = firstSection.fields.find((f) => regex.test(f.label ?? ""));
             if (!field) return;
-            // Don't overwrite anything the user already typed.
             if (next[field.id]) return;
-            // Don't auto-fill if the schema field itself is empty (defensive).
             if (value === "") return;
             next[field.id] = value;
           };
@@ -141,7 +126,6 @@ export default function RegisterPage({ params }) {
           return next;
         });
       } catch (err) {
-        // Silent: prefill is best-effort and shouldn't break the form.
         console.error("Prefill from /api/auth/me failed:", err);
       }
     };
@@ -156,7 +140,6 @@ export default function RegisterPage({ params }) {
     setTimeout(() => setToastShow(false), 4000); 
   };
 
-  // Pilih form schema yang sesuai dengan tipe pendaftaran (SJN fully/self, atau Camp)
   const getFormSchema = () => {
     if (!program) return null;
     if (program.category === "SJN") {
@@ -166,7 +149,6 @@ export default function RegisterPage({ params }) {
     return program.custom_registration_form || null;
   };
 
-  // Mengambil total step berdasarkan array dari custom_registration_form (default ke fungsi lama jika blm ada)
   const getTotalSteps = () => {
     const schema = getFormSchema();
     if (schema && Array.isArray(schema) && schema.length > 0) return schema.length;
@@ -178,7 +160,6 @@ export default function RegisterPage({ params }) {
     if (schema && Array.isArray(schema) && schema.length > 0) {
       return schema.map(section => section.title);
     }
-    // Fallback lama
     const baseSteps = ["Data Diri"];
     if (type !== "semesta-camp") baseSteps.push("Deskripsi Diri");
     baseSteps.push("Kelengkapan Persyaratan");
@@ -299,7 +280,6 @@ export default function RegisterPage({ params }) {
         }
       }
 
-      // Menyiapkan payload dynamic answers
       const formSchema = getFormSchema() || [];
       const dynamic_answers = Object.entries(formData).map(([key, value]) => {
         return {
@@ -308,19 +288,15 @@ export default function RegisterPage({ params }) {
         };
       });
 
-      // Build a flat map of field_id -> field info from the custom form config
       const fieldMap = new Map();
       formSchema.forEach((sec) => {
         sec.fields?.forEach((f) => fieldMap.set(f.id, f));
       });
 
-      // Helper: find the field ID whose label matches a keyword
       const findFieldId = (regex) => [...fieldMap.keys()].find((k) => regex.test(fieldMap.get(k)?.label ?? ''));
 
-      // Helper: extract the value for a given field ID
       const val = (fieldId) => formData[fieldId] || '';
 
-      // Try to match static columns to dynamic fields by label keywords
       const nameId = findFieldId(/nama|name/i);
       const emailId = findFieldId(/email/i);
       const waId = findFieldId(/whatsapp|no\.?hp|handphone/i);
@@ -330,7 +306,6 @@ export default function RegisterPage({ params }) {
       const instId = findFieldId(/instansi|institution|perguruan|sekolah/i);
       const reasonId = findFieldId(/alasan|reason|mengapa/i);
 
-      // Fallback: if nothing matched, use the first field of the first section as name
       const firstFieldId = formSchema?.[0]?.fields?.[0]?.id;
 
       const payload = {
@@ -346,7 +321,6 @@ export default function RegisterPage({ params }) {
         institution: val(instId) || '',
         reason: val(reasonId) || '',
 
-        // Memasukkan array dinamis
         dynamic_answers: dynamic_answers,
         uploaded_files: uploaded_files
       };
@@ -470,10 +444,6 @@ export default function RegisterPage({ params }) {
     );
   };
 
-  // Program yang ditutup admin harus diperlakukan seolah tidak ada,
-  // sehingga form pendaftaran tidak bisa di-bypass via URL langsung.
-  // Untuk SJN: tutup jika funding yang sedang diakses user Non-aktif.
-  // Untuk Semesta Camp: tutup jika self (satu-satunya funding) Non-aktif.
   const fundingTypes = program?.program_funding_types || [];
   const selfEntry = fundingTypes.find((f) => f.code === "self");
   const fullyEntry = fundingTypes.find((f) => f.code === "fully");
@@ -490,8 +460,6 @@ export default function RegisterPage({ params }) {
     program?.status === "Ditutup" ||
     isFundingTypeClosed;
 
-  // Redirect ke daftar program begitu ketahuan program sudah ditutup.
-  // Hindari flicker dengan efek ini.
   useEffect(() => {
     if (!loading && program && isClosed) {
       router.replace("/user/program");

@@ -21,7 +21,6 @@ export default function UserProfilePage() {
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
 
-  // Personal form state
   const [form, setForm] = useState({
     name: "",
     whatsapp: "",
@@ -33,7 +32,6 @@ export default function UserProfilePage() {
   const [formErrors, setFormErrors] = useState({});
   const [savingPersonal, setSavingPersonal] = useState(false);
 
-  // Security form state
   const [pwdForm, setPwdForm] = useState({
     current: "",
     new: "",
@@ -42,7 +40,6 @@ export default function UserProfilePage() {
   const [pwdErrors, setPwdErrors] = useState({});
   const [savingPwd, setSavingPwd] = useState(false);
 
-  // Programs list (loaded together with profile so stats are ready immediately)
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(true);
 
@@ -69,7 +66,6 @@ export default function UserProfilePage() {
         return;
       }
 
-      // Fetch profile + registrations in parallel so stats are ready on first paint.
       try {
         const [profileRes, regsRes] = await Promise.all([
           fetch("/api/users/me", { cache: "no-store" }),

@@ -25,7 +25,6 @@ function ResetPasswordForm() {
     function markReady() {
       if (cancelled) return;
       cancelled = true;
-      // Clean URL.
       try {
         window.history.replaceState(null, "", window.location.pathname);
       } catch (_e) {}
@@ -38,7 +37,6 @@ function ResetPasswordForm() {
       setStatus("invalid");
     }
 
-    // Extract tokens from URL hash or query params.
     const hashStr = window.location.hash.slice(1);
     const searchStr = window.location.search.replace(/^\?/, "");
     const urlData = [hashStr, searchStr].filter(Boolean).join("&");
@@ -52,8 +50,6 @@ function ResetPasswordForm() {
       const hasTokenPair = accessToken && refreshToken;
 
       if (hasTokenPair && isRecovery) {
-        // Directly set the session — the singleton client's detectSessionInUrl
-        // failed because of flowType mismatch (pkce vs implicit recovery tokens).
         try {
           supabase.auth
             .setSession({ access_token: accessToken, refresh_token: refreshToken })
@@ -61,8 +57,6 @@ function ResetPasswordForm() {
               if (sess?.session) {
                 markReady();
               } else {
-                // setSession may not populate the session in the return value
-                // for recovery tokens; check explicitly.
                 setTimeout(() => {
                   if (!cancelled) markReady();
                 }, 100);
@@ -71,24 +65,14 @@ function ResetPasswordForm() {
             .catch(() => {});
         } catch (_e) {}
       } else if (!hasTokenPair && isRecovery) {
-        // token_hash from query string (explicit-flow or PKCE flow)
-        // Supabase verify endpoint would have stripped the hash tokens from query
-        // and put them in the URL. If we only see type=recovery without access_token,
-        // it might have already been processed by detectSessionInUrl (but failed
-        // due to flow mismatch).
-        // In this case, check if there's a session stored anyway.
       } else {
-        // No valid token pair — could be a stale recovery link.
-        // Check the already-subscribed session.
       }
     }
 
-    // Also listen for any session changes.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) markReady();
     });
 
-    // Fallback: poll getSession a couple times.
     let pollCount = 0;
     const pollInterval = setInterval(() => {
       if (pollCount++ > 10) {
@@ -108,7 +92,6 @@ function ResetPasswordForm() {
       });
     }, 500);
 
-    // Final timeout.
     setTimeout(() => {
       clearInterval(pollInterval);
       supabase.auth.getSession().then(({ data }) => {

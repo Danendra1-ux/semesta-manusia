@@ -78,7 +78,6 @@ export default function AdminSidebar({ isCollapsed, onToggle }) {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
 
-    // Safety net: if signOut hangs (network/auth issue), reset state and still navigate.
     const timeoutId = setTimeout(() => {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);

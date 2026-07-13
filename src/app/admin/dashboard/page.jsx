@@ -7,7 +7,6 @@ import AdminSidebar from "../components/AdminSidebar";
 import styles from "./page.module.css";
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
-// Chart data (initial empty state — replaced by fetched data)
 const emptyChartData = [
   { name: "Menunggu", value: 0, color: "#00bfff" },
   { name: "Diterima", value: 0, color: "#10b981" },
@@ -27,7 +26,7 @@ const getStatusBadgeClass = (status) => {
   }
 };
 
-// Get today's date formatted
+// Tanggal sekarang
 const getFormattedDate = () => {
   const options = { weekday: "long", day: "numeric", month: "long", year: "numeric" };
   return new Date().toLocaleDateString("id-ID", options);

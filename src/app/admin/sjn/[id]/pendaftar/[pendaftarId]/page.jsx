@@ -11,13 +11,12 @@ export default function SJNPendaftarDetailPage({ params }) {
   const programId = resolvedParams.id;
   const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
-  // State untuk Data
+
   const [pendaftar, setPendaftar] = useState(null);
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch Data Pendaftar & Program
   useEffect(() => {
     if (!pendaftarId || !programId) {
       setLoading(false);
@@ -172,7 +171,7 @@ export default function SJNPendaftarDetailPage({ params }) {
           </div>
         </div>
 
-        {/* RENDER SECTIONS SECARA DINAMIS — gunakan formSchema berdasarkan funding code */}
+        {/* RENDER SECTIONS */}
         <div className={styles.infoGrid}>
           {formSchema && formSchema.length > 0 ? (
             formSchema.map((section) => (
@@ -181,7 +180,6 @@ export default function SJNPendaftarDetailPage({ params }) {
 
                 <div className={styles.infoList} style={{ gap: '1.25rem' }}>
                   {section.fields.map((field) => {
-                    // Cek apakah ada file yang terupload untuk field ini
                     const fileObj = getFileForField(field);
 
                     return (
@@ -218,7 +216,6 @@ export default function SJNPendaftarDetailPage({ params }) {
                             <span className={styles.infoValue} style={{ color: "#9ca3af" }}>Tidak ada berkas.</span>
                           )
                         ) : (
-                          // RENDER TEKS / DROPDOWN / LAINNYA
                           <span className={styles.infoValue} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
                             {getAnswerForField(field)}
                           </span>

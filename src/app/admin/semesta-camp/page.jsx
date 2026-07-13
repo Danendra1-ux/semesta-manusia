@@ -14,12 +14,12 @@ export default function SemestaCampPage() {
   const router = useRouter();
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   
-  // State untuk API Data
+  // State buat API Data
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State untuk UI & Filter
+  // State buat UI & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [sortDate, setSortDate] = useState(null);
@@ -32,7 +32,7 @@ export default function SemestaCampPage() {
   const filterDropdownRef = useRef(null);
   const optionsButtonRefs = useRef({});
 
-  // Modal konfirmasi hapus program
+  // popup konfirmasi hapus program
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: "", pendaftar: 0 });
   const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
@@ -58,14 +58,13 @@ export default function SemestaCampPage() {
     fetchPrograms();
   }, []);
 
-  // 1b. Refresh data ketika user kembali ke halaman (misal setelah hapus pendaftar di halaman detail)
   useEffect(() => {
     const handleFocus = () => fetchPrograms();
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  // 2. Klik di luar dropdown filter status
+  // Klik di luar dropdown filter status
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
@@ -115,7 +114,7 @@ export default function SemestaCampPage() {
     }
   };
 
-  // --- FUNGSI UBAH STATUS (BUKA/TUTUP) ---
+  // FUNGSI UBAH STATUS (BUKA/TUTUP)
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "Dibuka" ? "Ditutup" : "Dibuka";
     const newIsActive = newStatus === "Dibuka";
@@ -129,7 +128,6 @@ export default function SemestaCampPage() {
 
       if (!response.ok) throw new Error("Gagal mengubah status program");
 
-      // Update state lokal agar UI langsung berubah
       setPrograms((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
       );
@@ -140,7 +138,7 @@ export default function SemestaCampPage() {
     }
   };
 
-  // --- FUNGSI HAPUS PROGRAM ---
+  // FUNGSI HAPUS PROGRAM
   const openDeleteModal = (id) => {
     const target = programs.find((p) => p.id === id);
     setDeleteModal({
@@ -224,7 +222,7 @@ export default function SemestaCampPage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 3. Logika Filter & Sort
+  // Logika Filter & Sort
   const filteredPrograms = useMemo(() => {
     let result = [...programs];
 

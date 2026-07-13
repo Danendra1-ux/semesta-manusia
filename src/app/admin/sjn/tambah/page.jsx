@@ -50,7 +50,6 @@ function TambahSJNProgramPageInner() {
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
   const fileInputRef = useRef(null);
 
-  // Form state
   const [nama, setNama] = useState("");
   const [jadwalMulai, setJadwalMulai] = useState("");
   const [jadwalSelesai, setJadwalSelesai] = useState("");
@@ -64,19 +63,15 @@ function TambahSJNProgramPageInner() {
   const [selfFundedBatasReg, setSelfFundedBatasReg] = useState("");
   const [selfFundedStatus, setSelfFundedStatus] = useState("Non-aktif");
 
-  // Formulir lock/unlock state — pisah per tipe (fully-funded & self-funded)
   const [fullyFormulirCreated, setFullyFormulirCreated] = useState(false);
   const [selfFormulirCreated, setSelfFormulirCreated] = useState(false);
   const [tooltipShow, setTooltipShow] = useState(null); // null | "fully" | "self"
 
-  // Dynamic fields
   const [detailFields, setDetailFields] = useState([]);
   const [pekerjaanFields, setPekerjaanFields] = useState([]);
 
-  // File objects staged for upload (key: `${section}-${fieldId}`)
   const [uploadFiles, setUploadFiles] = useState({});
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [targetSection, setTargetSection] = useState(null);
   const [modalFieldType, setModalFieldType] = useState("Teks");
@@ -89,7 +84,6 @@ function TambahSJNProgramPageInner() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // 1. Load draft & created-flag dari sessionStorage saat mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const fullyCreated = sessionStorage.getItem("sjn_formulir_created_fully");
@@ -112,7 +106,6 @@ function TambahSJNProgramPageInner() {
         if (parsed.pekerjaanFields) setPekerjaanFields(parsed.pekerjaanFields);
       }
 
-      // Reconstruct Poster File from Base64
       const posterDraft = sessionStorage.getItem("sjn_poster_draft");
       const posterName = sessionStorage.getItem("sjn_poster_name");
       const posterType = sessionStorage.getItem("sjn_poster_type");
@@ -133,7 +126,6 @@ function TambahSJNProgramPageInner() {
     }
   }, []);
 
-  // 2. Auto-save draft on every relevant change
   useEffect(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("sjn_draft", JSON.stringify({
@@ -143,7 +135,6 @@ function TambahSJNProgramPageInner() {
     }
   }, [nama, jadwalMulai, jadwalSelesai, lokasi, deskripsi, fullyFundedBatasReg, selfFundedBatasReg, detailFields, pekerjaanFields]);
 
-  // 3. Detect redirect back from formulir page with created=true
   useEffect(() => {
     const created = searchParams.get("created");
     const createdTipe = searchParams.get("tipe");
@@ -317,7 +308,7 @@ function TambahSJNProgramPageInner() {
   };
 
   const handleSave = async () => {
-    if (isSaving) return; // prevent double-click
+    if (isSaving) return;
     if (!nama.trim()) return showToast("Nama Program harus diisi!", true);
     if (!jadwalMulai || !jadwalSelesai) return showToast("Jadwal Pelaksanaan (Mulai & Selesai) harus diisi!", true);
     if (new Date(jadwalSelesai) < new Date(jadwalMulai)) return showToast("Tanggal Selesai tidak boleh sebelum tanggal Mulai!", true);
@@ -348,7 +339,6 @@ function TambahSJNProgramPageInner() {
 
       let imageUrl = "";
 
-      // Upload poster ke Supabase Storage jika ada file
       if (posterFile) {
         const fileName = `program-new-${Date.now()}-${posterFile.name}`;
         const { error: uploadError } = await supabase.storage
@@ -363,7 +353,6 @@ function TambahSJNProgramPageInner() {
         }
       }
 
-      // Upload file Upload File dari detail/pekerjaan ke Supabase Storage
       const processedDetail = await processUploadFiles(detailFields, "detail");
       const processedPekerjaan = await processUploadFiles(pekerjaanFields, "pekerjaan");
 

@@ -1,8 +1,3 @@
-/* ==========================================
-   USER SIGNUP PAGE — Volunteer sign-up
-   Reuses login styles + multi-section form
-   ========================================== */
-
 .signupPage {
   min-height: 100vh;
   display: grid;

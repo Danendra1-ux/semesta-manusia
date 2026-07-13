@@ -95,26 +95,22 @@ function LoginForm() {
 
       clearTimeout(timeoutId);
 
-      // Record last login timestamp (idempotent, lightweight).
       try {
         await fetch("/api/auth/record-login", { method: "POST" });
       } catch (_e) {
-        // Silent fail — login succeeded, the timestamp is non-essential.
       }
 
-      // Check if the logged-in user is an admin
+      // jika role admin
       const session = await supabase.auth.getSession();
       const role = session.data.session?.user?.app_metadata?.role
         || session.data.session?.user?.user_metadata?.role;
       if (role === "admin") {
-        // Honor the original admin target if it was an internal /admin/* path.
         const adminRedirect = redirectParam.startsWith("/admin") ? redirectParam : "/admin/dashboard";
         router.replace(adminRedirect);
         router.refresh();
         return;
       }
 
-      // Sanitize redirect target - only allow internal paths.
       const safeRedirect = redirectParam.startsWith("/") ? redirectParam : "/user/program";
       router.replace(safeRedirect);
       router.refresh();
@@ -159,7 +155,7 @@ function LoginForm() {
 
   return (
     <div className={styles.loginPage}>
-      {/* Left Column - Visual Branding */}
+      {/* Left Column */}
       <div className={styles.leftColumn}>
         <div className={styles.decorativeCircle1} />
         <div className={styles.decorativeCircle2} />

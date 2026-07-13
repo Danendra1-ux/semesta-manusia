@@ -11,13 +11,12 @@ export default function PendaftarDetailPage({ params }) {
   const programId = resolvedParams.id;
   const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
-  // State untuk Data
+
   const [pendaftar, setPendaftar] = useState(null);
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch Data Pendaftar & Program
   useEffect(() => {
     if (!pendaftarId || !programId) {
       setLoading(false);
@@ -69,9 +68,8 @@ export default function PendaftarDetailPage({ params }) {
     return `${(bytes / 1024).toFixed(0)} KB`;
   };
 
-  // Helper untuk mendapatkan jawaban Teks / Tipe Lainnya
+  // Helper untuk mendapatkan jawaban
   const getAnswerForField = (field) => {
-    // 1. Coba cari di jawaban dinamis
     const dynamicAns = pendaftar?.registration_answers?.find(a => a.field_id === field.id);
     if (dynamicAns) {
       return dynamicAns.value_text || "-";
@@ -93,7 +91,6 @@ export default function PendaftarDetailPage({ params }) {
 
   // Helper untuk mendapatkan URL & Info File Upload
   const getFileForField = (field) => {
-    // 1. Cari berdasarkan ID field (Sistem baru)
     let fileObj = pendaftar?.registration_files?.find(f => f.field_key === field.id);
     
     // 2. Fallback berdasarkan Keyword Label (Sistem lama)
@@ -190,7 +187,6 @@ export default function PendaftarDetailPage({ params }) {
                 
                 <div className={styles.infoList} style={{ gap: '1.25rem' }}>
                   {section.fields.map((field) => {
-                    // Cek apakah ada file yang terupload untuk field ini
                     const fileObj = pendaftar?.registration_files?.find(f => f.field_key === field.id);
                     
                     return (
@@ -198,7 +194,6 @@ export default function PendaftarDetailPage({ params }) {
                         <span className={styles.infoLabel}>{field.label}</span>
                         
                         {field.type === "upload" ? (
-                          // RENDER FILE UPLOAD
                           fileObj ? (
                             <div className={styles.berkasItem} style={{ width: '100%', maxWidth: '600px', marginTop: '0.2rem' }}>
                               <div className={styles.berkasIcon}>
@@ -227,7 +222,6 @@ export default function PendaftarDetailPage({ params }) {
                             <span className={styles.infoValue} style={{ color: "#9ca3af" }}>Tidak ada berkas.</span>
                           )
                         ) : (
-                          // RENDER TEKS / DROPDOWN / LAINNYA
                           <span className={styles.infoValue} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
                             {getAnswerForField(field)}
                           </span>

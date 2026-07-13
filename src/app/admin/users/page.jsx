@@ -18,15 +18,12 @@ export default function AdminUsersPage() {
   const filterDropdownRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 3-dots dropdown state
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const optionsButtonRefs = useRef({});
 
-  // Selected rows for bulk delete
   const [selectedRows, setSelectedRows] = useState([]);
 
-  // Delete confirmation modal
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     id: null,
@@ -37,7 +34,6 @@ export default function AdminUsersPage() {
   const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Warn / remind confirmation modal
   const [remindModal, setRemindModal] = useState({ open: false, id: null, name: "", email: "" });
   const [reminding, setReminding] = useState(false);
 
@@ -385,7 +381,6 @@ export default function AdminUsersPage() {
               />
             </div>
             <div className={styles.filterButtons}>
-              {/* Status + Login Filter Dropdown */}
               <div className={styles.filterDropdown}>
                 <button
                   className={`${styles.filterButton} ${(statusFilter !== "all" || loginSort !== "all") ? styles.active : ""}`}
@@ -399,7 +394,6 @@ export default function AdminUsersPage() {
                 </button>
                 {filterDropdownOpen && (
                   <div className={styles.statusDropdownMenu}>
-                    {/* Status Options */}
                     {[
                       { value: "all", label: "Semua" },
                       { value: "active", label: "Aktif" },
@@ -421,7 +415,7 @@ export default function AdminUsersPage() {
                         {opt.label}
                       </button>
                     ))}
-                    {/* Login Sort Section */}
+                    {/* Login Sort */}
                     <div className={styles.loginSortSection}>
                       <div className={styles.loginSortLabel}>Login Terakhir</div>
                       {[
@@ -452,7 +446,6 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
-          {/* Selected rows bar */}
           {selectedRows.length > 0 && !loading && (
             <div className={styles.selectedBar}>
               <span>{selectedRows.length} baris dipilih</span>
@@ -564,7 +557,6 @@ export default function AdminUsersPage() {
                   </tbody>
                 </table>
               </div>
-              {/* Pagination */}
               <div className={styles.pagination}>
                 <span className={styles.paginationInfo}>
                   Menampilkan {start + 1}-{Math.min(start + ITEMS_PER_PAGE, filtered.length)} dari {filtered.length}
@@ -644,7 +636,6 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteModal.open && (
         <div className={styles.modalBackdrop} onClick={closeDeleteModal}>
           <div
@@ -707,7 +698,6 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Remind User Confirmation Modal */}
       {remindModal.open && (
         <div className={styles.modalBackdrop} onClick={closeRemindModal}>
           <div

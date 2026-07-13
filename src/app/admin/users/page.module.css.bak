@@ -1,7 +1,3 @@
-/* ==========================================
-   ADMIN PENGGUNA LIST PAGE
-   ========================================== */
-
 .pageWrapper {
   position: relative;
   display: flex;
