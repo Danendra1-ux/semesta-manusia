@@ -187,7 +187,7 @@ function TambahFormulirSJNPageInner() {
             required: true,
             isFixed: false,
             value: null,
-            placeholder: "Unggah 1 file. Maks 100 MB.",
+            placeholder: "Unggah 1 file.",
           },
           {
             id: `f-${baseId}-p2`,
@@ -196,7 +196,7 @@ function TambahFormulirSJNPageInner() {
             required: true,
             isFixed: false,
             value: null,
-            placeholder: "Unggah 1 file. Maks 100 MB.",
+            placeholder: "Unggah 1 file.",
           },
           {
             id: `f-${baseId}-p3`,
@@ -205,7 +205,7 @@ function TambahFormulirSJNPageInner() {
             required: true,
             isFixed: false,
             value: null,
-            placeholder: "Unggah 1 file. Maks 100 MB.",
+            placeholder: "Unggah 1 file.",
           },
           {
             id: `f-${baseId}-p4`,
@@ -214,7 +214,7 @@ function TambahFormulirSJNPageInner() {
             required: true,
             isFixed: false,
             value: null,
-            placeholder: "Unggah 1 file. Maks 100 MB.",
+            placeholder: "Unggah 1 file.",
           },
         ],
       },

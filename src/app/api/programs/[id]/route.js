@@ -163,7 +163,6 @@ export async function DELETE(request, { params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
 
-  // Hapus semua data terkait program ini secara cascade:
   // 1. Hapus registrations (yang punya FK ke funding_type_id & program_id)
   await supabase
     .from('registrations')

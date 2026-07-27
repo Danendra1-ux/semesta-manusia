@@ -13,13 +13,9 @@ export async function POST(request) {
       uploaded_files
     } = body;
 
-    // =====================================================================
     // 0. GUARD STATUS PROGRAM / FUNDING TYPE
-    // Frontend bisa di-bypass (langsung POST /api/registrations via curl/
-    // devtools, atau JavaScript dimatikan), jadi kita validasi status di
-    // server. Tolak jika program non-aktif, status "Ditutup", atau
+    // Tolak jika program non-aktif, status "Ditutup", atau
     // funding_type yang diminta Non-aktif.
-    // =====================================================================
     const programCheck = await supabase
       .from('programs')
       .select('id, is_active, status')
@@ -54,9 +50,7 @@ export async function POST(request) {
       }
     }
 
-    // =====================================================================
     // 1. CEK DUPLIKAT EMAIL ATAU WHATSAPP DI PROGRAM & TIPE PENDAFTARAN YANG SAMA
-    // =====================================================================
     let duplicateQuery = supabase
       .from('registrations')
       .select('id')
@@ -83,8 +77,6 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    // =====================================================================
-
     // 2. Insert Base Registration
     const { data: registration, error: regError } = await supabase
       .from('registrations')

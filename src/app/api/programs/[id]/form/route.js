@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
 
-  // Blokir form jika program ditutup admin (is_active=false / status="Ditutup")
+  // Blokir form jika program ditutup admin)
   if (program?.is_active === false || program?.status === 'Ditutup') {
     return NextResponse.json({ error: 'Program ini sedang ditutup' }, { status: 410 });
   }

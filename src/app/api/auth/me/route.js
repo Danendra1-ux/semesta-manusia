@@ -31,7 +31,6 @@ export async function GET() {
           return cookieStore.getAll();
         },
         setAll() {
-          // No-op in read-only check.
         },
       },
     });

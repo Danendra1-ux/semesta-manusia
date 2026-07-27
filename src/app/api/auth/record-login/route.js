@@ -5,17 +5,6 @@ import { cookies } from "next/headers";
 
 /**
  * POST /api/auth/record-login
- *
- * Stamps public.users.last_login_at = now() for the currently authenticated
- * user. Intended to be called once after a successful sign-in on the client,
- * because Supabase auth updates auth.users.last_sign_in_at but does NOT touch
- * the public mirror row.
- *
- * Also re-activates the account (is_active = true) if the previous
- * last_login_at is older than 6 months — that is the user's first login after
- * being auto-flagged as dormant.
- *
- * Idempotent and cheap — safe to call on every page load.
  */
 
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
@@ -52,9 +41,6 @@ export async function POST() {
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // Fetch existing last_login_at + is_active so we can decide whether to
-    // re-activate. Doing it in two queries instead of a stored procedure keeps
-    // the endpoint portable and free of side effects on every login.
     const { data: existing, error: lookupErr } = await adminClient
       .from("users")
       .select("last_login_at, is_active")

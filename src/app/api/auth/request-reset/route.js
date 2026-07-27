@@ -47,7 +47,6 @@ export async function POST(request) {
     });
 
     if (error) {
-      // Still return ok — we don't want to leak which emails are registered.
       return NextResponse.json({ ok: true });
     }
 

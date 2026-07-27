@@ -53,9 +53,7 @@ export async function POST(request) {
       },
     });
 
-    // Pre-flight: pastikan email belum terdaftar. signUp() di Supabase kadang
-    // tidak melempar error untuk duplikat (terutama jika setting "Allow duplicate
-    // signups" aktif), jadi kita cek dulu lewat admin API sebelum lanjut.
+    // Pre-flight: pastikan email belum terdaftar.
     if (supabaseServiceKey) {
       const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
         auth: { persistSession: false, autoRefreshToken: false },
@@ -95,11 +93,11 @@ export async function POST(request) {
       email: email,       
       password: password, 
       options: {
-        emailRedirectTo: emailRedirectTo, // PERBAIKAN 1: Wajib dimasukkan agar tombol email berfungsi
+        emailRedirectTo: emailRedirectTo,
         data: {           
           name: name,
           whatsapp: whatsapp,
-          instagram: ig, // PERBAIKAN 2: Menggunakan variabel ig yang sudah dibersihkan
+          instagram: ig,
           birth_date: birth_date,
           region: region,
           institution: institution
@@ -109,7 +107,6 @@ export async function POST(request) {
 
     if (error) {
       console.error("Supabase Error:", error.message);
-      // Tandai secara eksplisit agar klien bisa menampilkan toast khusus.
       const isEmailTaken = /already.*registered|already been registered|email.*exist/i.test(error.message);
       return NextResponse.json(
         {

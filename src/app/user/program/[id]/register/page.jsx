@@ -427,7 +427,7 @@ export default function RegisterPage({ params }) {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 19V5M5 12l7-7 7 7" />
               </svg>
-              <span>Unggah 1 file. Maks 100 MB.</span>
+              <span>Unggah 1 file.</span>
               <small>Drag & drop atau klik untuk upload</small>
             </div>
           )}
