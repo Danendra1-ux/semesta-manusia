@@ -83,7 +83,7 @@ export async function PUT(request, { params }) {
       const { data: existing } = await supabase
         .from('program_funding_types')
         .select('id')
-        .eq('program_id', Number(id))
+        .eq('program_id', id)
         .eq('code', ft.code)
         .maybeSingle();
 
@@ -102,7 +102,7 @@ export async function PUT(request, { params }) {
         const { data: other } = await supabase
           .from('program_funding_types')
           .select('id')
-          .eq('program_id', Number(id))
+          .eq('program_id', id)
           .eq('code', ft.code)
           .eq('is_active', true)
           .maybeSingle();
@@ -121,7 +121,7 @@ export async function PUT(request, { params }) {
           await supabase
             .from('program_funding_types')
             .insert({
-              program_id: Number(id),
+              program_id: id,
               code: ft.code,
               label: ft.label,
               deadline: ft.deadline || null,
@@ -141,7 +141,7 @@ export async function PUT(request, { params }) {
     const { data: allActive } = await supabase
       .from('program_funding_types')
       .select('id, code')
-      .eq('program_id', Number(id))
+      .eq('program_id', id)
       .eq('is_active', true);
 
     const staleIds = (allActive || [])
@@ -173,7 +173,7 @@ export async function DELETE(request, { params }) {
   await supabase
     .from('program_funding_types')
     .delete()
-    .eq('program_id', Number(id));
+    .eq('program_id', id);
 
   // 3. Hapus program itu sendiri
   const { error } = await supabase.from('programs').delete().eq('id', id);

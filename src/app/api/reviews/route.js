@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 /**
  * GET  /api/reviews?is_published=true    Public: only published reviews (for landingpage)
@@ -55,7 +56,7 @@ export async function GET(request) {
       const cookieStore = await cookies();
       const ssrClient = createServerClient(
         supabaseUrl,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        getSupabaseAnonKey(),
         {
           cookies: {
             getAll() {
@@ -102,7 +103,7 @@ export async function POST(request) {
   try {
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {

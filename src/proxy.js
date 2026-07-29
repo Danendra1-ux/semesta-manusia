@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 const ADMIN_LOGIN_PATH = "/user/login";
 const USER_LOGIN_PATH = "/user/login";
@@ -26,7 +27,7 @@ function isUserProtectedPath(pathname) {
 
 function getSupabaseServer(req) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey = getSupabaseAnonKey();
   if (!supabaseUrl || !supabaseKey) return null;
   const reqCookies = req.cookies.getAll();
   return createServerClient(supabaseUrl, supabaseKey, {
@@ -41,6 +42,8 @@ function getSupabaseServer(req) {
 
 /**
  * Check whether the request carries a valid Supabase admin session.
+ * Roles must be present in app_metadata.role. Promotions via SQL must
+ * also update auth.users.raw_app_meta_data — see trigger below.
  */
 async function getAdminSession(req) {
   const supabase = getSupabaseServer(req);
@@ -79,13 +82,12 @@ async function getUserSession(req) {
   }
 }
 
-/** @type {import('next/server').NextRequestHandler} */
+/** @type {import("next/server").NextRequestHandler} */
 export default async function proxy(req) {
   const { pathname, search } = req.nextUrl;
 
   // ---- Admin routes ----
   if (isAdminPath(pathname)) {
-    // Protected admin routes — require an admin session.
     const session = await getAdminSession(req);
     if (!session) {
       const url = req.nextUrl.clone();
@@ -113,7 +115,6 @@ export default async function proxy(req) {
       return NextResponse.redirect(url);
     }
 
-    // Admins use the admin dashboard, not the volunteer profile.
     const role =
       user.app_metadata?.role ||
       user.user_metadata?.role ||

@@ -4,13 +4,14 @@ import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/adminAuth";
 import { sendRemindAccountEmail } from "@/lib/email";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 export async function GET(_request, { params }) {
   try {
     const { id } = await params;
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
@@ -77,7 +78,7 @@ export async function PATCH(request, { params }) {
     const { id } = await params;
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
@@ -163,7 +164,7 @@ export async function DELETE(_request, { params }) {
     const { id } = await params;
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
@@ -252,7 +253,7 @@ export async function POST(request, { params }) {
     const { id } = await params;
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {

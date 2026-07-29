@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/adminAuth";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
 
@@ -10,7 +11,7 @@ export async function GET() {
   try {
     const cookieStore = await cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {

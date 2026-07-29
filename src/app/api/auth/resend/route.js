@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 /**
  * POST /api/auth/resend
@@ -24,7 +25,7 @@ export async function POST(request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return NextResponse.json(

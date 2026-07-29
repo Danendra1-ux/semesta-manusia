@@ -9,13 +9,12 @@ const supabase = createClient(
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const numericId = parseInt(id);
 
     // Look up the file record from registration_files
     const { data: fileRecord, error: fetchError } = await supabase
       .from('registration_files')
       .select('id, file_url, file_name, file_size, mime_type')
-      .eq('id', numericId)
+      .eq('id', id)
       .single();
 
     if (fetchError || !fileRecord) {

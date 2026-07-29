@@ -11,7 +11,7 @@ import styles from "./page.module.css";
 
 export default function ProgramDetailPage({ params }) {
   const { id } = use(params);
-  const programId = Number(id);
+  const programId = id;
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("deskripsi");

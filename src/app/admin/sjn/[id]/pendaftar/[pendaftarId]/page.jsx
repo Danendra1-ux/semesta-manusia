@@ -9,7 +9,7 @@ import styles from "./page.module.css";
 export default function SJNPendaftarDetailPage({ params }) {
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
-  const pendaftarId = resolvedParams.pendaftarId ? parseInt(resolvedParams.pendaftarId) : null;
+  const pendaftarId = resolvedParams.pendaftarId || null;
   const { isCollapsed, toggle: onToggleSidebar } = useSidebar();
 
   const [pendaftar, setPendaftar] = useState(null);

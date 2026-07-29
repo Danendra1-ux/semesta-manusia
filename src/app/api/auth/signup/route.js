@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 /**
  * POST /api/auth/signup
@@ -33,7 +34,7 @@ export async function POST(request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
@@ -54,8 +55,9 @@ export async function POST(request) {
     });
 
     // Pre-flight: pastikan email belum terdaftar.
+    let adminClient = null;
     if (supabaseServiceKey) {
-      const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      adminClient = createClient(supabaseUrl, supabaseServiceKey, {
         auth: { persistSession: false, autoRefreshToken: false },
       });
       const normalizedEmail = String(email).trim().toLowerCase();
@@ -83,46 +85,93 @@ export async function POST(request) {
       }
     }
 
-    // Build the redirect target for the email confirmation link.
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-      new URL(request.url).origin;
-    const emailRedirectTo = `${siteUrl}/user/login`;
+    // [LOCAL TESTING] Email verification fully disabled.
+    //
+    // Pakai admin.createUser langsung (bukan anon signUp) supaya:
+    // 1. Tidak ada email konfirmasi yang dikirim (lewati Supabase rate limit).
+    // 2. email_confirm: true set dari awal, jadi user auto-verified.
+    // 3. signInWithPassword di bawah mengembalikan session → client auto-login.
+    //
+    // Fallback ke signUp() anonim hanya kalau service role key tidak ada.
 
-    const { data, error } = await supabase.auth.signUp({
-      email: email,       
-      password: password, 
-      options: {
-        emailRedirectTo: emailRedirectTo,
-        data: {           
-          name: name,
-          whatsapp: whatsapp,
+    let data = null;
+    let error = null;
+
+    if (adminClient) {
+      const result = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          name,
+          whatsapp,
           instagram: ig,
-          birth_date: birth_date,
-          region: region,
-          institution: institution
+          birth_date,
+          region,
+          institution,
+        },
+      });
+      data = result.data ? { user: result.data.user, session: null } : null;
+      error = result.error;
+
+      // auth.admin.createUser bypasses on_auth_user_created trigger — insert
+      // public.users row manually so the rest of the app (record-login,
+      // admin/users list, /api/auth/me) sees the new account.
+      if (!error && result.data?.user?.id) {
+        const { error: insertErr } = await adminClient
+          .from("users")
+          .insert({
+            id: result.data.user.id,
+            email,
+            name,
+            role: "user",
+            is_active: true,
+            whatsapp: whatsapp || null,
+            instagram: ig || null,
+            birth_date: birth_date || null,
+            region: region || null,
+            institution: institution || null,
+          });
+        if (insertErr) {
+          console.error("public.users insert error:", insertErr.message);
         }
       }
-    });
-
-    if (error) {
-      console.error("Supabase Error:", error.message);
-      const isEmailTaken = /already.*registered|already been registered|email.*exist/i.test(error.message);
-      return NextResponse.json(
-        {
-          error: error.message,
-          code: isEmailTaken ? "email_taken" : undefined,
+    } else {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            whatsapp,
+            instagram: ig,
+            birth_date,
+            region,
+            institution,
+          },
         },
-        { status: 400 }
-      );
+      });
+      data = result.data;
+      error = result.error;
     }
 
-    const requiresConfirmation = !data?.session;
+
+    // Untuk admin.createUser, session=null di data → signInWithPassword akan kerja.
+    let session = null;
+    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (!signInErr && signInData?.session) {
+      session = signInData.session;
+    }
+
+    const requiresConfirmation = !session;
 
     return NextResponse.json(
       {
         user: data?.user || null,
-        session: data?.session || null,
+        session,
         requiresConfirmation,
       },
       { status: 201 }

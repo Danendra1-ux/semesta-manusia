@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { getSupabaseAnonKey } from "./supabaseKeys";
 
 function decodeJwtPayload(token) {
   try {
@@ -26,9 +27,9 @@ export async function getAdminSession() {
   const cookieName = projectRef ? `sb-${projectRef}-auth-token` : "";
 
   // First try to use @supabase/ssr which knows the chunked cookie layout.
-  if (supabaseUrl && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (supabaseUrl && getSupabaseAnonKey()) {
     try {
-      const supabase = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+      const supabase = createServerClient(supabaseUrl, getSupabaseAnonKey(), {
         cookies: {
           getAll() {
             return cookieStore.getAll();

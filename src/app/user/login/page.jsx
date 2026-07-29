@@ -100,10 +100,21 @@ function LoginForm() {
       } catch (_e) {
       }
 
-      // jika role admin
-      const session = await supabase.auth.getSession();
-      const role = session.data.session?.user?.app_metadata?.role
-        || session.data.session?.user?.user_metadata?.role;
+      // jika role admin — baca dari public.users (sumber kebenaran untuk role)
+      let role = null;
+      try {
+        const meRes = await fetch("/api/auth/me");
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          role = meData?.user?.role || null;
+        }
+      } catch (_e) {
+        // Fallback ke auth metadata kalau /api/auth/me gagal
+        const session = await supabase.auth.getSession();
+        role = session.data.session?.user?.app_metadata?.role
+          || session.data.session?.user?.user_metadata?.role;
+      }
+
       if (role === "admin") {
         const adminRedirect = redirectParam.startsWith("/admin") ? redirectParam : "/admin/dashboard";
         router.replace(adminRedirect);

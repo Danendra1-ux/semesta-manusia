@@ -8,9 +8,10 @@ import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import styles from "./page.module.css";
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAnonKey } from '@/lib/supabaseKeys';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseAnonKey = getSupabaseAnonKey();
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Toast = ({ message, show, isError }) => (
@@ -41,7 +42,7 @@ const CalendarIcon = () => (
 
 export default function RegisterPage({ params }) {
   const { id } = use(params);
-  const programId = Number(id);
+  const programId = id;
   const router = useRouter();
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -278,26 +279,23 @@ export default function RegisterPage({ params }) {
       
       for (const [fieldKey, file] of Object.entries(files)) {
         if (file) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${programId}-${Date.now()}-${fieldKey}.${fileExt}`;
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('fieldKey', fieldKey);
+          fd.append('programId', programId);
 
-          const { error: uploadError } = await supabase.storage
-            .from('registration-files')
-            .upload(fileName, file);
-
-          if (uploadError) throw new Error(`Gagal upload ${fieldKey}: ${uploadError.message}`);
-
-          const { data: publicUrlData } = supabase.storage
-            .from('registration-files')
-            .getPublicUrl(fileName);
-
-          uploaded_files.push({
-            field_key: fieldKey,
-            file_url: publicUrlData.publicUrl,
-            file_name: file.name,
-            file_size: file.size,
-            mime_type: file.type
+          const uploadRes = await fetch('/api/uploads/registration-files', {
+            method: 'POST',
+            body: fd,
           });
+
+          if (!uploadRes.ok) {
+            const errBody = await uploadRes.json().catch(() => ({}));
+            throw new Error(`Gagal upload ${fieldKey}: ${errBody.error || uploadRes.statusText}`);
+          }
+
+          const uploaded = await uploadRes.json();
+          uploaded_files.push(uploaded);
         }
       }
 

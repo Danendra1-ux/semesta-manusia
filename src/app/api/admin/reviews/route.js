@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/adminAuth";
+import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
 
 /**
  * GET    /api/admin/reviews             Admin only: list ALL reviews (published + unpublished)
@@ -14,7 +15,7 @@ import { getAdminSession } from "@/lib/adminAuth";
 async function requireAdmin() {
   const cookieStore = await cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseAnonKey = getSupabaseAnonKey();
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
