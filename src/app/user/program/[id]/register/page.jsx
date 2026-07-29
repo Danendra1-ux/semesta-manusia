@@ -208,11 +208,32 @@ export default function RegisterPage({ params }) {
       const currentSection = customSections[step - 1];
 
       currentSection.fields.forEach((field) => {
-        if (field.required) {
-          if (field.type === "upload") {
-            if (!files[field.id]) newErrors[field.id] = "File ini wajib diupload";
-          } else {
-            if (!formData[field.id]?.trim()) newErrors[field.id] = "Field ini wajib diisi";
+        if (field.type === "upload") {
+          if (field.required && !files[field.id]) {
+            newErrors[field.id] = "File ini wajib diupload";
+          }
+          return;
+        }
+
+        const value = formData[field.id];
+        const label = (field.label || "").toLowerCase();
+
+        if (field.required && !value?.trim()) {
+          newErrors[field.id] = "Field ini wajib diisi";
+          return;
+        }
+
+        if (!value?.trim()) return;
+
+        if (label.includes("email")) {
+          if (!value.includes("@")) {
+            newErrors[field.id] = "Email harus mengandung karakter '@'";
+          } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            newErrors[field.id] = "Format email tidak valid";
+          }
+        } else if (label.includes("whatsapp") || label.includes("no. hp") || label.includes("no hp") || label.includes("handphone")) {
+          if (!/^\d+$/.test(value)) {
+            newErrors[field.id] = "Nomor WhatsApp hanya boleh berisi angka";
           }
         }
       });
@@ -551,10 +572,17 @@ export default function RegisterPage({ params }) {
                       </label>
                       <input
                         type={field.label.toLowerCase().includes("email") ? "email" : field.label.toLowerCase().includes("whatsapp") ? "tel" : field.type === "angka" ? "number" : "text"}
+                        inputMode={field.label.toLowerCase().includes("whatsapp") ? "numeric" : undefined}
+                        pattern={field.label.toLowerCase().includes("whatsapp") ? "[0-9]*" : undefined}
                         className={`${styles.input} ${errors[field.id] ? styles.inputError : ""}`}
                         placeholder={field.placeholder || ("Masukkan " + field.label.toLowerCase())}
                         value={formData[field.id] || ""}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const isWa = /whatsapp|no\.?\s*hp|handphone/i.test(field.label || "");
+                          const sanitized = isWa ? raw.replace(/\D/g, "") : raw;
+                          handleInputChange(field.id, sanitized);
+                        }}
                       />
                       {errors[field.id] && <span className={styles.errorText}>{errors[field.id]}</span>}
                     </>
