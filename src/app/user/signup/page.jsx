@@ -42,6 +42,13 @@ function SignupForm() {
     if (key === "email" && emailTakenToast) {
       setEmailTakenToast(null);
     }
+    if (key === "whatsapp" && errors.whatsapp) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.whatsapp;
+        return next;
+      });
+    }
   };
 
   useEffect(() => {
@@ -70,6 +77,9 @@ function SignupForm() {
       newErrors.password = "Password terlalu panjang (maks 72 karakter)";
     } else if (!/[a-zA-Z]/.test(formData.password) || !/\d/.test(formData.password)) {
       newErrors.password = "Password harus mengandung huruf dan angka";
+    }
+    if (formData.whatsapp && !/^\d+$/.test(formData.whatsapp)) {
+      newErrors.whatsapp = "Nomor WhatsApp hanya boleh berisi angka";
     }
     return newErrors;
   };
@@ -357,12 +367,27 @@ function SignupForm() {
                 <input
                   id="whatsapp"
                   type="tel"
-                  className={styles.inputField}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className={`${styles.inputField} ${errors.whatsapp ? styles.inputError : ""} ${shakeField === "whatsapp" ? styles.shake : ""}`}
                   placeholder="08xxxxxxxxxx"
                   value={formData.whatsapp}
-                  onChange={(e) => update("whatsapp", e.target.value)}
+                  onChange={(e) => {
+                    const sanitized = e.target.value.replace(/\D/g, "");
+                    update("whatsapp", sanitized);
+                  }}
                   autoComplete="tel"
                 />
+                {errors.whatsapp && (
+                  <p className={styles.fieldError}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {errors.whatsapp}
+                  </p>
+                )}
               </div>
 
               <div className={styles.inputGroup}>
