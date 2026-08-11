@@ -340,16 +340,18 @@ function TambahSJNProgramPageInner() {
       let imageUrl = "";
 
       if (posterFile) {
-        const fileName = `program-new-${Date.now()}-${posterFile.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('program-images')
-          .upload(fileName, posterFile);
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from('program-images')
-            .getPublicUrl(fileName);
-          if (urlData?.publicUrl) imageUrl = urlData.publicUrl;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const fileName = buildFileName("poster", posterFile.name);
+        try {
+          const { url } = await uploadFileDirect(posterFile, {
+            bucket: "program-images",
+            fileName,
+            accessToken: token,
+          });
+          imageUrl = url;
+        } catch (err) {
+          throw new Error(`Gagal upload poster: ${err.message}`);
         }
       }
 

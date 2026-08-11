@@ -8,20 +8,23 @@ export default function Home() {
 
   useEffect(() => {
     // Supabase verify endpoint redirects to the site root with hash tokens:
-    //   /#access_token=...&type=recovery
-    // Detect recovery tokens and forward to the password-reset page.
+    //   /#access_token=...&type=recovery    → password reset
+    //   /#access_token=...&type=signup     → email confirmation (go to login)
     const hash = window.location.hash.slice(1);
     const searchQuery = window.location.search;
     const queryParts = [hash, searchQuery].filter(Boolean).join("&");
-    const hasRecoveryTokens =
-      queryParts.includes("access_token") ||
-      queryParts.includes("type=recovery") ||
-      queryParts.includes("type=signup");
 
-    if (hasRecoveryTokens) {
-      // Clean the URL and navigate to the password-reset page.
+    // Only redirect to reset-password for recovery tokens.
+    if (queryParts.includes("type=recovery") && queryParts.includes("access_token")) {
       window.history.replaceState(null, "", "/user/reset-password");
       router.replace("/user/reset-password");
+      return;
+    }
+
+    // Signup confirmation tokens → redirect to login page.
+    if (queryParts.includes("type=signup") || queryParts.includes("access_token")) {
+      window.history.replaceState(null, "", "/user/login");
+      router.replace("/user/login");
       return;
     }
 

@@ -146,6 +146,11 @@ export default function UserProfilePage() {
     } else if (form.name.trim().length < 2) {
       errs.name = "Nama minimal 2 karakter";
     }
+    if (form.whatsapp && !/^\d+$/.test(form.whatsapp)) {
+      errs.whatsapp = "Nomor WhatsApp hanya boleh berisi angka";
+    } else if (form.whatsapp && form.whatsapp.length < 8) {
+      errs.whatsapp = "Nomor WhatsApp minimal 8 digit";
+    }
     return errs;
   };
 
@@ -479,11 +484,17 @@ export default function UserProfilePage() {
                   <input
                     id="whatsapp"
                     type="tel"
-                    className={styles.formInput}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    className={`${styles.formInput} ${formErrors.whatsapp ? styles.formInputError : ""}`}
                     placeholder="08xxxxxxxxxx"
                     value={form.whatsapp}
-                    onChange={(e) => handleFormChange("whatsapp", e.target.value)}
+                    onChange={(e) => {
+                      const sanitized = e.target.value.replace(/\D/g, "");
+                      handleFormChange("whatsapp", sanitized);
+                    }}
                   />
+                  {formErrors.whatsapp && <p className={styles.formError}>{formErrors.whatsapp}</p>}
                 </div>
                 <div className={styles.formGroup}>
                   <label htmlFor="instagram" className={styles.formLabel}>

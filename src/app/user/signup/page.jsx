@@ -28,6 +28,7 @@ function SignupForm() {
   const [shakeField, setShakeField] = useState(null);
   const [success, setSuccess] = useState(null);
   const [emailTakenToast, setEmailTakenToast] = useState(null);
+  const [resendStatus, setResendStatus] = useState({ state: "idle", message: "" });
   const inFlightRef = useRef(false);
 
   const update = (key, value) => {
@@ -80,6 +81,8 @@ function SignupForm() {
     }
     if (formData.whatsapp && !/^\d+$/.test(formData.whatsapp)) {
       newErrors.whatsapp = "Nomor WhatsApp hanya boleh berisi angka";
+    } else if (formData.whatsapp && formData.whatsapp.length < 8) {
+      newErrors.whatsapp = "Nomor WhatsApp minimal 8 digit";
     }
     return newErrors;
   };
@@ -137,12 +140,16 @@ function SignupForm() {
       if (!res.ok) {
         let msg = data?.error || "Pendaftaran gagal. Silakan coba lagi.";
         const isEmailTaken = data?.code === "email_taken";
+        const isRateLimited = data?.code === "rate_limited" || res.status === 429;
         if (isEmailTaken) {
           msg = "Email sudah terdaftar. Silakan masuk atau gunakan email lain.";
           setEmailTakenToast({
             email: formData.email.trim(),
             id: Date.now(),
           });
+        }
+        if (isRateLimited) {
+          msg = "Terlalu banyak permintaan. Tunggu beberapa menit sebelum mencoba lagi.";
         }
         setErrors({ general: msg });
         triggerShake("general");
@@ -177,6 +184,35 @@ function SignupForm() {
       console.error("Signup error:", err);
       setErrors({ general: "Terjadi kesalahan. Periksa koneksi Anda lalu coba lagi." });
       triggerShake("general");
+    }
+  };
+
+  const handleResend = async () => {
+    if (!success?.email) return;
+    setResendStatus({ state: "loading", message: "" });
+    try {
+      const res = await fetch("/api/auth/resend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: success.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setResendStatus({
+          state: "error",
+          message: data?.error || "Gagal mengirim ulang email. Coba lagi nanti.",
+        });
+        return;
+      }
+      setResendStatus({
+        state: "success",
+        message: "Email verifikasi sudah dikirim ulang. Cek inbox (atau folder spam) kamu.",
+      });
+    } catch (err) {
+      setResendStatus({
+        state: "error",
+        message: "Tidak dapat menghubungi server. Periksa koneksi kamu.",
+      });
     }
   };
 
@@ -535,6 +571,33 @@ function SignupForm() {
                 </>
               )}
             </p>
+
+            {success.requiresConfirmation && (
+              <div className={styles.resendBlock}>
+                <button
+                  type="button"
+                  className={styles.resendButton}
+                  onClick={handleResend}
+                  disabled={resendStatus.state === "loading"}
+                >
+                  {resendStatus.state === "loading"
+                    ? "Mengirim..."
+                    : "Kirim ulang email verifikasi"}
+                </button>
+                {resendStatus.message && (
+                  <p
+                    className={`${styles.resendStatus} ${
+                      resendStatus.state === "success"
+                        ? styles.resendStatusSuccess
+                        : styles.resendStatusError
+                    }`}
+                  >
+                    {resendStatus.message}
+                  </p>
+                )}
+              </div>
+            )}
+
             <button className={styles.modalButton} onClick={handleSuccessAction}>
               {success.requiresConfirmation ? "Lanjut ke Halaman Masuk" : "Mulai Sekarang"}
             </button>

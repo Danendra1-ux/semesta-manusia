@@ -54,9 +54,9 @@ export async function POST(request) {
       );
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "Ukuran file melebihi 10 MB." },
+        { error: "Ukuran file melebihi 5 MB." },
         { status: 400 }
       );
     }

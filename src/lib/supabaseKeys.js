@@ -10,3 +10,7 @@ export function getSupabaseAnonKey() {
     ""
   );
 }
+
+export function getSupabaseServiceKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+}

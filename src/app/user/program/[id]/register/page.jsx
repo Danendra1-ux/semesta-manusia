@@ -10,6 +10,9 @@ import styles from "./page.module.css";
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAnonKey } from '@/lib/supabaseKeys';
 
+// Maks 5 MB per file (gambar/PDF dokumen pendaftaran)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = getSupabaseAnonKey();
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -189,6 +192,10 @@ export default function RegisterPage({ params }) {
   };
 
   const handleFileChange = (fieldId, file) => {
+    if (file && file.size > MAX_FILE_SIZE) {
+      setErrors((prev) => ({ ...prev, [fieldId]: `Ukuran file terlalu besar. Maksimal 5 MB.` }));
+      return;
+    }
     setFiles((prev) => ({ ...prev, [fieldId]: file }));
     if (errors[fieldId]) setErrors((prev) => ({ ...prev, [fieldId]: null }));
   };
@@ -235,6 +242,8 @@ export default function RegisterPage({ params }) {
         } else if (label.includes("whatsapp") || label.includes("no. hp") || label.includes("no hp") || label.includes("handphone")) {
           if (!/^\d+$/.test(value)) {
             newErrors[field.id] = "Nomor WhatsApp hanya boleh berisi angka";
+          } else if (value.length < 8) {
+            newErrors[field.id] = "Nomor WhatsApp minimal 8 digit";
           }
         }
       });

@@ -57,9 +57,6 @@ export async function POST(request) {
       .eq('program_id', program_id)
       .or(`email.eq.${email},whatsapp.eq.${whatsapp}`);
 
-    // Sertakan funding_type_id dalam pengecekan jika tersedia,
-    // agar user bisa mendaftar di tipe funding yang berbeda (Fully Funded vs Self Funded)
-    // dengan email/whatsapp yang sama, khusus untuk program SJN.
     if (funding_type_id) {
       duplicateQuery = duplicateQuery.eq('funding_type_id', funding_type_id);
     } else {
@@ -161,16 +158,21 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const programId = searchParams.get('program_id');
   const status = searchParams.get('status');
+  const limit = parseInt(searchParams.get('limit') || '0', 10);
+  const offset = parseInt(searchParams.get('offset') || '0', 10);
 
   let query = supabase
     .from('registrations')
-    .select('*, program_funding_types(label)');
+    .select('*, program_funding_types(label)', { count: 'exact' });
 
   if (programId) query = query.eq('program_id', programId);
   if (status) query = query.eq('status', status);
+  query = query.order('registered_at', { ascending: false });
 
-  const { data, error } = await query.order('registered_at', { ascending: false });
+  if (limit > 0) query = query.range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json({ data, count: count ?? data?.length ?? 0 });
 }

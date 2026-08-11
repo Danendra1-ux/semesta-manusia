@@ -262,7 +262,7 @@ export default function EditProgramPage({ params }) {
 
     setIsSaving(true);
     try {
-      let imageUrl = posterPreview;
+      let imageUrl = "";
 
       if (posterFile) {
         const { data: { session } } = await supabase.auth.getSession();
@@ -278,6 +278,9 @@ export default function EditProgramPage({ params }) {
         } catch (err) {
           throw new Error(`Gagal upload poster: ${err.message}`);
         }
+      }
+      else if (posterPreview && posterPreview !== 'null' && !posterPreview.startsWith('blob:')) {
+        imageUrl = posterPreview;
       }
 
       const processUploads = async (fields, section) => {

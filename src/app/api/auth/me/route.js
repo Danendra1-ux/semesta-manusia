@@ -75,6 +75,11 @@ export async function GET() {
       });
     }
 
+    // Block access if the user has been deleted or deactivated.
+    if (row.is_active === false) {
+      return NextResponse.json({ error: "Akun telah dinonaktifkan." }, { status: 401 });
+    }
+
     return NextResponse.json({ user: row });
   } catch (err) {
     return NextResponse.json(

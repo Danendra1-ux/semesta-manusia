@@ -23,10 +23,10 @@ from datetime import date, timedelta
 
 import requests
 
-PROGRAM_ID = "126e25f5-f78c-43ae-8ff9-fae71b502946"
-FUNDING_TYPE_ID = "7ff56bc7-67af-4464-b0c1-01382e85f3c5"  # self
+PROGRAM_ID = "9d578e4d-51b2-4879-b3a2-e316c5aa9b0e"
+FUNDING_TYPE_ID = "6b6d79e9-7749-4777-94f4-07bca8d7a89f"
 BASE_URL = "http://localhost:3000"
-EMAIL_PREFIX = "loadtest+"  # marker for cleanup
+EMAIL_PREFIX = "loadtest+"
 TARGET = 1000
 
 

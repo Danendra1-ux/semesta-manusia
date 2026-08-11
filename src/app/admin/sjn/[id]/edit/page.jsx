@@ -345,22 +345,24 @@ export default function EditSJNProgramPage({ params }) {
         }
       }
 
-      let finalImageUrl = posterPreview || "";
+      let finalImageUrl = "";
 
       if (posterFile) {
-        const fileName = `program-${programId}-${Date.now()}-${posterFile.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('program-images')
-          .upload(fileName, posterFile, { upsert: true });
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from('program-images')
-            .getPublicUrl(fileName);
-          if (urlData?.publicUrl) finalImageUrl = urlData.publicUrl;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const fileName = buildFileName("poster", posterFile.name);
+        try {
+          const { url } = await uploadFileDirect(posterFile, {
+            bucket: "program-images",
+            fileName,
+            accessToken: token,
+          });
+          finalImageUrl = url;
+        } catch (err) {
+          throw new Error(`Gagal upload poster: ${err.message}`);
         }
       }
-      else if (posterPreview && posterPreview !== 'null') {
+      else if (posterPreview && posterPreview !== 'null' && !posterPreview.startsWith('blob:')) {
         finalImageUrl = posterPreview;
       }
 

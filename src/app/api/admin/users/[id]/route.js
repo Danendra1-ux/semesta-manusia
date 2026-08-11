@@ -213,7 +213,14 @@ export async function DELETE(_request, { params }) {
       );
     }
 
-    // 1) Remove from public.users
+    // 1) Fetch user email before deletion (needed for session revocation).
+    const { data: user } = await adminClient
+      .from("users")
+      .select("email")
+      .eq("id", id)
+      .maybeSingle();
+
+    // 2) Remove from public.users
     const { error: delErr } = await adminClient
       .from("users")
       .delete()
@@ -223,11 +230,19 @@ export async function DELETE(_request, { params }) {
       return NextResponse.json({ error: delErr.message }, { status: 500 });
     }
 
-    // 2) Remove from auth.users (best-effort). Skip on failure.
+    // 3) Revoke all sessions and remove from auth.users — both required.
+    try {
+      await adminClient.auth.admin.signOut(user?.email);
+    } catch (e) {
+      console.warn("signOut failed for user", id, e?.message || e);
+    }
     try {
       await adminClient.auth.admin.deleteUser(id);
     } catch (e) {
-      console.warn("Failed to delete auth user:", e?.message || e);
+      return NextResponse.json(
+        { error: "Gagal menghapus akun auth: " + (e?.message || String(e)) },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ ok: true });

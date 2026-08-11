@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
+import { sendVerificationLinkEmail } from "@/lib/email";
 
 /**
  * POST /api/auth/signup
  *
- * Register a new volunteer account. Forwards Data Diri fields to
- * auth.users.raw_user_meta_data so the on_auth_user_created trigger
- * can populate public.users on insert.
+ * Register a new volunteer account.
  *
- * Uses the anon key (NOT service role) so the auth flow runs as the
- * new user - this is what triggers the cookie/session creation.
+ * Flow:
+ * 1. admin.generateLink({ type: 'signup' }) creates user + confirmation link
+ * 2. Send verification link via Resend (bypasses Supabase email rate limits)
+ * 3. Insert into public.users
+ * 4. Return response so client shows "Cek Email" modal
  */
 export async function POST(request) {
   try {
@@ -34,10 +35,9 @@ export async function POST(request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = getSupabaseAnonKey();
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: "Konfigurasi Supabase tidak ditemukan." },
         { status: 500 }
@@ -47,132 +47,104 @@ export async function POST(request) {
     // Strip leading @ from instagram if user typed it.
     const ig = (instagram || "").replace(/^@/, "").trim();
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    // Build the redirect target for the email confirmation link.
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+      new URL(request.url).origin;
+    const emailRedirectTo = `${siteUrl}/user/login`;
+
+    // Step 1: Generate signup link (creates user + confirmation link in one call)
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: "signup",
+      email,
+      password,
+      data: {
+        name,
+        whatsapp,
+        instagram: ig,
+        birth_date,
+        region,
+        institution,
+      },
+      options: {
+        redirectTo: emailRedirectTo,
       },
     });
 
-    // Pre-flight: pastikan email belum terdaftar.
-    let adminClient = null;
-    if (supabaseServiceKey) {
-      adminClient = createClient(supabaseUrl, supabaseServiceKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const normalizedEmail = String(email).trim().toLowerCase();
-      const perPage = 200;
-      for (let page = 1; page <= 20; page += 1) {
-        const { data: listData, error: listErr } =
-          await adminClient.auth.admin.listUsers({ page, perPage });
-        if (listErr) {
-          console.error("listUsers preflight error:", listErr.message);
-          break; // Jangan blokir signup kalau cek gagal; signUp() akan jadi fallback.
-        }
-        const match = (listData?.users || []).find(
-          (u) => (u.email || "").toLowerCase() === normalizedEmail
+    if (linkError) {
+      console.error("generateLink error:", linkError.message);
+      const isEmailTaken = /already.*registered|already been registered|email.*exist/i.test(linkError.message);
+      if (isEmailTaken) {
+        return NextResponse.json(
+          { error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.", code: "email_taken" },
+          { status: 409 }
         );
-        if (match) {
-          return NextResponse.json(
-            {
-              error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
-              code: "email_taken",
-            },
-            { status: 409 }
-          );
-        }
-        if (!listData || (listData.users || []).length < perPage) break;
       }
+      return NextResponse.json(
+        { error: linkError.message },
+        { status: 400 }
+      );
     }
 
-    // [LOCAL TESTING] Email verification fully disabled.
-    //
-    // Pakai admin.createUser langsung (bukan anon signUp) supaya:
-    // 1. Tidak ada email konfirmasi yang dikirim (lewati Supabase rate limit).
-    // 2. email_confirm: true set dari awal, jadi user auto-verified.
-    // 3. signInWithPassword di bawah mengembalikan session → client auto-login.
-    //
-    // Fallback ke signUp() anonim hanya kalau service role key tidak ada.
+    const user = linkData?.user;
+    const verificationLink = linkData?.properties?.action_link;
 
-    let data = null;
-    let error = null;
-
-    if (adminClient) {
-      const result = await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          name,
-          whatsapp,
-          instagram: ig,
-          birth_date,
-          region,
-          institution,
-        },
-      });
-      data = result.data ? { user: result.data.user, session: null } : null;
-      error = result.error;
-
-      // auth.admin.createUser bypasses on_auth_user_created trigger — insert
-      // public.users row manually so the rest of the app (record-login,
-      // admin/users list, /api/auth/me) sees the new account.
-      if (!error && result.data?.user?.id) {
-        const { error: insertErr } = await adminClient
-          .from("users")
-          .insert({
-            id: result.data.user.id,
-            email,
-            name,
-            role: "user",
-            is_active: true,
-            whatsapp: whatsapp || null,
-            instagram: ig || null,
-            birth_date: birth_date || null,
-            region: region || null,
-            institution: institution || null,
-          });
-        if (insertErr) {
-          console.error("public.users insert error:", insertErr.message);
-        }
-      }
-    } else {
-      const result = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            whatsapp,
-            instagram: ig,
-            birth_date,
-            region,
-            institution,
-          },
-        },
-      });
-      data = result.data;
-      error = result.error;
+    if (!user?.id) {
+      return NextResponse.json(
+        { error: "Gagal membuat akun. Silakan coba lagi." },
+        { status: 500 }
+      );
     }
 
-
-    // Untuk admin.createUser, session=null di data → signInWithPassword akan kerja.
-    let session = null;
-    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Step 2: Send verification link via Resend
+    const emailResult = await sendVerificationLinkEmail({
+      to: email,
+      name,
+      verificationLink,
     });
-    if (!signInErr && signInData?.session) {
-      session = signInData.session;
+
+    if (!emailResult.success) {
+      console.error("[email] Verification email failed:", emailResult.error);
+      // Don't block signup if email fails — user can still verify via link
+    } else {
+      console.log("[email] Verification email sent successfully:", emailResult.id);
     }
 
-    const requiresConfirmation = !session;
+    // Step 3: Insert into public.users
+    const { error: insertErr } = await adminClient
+      .from("users")
+      .insert({
+        id: user.id,
+        email,
+        name,
+        role: "user",
+        is_active: true,
+        whatsapp: whatsapp || null,
+        instagram: ig || null,
+        birth_date: birth_date || null,
+        region: region || null,
+        institution: institution || null,
+      });
 
+    if (insertErr) {
+      console.error("public.users insert error:", insertErr.message);
+      // Don't block signup if insert fails — the trigger may handle it later
+    }
+
+    // Step 4: Return response — user needs to verify email
     return NextResponse.json(
       {
-        user: data?.user || null,
-        session,
-        requiresConfirmation,
+        user: {
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+        },
+        session: null,
+        requiresConfirmation: true,
       },
       { status: 201 }
     );

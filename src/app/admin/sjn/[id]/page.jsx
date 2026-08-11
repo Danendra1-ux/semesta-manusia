@@ -56,9 +56,9 @@ export default function SJNDetailPage({ params }) {
       try {
         const [progRes, regRes] = await Promise.all([
           fetch(`/api/programs/${programId}`),
-          fetch(`/api/registrations?program_id=${programId}`)
+          fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=0`)
         ]);
-        
+
         if (progRes.ok) {
           const progData = await progRes.json();
           setProgram({
@@ -66,10 +66,23 @@ export default function SJNDetailPage({ params }) {
             deskripsi: progData.description
           });
         }
-        
+
         if (regRes.ok) {
           const regData = await regRes.json();
-          const formattedPendaftar = regData.map(r => ({
+          const allRegs = regData.data || [];
+          const total = regData.count ?? allRegs.length;
+          let fetched = allRegs;
+          let currentOffset = fetched.length;
+          while (fetched.length < total) {
+            const moreRes = await fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=${currentOffset}`);
+            if (!moreRes.ok) break;
+            const moreData = await moreRes.json();
+            const moreRows = moreData.data || [];
+            if (moreRows.length === 0) break;
+            fetched = [...fetched, ...moreRows];
+            currentOffset += moreRows.length;
+          }
+          const formattedPendaftar = fetched.map(r => ({
             id: r.id,
             tanggal: new Date(r.registered_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}),
             rawDate: new Date(r.registered_at),
@@ -246,7 +259,18 @@ export default function SJNDetailPage({ params }) {
       const regRes = await fetch(`/api/registrations?program_id=${programId}`);
       if (regRes.ok) {
         const regData = await regRes.json();
-        const formatted = regData.map(r => ({
+        const allRegs = regData.data || [];
+        const total = regData.count ?? allRegs.length;
+        let fetched = allRegs;
+        let currentOffset = 2000;
+        while (fetched.length < total) {
+          const moreRes = await fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=${currentOffset}`);
+          if (!moreRes.ok) break;
+          const moreData = await moreRes.json();
+          fetched = [...fetched, ...(moreData.data || [])];
+          currentOffset += 2000;
+        }
+        const formatted = fetched.map(r => ({
           id: r.id,
           tanggal: new Date(r.registered_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}),
           rawDate: new Date(r.registered_at),

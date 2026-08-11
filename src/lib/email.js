@@ -27,23 +27,18 @@ export const sendRegistrationNotification = async ({ to, name, subject, bodyHtml
             <tr>
               <td align="center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                  <!-- Header -->
                   <tr>
                     <td style="background-color: #00BFFF; padding: 32px 24px 24px; text-align: center;">
                       <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600;">Semesta Manusia</h1>
                       <p style="margin: 8px 0 0; color: #c7d2fe; font-size: 13px;">${subtitle || 'Pengumuman Penerimaan'}</p>
                     </td>
                   </tr>
-                  <!-- Body -->
                   <tr>
                     <td style="padding: 32px 24px;">
                       <p style="margin: 0 0 16px; color: #1f2937; font-size: 16px;">Halo, <strong>${name}</strong>,</p>
-                      <div style="color: #374151; font-size: 15px; line-height: 1.65;">
-                        ${bodyHtml}
-                      </div>
+                      <div style="color: #374151; font-size: 15px; line-height: 1.65;">${bodyHtml}</div>
                     </td>
                   </tr>
-                  <!-- Footer -->
                   <tr>
                     <td style="background-color: #f9fafb; padding: 20px 24px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
@@ -71,6 +66,84 @@ export const sendRegistrationNotification = async ({ to, name, subject, bodyHtml
     return { success: true, id: result?.data?.id };
   } catch (error) {
     console.error('[email] Exception saat kirim:', error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+export const sendVerificationLinkEmail = async ({ to, name, verificationLink }) => {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('[email] RESEND_API_KEY tidak ditemukan di .env');
+    return { success: false, error: 'RESEND_API_KEY missing' };
+  }
+
+  const bodyHtml = `
+    <p>Halo <strong>${name}</strong>,</p>
+    <p>Terima kasih telah mendaftar di Semesta Manusia! Untuk mengaktifkan akun Anda, silakan klik tombol di bawah ini:</p>
+    <p style="margin: 24px 0; text-align: center;">
+      <a href="${verificationLink}" style="display: inline-block; padding: 12px 32px; background-color: #00BFFF; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+        Aktifkan Akun Saya
+      </a>
+    </p>
+    <p>Atau salin link berikut ke browser Anda:</p>
+    <p style="word-break: break-all; color: #6366f1; font-size: 13px;">${verificationLink}</p>
+    <p style="color: #6b7280; font-size: 13px;">Link ini akan kadaluarsa dalam 24 jam.</p>
+  `;
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: 'Aktifkan Akun Semesta Manusia Anda',
+      html: `
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background-color: #f3f4f6;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <tr>
+                    <td style="background-color: #00BFFF; padding: 32px 24px 24px; text-align: center;">
+                      <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600;">Semesta Manusia</h1>
+                      <p style="margin: 8px 0 0; color: #c7d2fe; font-size: 13px;">Aktifkan Akun Anda</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 32px 24px;">
+                      <div style="color: #374151; font-size: 15px; line-height: 1.65;">${bodyHtml}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="background-color: #f9fafb; padding: 20px 24px; text-align: center; border-top: 1px solid #e5e7eb;">
+                      <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
+                        Ini adalah pesan otomatis.<br/>
+                        Semesta Manusia &copy; ${new Date().getFullYear()}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    console.log('[email] Verification link sent:', JSON.stringify(result, null, 2));
+
+    if (result?.error) {
+      console.error('[email] Verification link error:', JSON.stringify(result.error, null, 2));
+      return { success: false, error: result.error };
+    }
+
+    return { success: true, id: result?.data?.id };
+  } catch (error) {
+    console.error('[email] Exception kirim verification link:', error.message);
     return { success: false, error: error.message };
   }
 };
@@ -107,23 +180,18 @@ export const sendRemindAccountEmail = async ({ to, name, subject }) => {
             <tr>
               <td align="center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                  <!-- Header -->
                   <tr>
                     <td style="background-color: #d97706; padding: 32px 24px 24px; text-align: center;">
                       <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600;">Semesta Manusia</h1>
                       <p style="margin: 8px 0 0; color: #fef3c7; font-size: 13px;">Konfirmasi Akun</p>
                     </td>
                   </tr>
-                  <!-- Body -->
                   <tr>
                     <td style="padding: 32px 24px;">
                       <p style="margin: 0 0 16px; color: #1f2937; font-size: 16px;">Halo, <strong>${name}</strong>,</p>
-                      <div style="color: #374151; font-size: 15px; line-height: 1.65;">
-                        ${bodyHtml}
-                      </div>
+                      <div style="color: #374151; font-size: 15px; line-height: 1.65;">${bodyHtml}</div>
                     </td>
                   </tr>
-                  <!-- Footer -->
                   <tr>
                     <td style="background-color: #f9fafb; padding: 20px 24px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">

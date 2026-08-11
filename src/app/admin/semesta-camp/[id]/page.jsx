@@ -89,7 +89,7 @@ export default function SemestaCampDetailPage({ params }) {
         // Panggil kedua API secara bersamaan
         const [progRes, regRes] = await Promise.all([
           fetch(`/api/programs/${programId}`),
-          fetch(`/api/registrations?program_id=${programId}`)
+          fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=0`)
         ]);
 
         if (!progRes.ok) throw new Error("Gagal mengambil data program");
@@ -98,7 +98,20 @@ export default function SemestaCampDetailPage({ params }) {
 
         if (regRes.ok) {
           const regData = await regRes.json();
-          setPendaftar(regData);
+          const allRegs = regData.data || [];
+          const total = regData.count ?? allRegs.length;
+          let fetched = allRegs;
+          let currentOffset = fetched.length;
+          while (fetched.length < total) {
+            const moreRes = await fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=${currentOffset}`);
+            if (!moreRes.ok) break;
+            const moreData = await moreRes.json();
+            const moreRows = moreData.data || [];
+            if (moreRows.length === 0) break;
+            fetched = [...fetched, ...moreRows];
+            currentOffset += moreRows.length;
+          }
+          setPendaftar(fetched);
         } else {
           throw new Error("Gagal mengambil data pendaftar");
         }
@@ -271,7 +284,22 @@ export default function SemestaCampDetailPage({ params }) {
         const response = await fetch(`/api/registrations/${id}`, { method: "DELETE" });
         if (response.ok) successCount++;
       }
-      await fetch(`/api/registrations?program_id=${programId}`).then(r => r.json()).then(d => setPendaftar(d));
+      const r2 = await fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=0`);
+      const d2 = await r2.json();
+      const allRegs2 = d2.data || [];
+      const total2 = d2.count ?? allRegs2.length;
+      let fetched2 = allRegs2;
+      let off2 = fetched2.length;
+      while (fetched2.length < total2) {
+        const mr = await fetch(`/api/registrations?program_id=${programId}&limit=2000&offset=${off2}`);
+        if (!mr.ok) break;
+        const md = await mr.json();
+        const mr2 = md.data || [];
+        if (mr2.length === 0) break;
+        fetched2 = [...fetched2, ...mr2];
+        off2 += mr2.length;
+      }
+      setPendaftar(fetched2);
       setSelectedRows([]);
       setDeleteModal({ open: false, id: null, fullName: "" });
       showToast(`Berhasil menghapus ${successCount} pendaftar`);

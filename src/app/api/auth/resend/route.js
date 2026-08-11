@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
+import { sendVerificationLinkEmail } from "@/lib/email";
 
 /**
  * POST /api/auth/resend
  *
- * Re-sends the "Confirm signup" email to a user who hasn't verified yet.
- * Body: { email }
+ * Re-sends the verification link to a user who hasn't verified yet.
+ * Uses admin.generateLink to create a fresh link (no rate limit),
+ * then sends via Resend.
  *
- * Rate limit: Supabase itself caps resends (≈ 1 per minute per email), so
- * we don't need a server-side counter — clients should debounce the button
- * themselves to avoid a wasted round-trip.
+ * Body: { email }
  */
 export async function POST(request) {
   try {
@@ -25,9 +24,9 @@ export async function POST(request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = getSupabaseAnonKey();
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: "Konfigurasi Supabase tidak ditemukan." },
         { status: 500 }
@@ -39,21 +38,48 @@ export async function POST(request) {
       new URL(request.url).origin;
     const emailRedirectTo = `${siteUrl}/user/login`;
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { error } = await supabase.auth.resend({
+    // Generate a fresh signup link (creates fresh token, no rate limit)
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: "signup",
       email,
-      options: { emailRedirectTo },
+      options: { redirectTo: emailRedirectTo },
     });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (linkError) {
+      console.error("generateLink resend error:", linkError.message);
+      return NextResponse.json({ error: linkError.message }, { status: 400 });
+    }
+
+    const user = linkData?.user;
+    const verificationLink = linkData?.properties?.action_link;
+
+    if (!user?.id || !verificationLink) {
+      return NextResponse.json(
+        { error: "Gagal membuat link verifikasi." },
+        { status: 500 }
+      );
+    }
+
+    // Get name from user metadata or email
+    const name = user.user_metadata?.name || (email || "").split("@")[0] || "Pengguna";
+
+    // Send via Resend
+    const emailResult = await sendVerificationLinkEmail({
+      to: email,
+      name,
+      verificationLink,
+    });
+
+    if (!emailResult.success) {
+      console.error("[email] Verification email resend failed:", emailResult.error);
+      return NextResponse.json(
+        { error: "Gagal mengirim email. Coba lagi nanti." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ ok: true });

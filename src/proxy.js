@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { getSupabaseAnonKey } from "@/lib/supabaseKeys";
+import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAnonKey, getSupabaseServiceKey } from "@/lib/supabaseKeys";
 
 const ADMIN_LOGIN_PATH = "/user/login";
 const USER_LOGIN_PATH = "/user/login";
@@ -13,10 +14,6 @@ function isUserPath(pathname) {
   return pathname === "/user" || pathname.startsWith("/user/");
 }
 
-/**
- * Volunteer-only routes. Anyone hitting these must be authenticated as
- * a regular user (non-admin). Admins are bounced to the admin dashboard.
- */
 const USER_PROTECTED_PREFIXES = ["/user/profile", "/user/my-programs"];
 
 function isUserProtectedPath(pathname) {
@@ -33,44 +30,26 @@ function getSupabaseServer(req) {
   return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll: async () => reqCookies,
-      setAll: () => {
-        // No-op — proxy only reads.
-      },
+      setAll: () => {},
     },
   });
 }
 
-/**
- * Check whether the request carries a valid Supabase admin session.
- * Roles must be present in app_metadata.role. Promotions via SQL must
- * also update auth.users.raw_app_meta_data — see trigger below.
- */
 async function getAdminSession(req) {
   const supabase = getSupabaseServer(req);
   if (!supabase) return null;
-
   try {
     const { data } = await supabase.auth.getUser();
     const user = data?.user;
     if (!user) return null;
-
-    const role =
-      user.app_metadata?.role ||
-      user.user_metadata?.role ||
-      user.role;
-
+    const role = user.app_metadata?.role || user.user_metadata?.role || user.role;
     if (role !== "admin") return null;
-
     return { user, role };
   } catch {
     return null;
   }
 }
 
-/**
- * Check whether the request carries a valid Supabase user session.
- * Returns the user object if signed in, else null.
- */
 async function getUserSession(req) {
   const supabase = getSupabaseServer(req);
   if (!supabase) return null;
@@ -82,7 +61,32 @@ async function getUserSession(req) {
   }
 }
 
-/** @type {import("next/server").NextRequestHandler} */
+/**
+ * Verify the authenticated user still exists and is active in public.users.
+ * Returns true if the user is active (or row not yet created by trigger).
+ * Returns false if the user was deleted or explicitly deactivated.
+ */
+async function isUserActive(authUserId) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = getSupabaseServiceKey();
+  if (!supabaseUrl || !serviceKey) return true;
+
+  try {
+    const adminClient = createClient(supabaseUrl, serviceKey);
+    const { data: row } = await adminClient
+      .from("users")
+      .select("is_active")
+      .eq("id", authUserId)
+      .maybeSingle();
+
+    if (!row) return false; // deleted from public.users
+    if (row.is_active === false) return false; // explicitly deactivated
+    return true;
+  } catch {
+    return true; // on DB error, don't block legitimate users
+  }
+}
+
 export default async function proxy(req) {
   const { pathname, search } = req.nextUrl;
 
@@ -96,6 +100,14 @@ export default async function proxy(req) {
       if (requested && requested !== ADMIN_LOGIN_PATH) {
         url.searchParams.set("redirect", requested);
       }
+      return NextResponse.redirect(url);
+    }
+
+    const adminActive = await isUserActive(session.user.id);
+    if (!adminActive) {
+      const url = req.nextUrl.clone();
+      url.pathname = ADMIN_LOGIN_PATH;
+      url.searchParams.set("redirect", pathname + (search || ""));
       return NextResponse.redirect(url);
     }
 
@@ -115,10 +127,15 @@ export default async function proxy(req) {
       return NextResponse.redirect(url);
     }
 
-    const role =
-      user.app_metadata?.role ||
-      user.user_metadata?.role ||
-      user.role;
+    const userActive = await isUserActive(user.id);
+    if (!userActive) {
+      const url = req.nextUrl.clone();
+      url.pathname = USER_LOGIN_PATH;
+      url.searchParams.set("redirect", pathname + (search || ""));
+      return NextResponse.redirect(url);
+    }
+
+    const role = user.app_metadata?.role || user.user_metadata?.role || user.role;
     if (role === "admin") {
       const url = req.nextUrl.clone();
       url.pathname = "/admin/dashboard";
@@ -126,14 +143,11 @@ export default async function proxy(req) {
     }
   }
 
-  // ---- Volunteer auth pages (login/signup) — bounce signed-in users ----
+  // ---- Volunteer auth pages — bounce signed-in users ----
   if (pathname === "/user/login" || pathname === "/user/signup") {
     const user = await getUserSession(req);
     if (user) {
-      const role =
-        user.app_metadata?.role ||
-        user.user_metadata?.role ||
-        user.role;
+      const role = user.app_metadata?.role || user.user_metadata?.role || user.role;
       const url = req.nextUrl.clone();
       url.pathname = role === "admin" ? "/admin/dashboard" : "/user/landingpage";
       url.search = "";
