@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
-import GallerySlider from "@/components/GallerySlider.jsx";
+// import GallerySlider from "@/components/GallerySlider.jsx";
 import styles from "./landingpage.module.css";
 
 const faqData = [
@@ -537,7 +537,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <GallerySlider />
+      {/* <GallerySlider />*/}
 
       {/* Partner Section */}
       <section className={styles.partnerSection}>
